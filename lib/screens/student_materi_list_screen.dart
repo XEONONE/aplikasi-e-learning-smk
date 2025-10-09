@@ -1,7 +1,8 @@
-// lib/screens/student_materi_list_screen.dart
-
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class StudentMateriListScreen extends StatelessWidget {
@@ -9,31 +10,53 @@ class StudentMateriListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('materi')
-          .orderBy('diunggahPada', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Center(child: Text('Silakan login ulang.'));
+    }
+
+    // Gunakan FutureBuilder untuk mendapatkan data kelas siswa terlebih dahulu
+    return FutureBuilder<UserModel?>(
+      future: AuthService().getUserData(currentUser.uid),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('Belum ada materi yang diunggah.'));
+        if (!userSnapshot.hasData || userSnapshot.data == null) {
+          return const Center(child: Text('Gagal memuat data kelas siswa.'));
         }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Terjadi error.'));
-        }
+        
+        final userKelas = userSnapshot.data!.kelas;
 
-        return ListView.builder(
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            var materiData =
-                snapshot.data!.docs[index].data() as Map<String, dynamic>;
-            return MateriCard(
-              judul: materiData['judul'],
-              deskripsi: materiData['deskripsi'],
-              fileUrl: materiData['fileUrl'],
+        // Setelah kelas didapatkan, gunakan StreamBuilder untuk memfilter materi
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('materi')
+              .where('untukKelas', isEqualTo: userKelas) // FILTER DITERAPKAN DI SINI
+              .orderBy('diunggahPada', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(child: Text('Belum ada materi untuk kelas $userKelas.'));
+            }
+            if (snapshot.hasError) {
+              return const Center(child: Text('Terjadi error saat memuat materi.'));
+            }
+
+            return ListView.builder(
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                var materiData =
+                    snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                return MateriCard(
+                  judul: materiData['judul'],
+                  deskripsi: materiData['deskripsi'],
+                  fileUrl: materiData['fileUrl'],
+                );
+              },
             );
           },
         );

@@ -1,10 +1,9 @@
-// PERBAIKAN DI SINI: Menggunakan ':' bukan '.'
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SubmissionListScreen extends StatelessWidget {
+class SubmissionListScreen extends StatefulWidget {
   final String taskId;
   final String taskTitle;
 
@@ -14,6 +13,12 @@ class SubmissionListScreen extends StatelessWidget {
     required this.taskTitle,
   });
 
+  @override
+  State<SubmissionListScreen> createState() => _SubmissionListScreenState();
+}
+
+class _SubmissionListScreenState extends State<SubmissionListScreen> {
+
   Future<void> _launchUrl(String fileUrl) async {
     final Uri url = Uri.parse(fileUrl);
     if (!await launchUrl(url)) {
@@ -21,7 +26,6 @@ class SubmissionListScreen extends StatelessWidget {
     }
   }
   
-  // Fungsi untuk mengambil nama siswa berdasarkan UID
   Future<String> _getStudentName(String uid) async {
     try {
       var userDoc = await FirebaseFirestore.instance.collection('users').where('uid', isEqualTo: uid).limit(1).get();
@@ -34,17 +38,69 @@ class SubmissionListScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _showGradingDialog(String submissionId, Map<String, dynamic> currentSubmissionData) async {
+    final nilaiController = TextEditingController(text: currentSubmissionData['nilai']?.toString() ?? '');
+    final feedbackController = TextEditingController(text: currentSubmissionData['feedback'] ?? '');
+    
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Beri Nilai dan Feedback'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: nilaiController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Nilai (0-100)'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: feedbackController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Catatan / Feedback'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Simpan'),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('tugas')
+                    .doc(widget.taskId)
+                    .collection('pengumpulan')
+                    .doc(submissionId)
+                    .update({
+                      'nilai': int.tryParse(nilaiController.text) ?? 0,
+                      'feedback': feedbackController.text.trim(),
+                    });
+                if (!mounted) return;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pengumpulan: $taskTitle'),
+        title: Text('Pengumpulan: ${widget.taskTitle}'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // Mengambil data dari sub-collection 'pengumpulan'
         stream: FirebaseFirestore.instance
             .collection('tugas')
-            .doc(taskId)
+            .doc(widget.taskId)
             .collection('pengumpulan')
             .orderBy('dikumpulkanPada', descending: true)
             .snapshots(),
@@ -55,14 +111,12 @@ class SubmissionListScreen extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Belum ada siswa yang mengumpulkan tugas ini.'));
           }
-          if (snapshot.hasError) {
-            return const Center(child: Text('Terjadi error.'));
-          }
 
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              var submissionData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+              var submissionDoc = snapshot.data!.docs[index];
+              var submissionData = submissionDoc.data() as Map<String, dynamic>;
               DateTime dikumpulkanPada = (submissionData['dikumpulkanPada'] as Timestamp).toDate();
               String formattedDate = DateFormat('d MMM yyyy, HH:mm').format(dikumpulkanPada);
 
@@ -80,11 +134,22 @@ class SubmissionListScreen extends StatelessWidget {
                       return Text(nameSnapshot.data ?? '...', style: const TextStyle(fontWeight: FontWeight.bold));
                     },
                   ),
+                  // PERBAIKAN STRUKTUR ADA DI SINI
                   subtitle: Text('Mengumpulkan pada: $formattedDate'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.download),
-                    tooltip: 'Unduh Jawaban',
-                    onPressed: () => _launchUrl(submissionData['fileUrl']),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.download, color: Colors.blue),
+                        tooltip: 'Unduh Jawaban',
+                        onPressed: () => _launchUrl(submissionData['fileUrl']),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.rate_review, color: Colors.orange),
+                        tooltip: 'Beri Nilai',
+                        onPressed: () => _showGradingDialog(submissionDoc.id, submissionData),
+                      ),
+                    ],
                   ),
                 ),
               );

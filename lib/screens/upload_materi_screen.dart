@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// PERBAIKAN DI SINI: Menggunakan ':' bukan '.'
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 
 class UploadMateriScreen extends StatefulWidget {
@@ -19,33 +18,56 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
   final _deskripsiController = TextEditingController();
   final _authService = AuthService();
 
-  File? _selectedFile;
+  Uint8List? _selectedFileBytes;
   String? _fileName;
   bool _isLoading = false;
+  
+  List<String> _daftarKelas = [];
+  String? _selectedKelas;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchKelas();
+  }
+
+  Future<void> _fetchKelas() async {
+    try {
+      var snapshot = await FirebaseFirestore.instance.collection('kelas').get();
+      if (!mounted) return;
+      List<String> kelas = snapshot.docs.map((doc) => doc['namaKelas'] as String).toList();
+      setState(() {
+        _daftarKelas = kelas;
+      });
+    } catch (e) {
+      if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat daftar kelas: $e')),
+      );
+    }
+  }
 
   Future<void> _pilihFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
-        _selectedFile = File(result.files.single.path!);
         _fileName = result.files.single.name;
+        _selectedFileBytes = result.files.single.bytes;
       });
     }
   }
 
   Future<void> _uploadMateri() async {
-    if (_formKey.currentState!.validate() && _selectedFile != null) {
+    if (_formKey.currentState!.validate() && _selectedFileBytes != null && _selectedKelas != null) {
       setState(() => _isLoading = true);
       try {
-        // 1. Upload file ke Firebase Storage
         final storageRef = FirebaseStorage.instance
             .ref()
             .child('materi/${DateTime.now().millisecondsSinceEpoch}_$_fileName');
-        UploadTask uploadTask = storageRef.putFile(_selectedFile!);
+        UploadTask uploadTask = storageRef.putData(_selectedFileBytes!);
         TaskSnapshot taskSnapshot = await uploadTask;
         String downloadUrl = await taskSnapshot.ref.getDownloadURL();
 
-        // 2. Simpan informasi materi ke Firestore
         await FirebaseFirestore.instance.collection('materi').add({
           'judul': _judulController.text.trim(),
           'deskripsi': _deskripsiController.text.trim(),
@@ -53,6 +75,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
           'fileName': _fileName,
           'diunggahPada': Timestamp.now(),
           'diunggahOlehUid': _authService.getCurrentUser()!.uid,
+          'untukKelas': _selectedKelas,
         });
         
         if (!mounted) return;
@@ -71,7 +94,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
       }
     } else {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Harap lengkapi semua field dan pilih file.')));
+            .showSnackBar(const SnackBar(content: Text('Harap lengkapi semua field, pilih kelas, dan pilih file.')));
     }
   }
   
@@ -81,7 +104,6 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
     _deskripsiController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +129,26 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
                 decoration: const InputDecoration(
                     labelText: 'Deskripsi', border: OutlineInputBorder()),
                 maxLines: 4,
-                validator: (value) =>
+                 validator: (value) =>
                     value!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedKelas,
+                hint: const Text('Pilih Kelas'),
+                items: _daftarKelas.map((String kelas) {
+                  return DropdownMenuItem<String>(
+                    value: kelas,
+                    child: Text(kelas),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedKelas = newValue;
+                  });
+                },
+                validator: (value) => value == null ? 'Kelas harus dipilih' : null,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               const SizedBox(height: 24),
               OutlinedButton.icon(

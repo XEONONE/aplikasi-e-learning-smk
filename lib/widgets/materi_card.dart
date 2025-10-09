@@ -1,3 +1,5 @@
+// lib/widgets/materi_card.dart
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +18,6 @@ class MateriCard extends StatelessWidget {
   Future<void> _launchUrl() async {
     final Uri url = Uri.parse(fileUrl);
     if (!await launchUrl(url)) {
-      // Di dunia nyata, Anda akan menampilkan notifikasi error di sini
       throw Exception('Could not launch $url');
     }
   }

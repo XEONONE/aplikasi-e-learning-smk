@@ -1,51 +1,82 @@
+// lib/screens/task_list_screen.dart
+
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:aplikasi_e_learning_smk/screens/submission_list_screen.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
+import 'package:aplikasi_e_learning_smk/widgets/task_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class TaskListScreen extends StatelessWidget {
   const TaskListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null)
+      return const Center(child: Text('Silakan login ulang.'));
+
     return Scaffold(
-      // AppBar sudah ada di dasbor utama, jadi kita tidak perlu di sini.
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('tugas')
-            .orderBy('dibuatPada', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: FutureBuilder<UserModel?>(
+        future: AuthService().getUserData(currentUser.uid),
+        builder: (context, userSnapshot) {
+          if (!userSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Belum ada tugas yang dibuat.'));
-          }
-          if (snapshot.hasError) {
+
+          final guruKelas = userSnapshot.data!.mengajarKelas;
+          if (guruKelas == null || guruKelas.isEmpty) {
             return const Center(
-              child: Text('Terjadi error saat memuat tugas.'),
+              child: Text('Anda belum terdaftar mengajar di kelas manapun.'),
             );
           }
 
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var taskData =
-                  snapshot.data!.docs[index].data() as Map<String, dynamic>;
-              DateTime tenggat = (taskData['tenggatWaktu'] as Timestamp)
-                  .toDate();
-              String formattedTenggat = DateFormat(
-                'd MMM yyyy, HH:mm',
-              ).format(tenggat);
+          return StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('tugas')
+                .where('untukKelas', whereIn: guruKelas)
+                .orderBy('dibuatPada', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(
+                  child: Text('Belum ada tugas yang dibuat untuk kelas Anda.'),
+                );
+              }
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('Terjadi error saat memuat tugas.'),
+                );
+              }
 
-              return ListTile(
-                title: Text(taskData['judul']),
-                subtitle: Text('Tenggat: $formattedTenggat'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  // Nanti di sini akan membuka halaman detail tugas untuk melihat siapa saja yang sudah mengumpulkan
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  var taskDoc = snapshot.data!.docs[index];
+                  var taskData = taskDoc.data() as Map<String, dynamic>;
+
+                  return TaskCard(
+                    taskId: taskDoc.id,
+                    judul: taskData['judul'],
+                    tenggatWaktu: taskData['tenggatWaktu'],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SubmissionListScreen(
+                            taskId: taskDoc.id,
+                            taskTitle: taskData['judul'],
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               );
             },

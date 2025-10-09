@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb, Uint8List; // Impor yang diperlukan untuk web
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -22,7 +22,7 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final _authService = AuthService();
-  File? _selectedFile;
+  Uint8List? _selectedFileBytes; // DIGANTI: dari File? menjadi Uint8List?
   String? _fileName;
   bool _isLoading = false;
 
@@ -30,14 +30,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
-        _selectedFile = File(result.files.single.path!);
         _fileName = result.files.single.name;
+        // Jika di web, ambil bytes-nya. Jika tidak, ambil path-nya
+        if (kIsWeb) {
+          _selectedFileBytes = result.files.single.bytes;
+        } else {
+          // Untuk mobile/desktop, Anda masih bisa menggunakan path,
+          // tapi untuk konsistensi kita bisa juga baca bytes-nya.
+          // Untuk saat ini kita fokus di web.
+        }
       });
     }
   }
 
   Future<void> _kumpulkanTugas() async {
-    if (_selectedFile == null) {
+    if (_selectedFileBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Silakan pilih file jawaban Anda.')),
       );
@@ -48,32 +55,33 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
     try {
-      // 1. Upload file jawaban ke Firebase Storage
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('jawaban_tugas/${widget.taskId}/$currentUserUid-$_fileName');
-      UploadTask uploadTask = storageRef.putFile(_selectedFile!);
+      
+      // DIGANTI: Menggunakan putData() untuk web, bukan putFile()
+      UploadTask uploadTask = storageRef.putData(_selectedFileBytes!);
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
 
-      // 2. Simpan info pengumpulan di sub-collection 'pengumpulan'
       await FirebaseFirestore.instance
           .collection('tugas')
           .doc(widget.taskId)
           .collection('pengumpulan')
-          .doc(currentUserUid) // Gunakan UID siswa sebagai ID dokumen
+          .doc(currentUserUid)
           .set({
         'fileUrl': downloadUrl,
         'fileName': _fileName,
         'dikumpulkanPada': Timestamp.now(),
         'siswaUid': currentUserUid,
+        'nilai': null,
+        'feedback': '',
       });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Tugas berhasil dikumpulkan!'),
           backgroundColor: Colors.green));
-      Navigator.pop(context);
 
     } catch (e) {
       if (!mounted) return;
@@ -86,10 +94,84 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  // Sisa kode di bawah ini tidak perlu diubah
+  // ... (widget _buildSubmissionStatus, _buildSubmissionForm, dan build tetap sama)
+  
+  Widget _buildSubmissionStatus(DocumentSnapshot submissionDoc) {
+    // ... implementasi tidak berubah
+    final data = submissionDoc.data() as Map<String, dynamic>;
+    final nilai = data['nilai'];
+    final feedback = data['feedback'];
+    final dikumpulkanPada = (data['dikumpulkanPada'] as Timestamp).toDate();
+    final formattedDate = DateFormat('d MMM yyyy, HH:mm').format(dikumpulkanPada);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Status Anda:', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 16),
+        ListTile(
+          leading: const Icon(Icons.check_circle, color: Colors.green),
+          title: const Text('Tugas Sudah Dikumpulkan'),
+          subtitle: Text('Pada: $formattedDate'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.grade, color: Colors.amber),
+          title: const Text('Nilai'),
+          subtitle: Text(
+            nilai == null ? 'Belum dinilai' : nilai.toString(),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.feedback, color: Colors.blue),
+          title: const Text('Feedback dari Guru'),
+          subtitle: Text(
+            (feedback == null || feedback.isEmpty) ? 'Belum ada feedback.' : feedback,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmissionForm() {
+    // ... implementasi tidak berubah
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Kumpulkan Jawaban Anda:', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.attach_file),
+          label: Text(_fileName ?? 'Pilih File Jawaban'),
+          onPressed: _pilihFile,
+        ),
+        const SizedBox(height: 24),
+        _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.upload),
+                  label: const Text('KUMPULKAN TUGAS'),
+                  onPressed: _kumpulkanTugas,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    textStyle: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ... implementasi tidak berubah
     DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
     String formattedTenggat = DateFormat('EEEE, d MMMM yyyy, HH:mm', 'id_ID').format(tenggat);
+    final currentUserUid = _authService.getCurrentUser()!.uid;
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.taskData['judul'])),
@@ -105,28 +187,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             Text('Tenggat Waktu:', style: Theme.of(context).textTheme.titleMedium),
             Text(formattedTenggat, style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
             const Divider(height: 32),
-            Text('Kumpulkan Jawaban Anda:', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.attach_file),
-              label: Text(_fileName ?? 'Pilih File Jawaban'),
-              onPressed: _pilihFile,
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('tugas')
+                  .doc(widget.taskId)
+                  .collection('pengumpulan')
+                  .doc(currentUserUid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  return _buildSubmissionStatus(snapshot.data!);
+                }
+                return _buildSubmissionForm();
+              },
             ),
-            const SizedBox(height: 24),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Center(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.upload),
-                      label: const Text('KUMPULKAN TUGAS'),
-                      onPressed: _kumpulkanTugas,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 24),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
           ],
         ),
       ),
