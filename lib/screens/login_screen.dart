@@ -1,5 +1,5 @@
-import 'package:aplikasi_e_learning_smk/screens/activation_screen.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'activation_screen.dart';
+import '../services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,8 +17,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
 
   void _login() async {
-    // Sembunyikan keyboard
     FocusScope.of(context).unfocus();
+
+    if (_nipNisnController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("NIP/NISN dan Password tidak boleh kosong."),
+          backgroundColor: Colors.orangeAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -29,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordController.text.trim(),
     );
 
-    // Pastikan widget masih ada sebelum mengubah state
     if (!mounted) return;
 
     setState(() {
@@ -45,7 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
-    // Jika sukses, AuthGate akan otomatis pindah halaman
   }
 
   @override
@@ -59,74 +67,95 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // 1. Latar belakang dengan gradasi
+        // PERUBAHAN: Latar belakang gradasi ungu ke hitam
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.indigo.shade200, Colors.indigo.shade500],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Colors.purple.shade900, Colors.black],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Card(
-              elevation: 8.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              child: Padding(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 450),
+              child: Container(
                 padding: const EdgeInsets.all(24.0),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.purple.shade700, width: 1),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // 2. Judul yang lebih menarik
-                    Text(
-                      'Selamat Datang',
+                    Image.asset('logo_sekolah.png', height: 100),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'PORTAL E - LEARNING',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade700,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Masuk ke akun E-Learning Anda',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
-                    ),
                     const SizedBox(height: 32),
-
-                    // 3. Input field dengan desain yang lebih baik
                     TextFormField(
                       controller: _nipNisnController,
                       keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'NIP / NISN',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        border: OutlineInputBorder(
+                        labelStyle: TextStyle(color: Colors.grey.shade400),
+                        prefixIcon: Icon(
+                          Icons.person_outline,
+                          color: Colors.grey.shade400,
+                        ),
+                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: Colors.grey.shade700),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(
+                            color: Colors.purple.shade400,
+                            width: 2,
+                          ), // PERUBAHAN
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     TextFormField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(
+                        labelStyle: TextStyle(color: Colors.grey.shade400),
+                        prefixIcon: Icon(
+                          Icons.lock_outline,
+                          color: Colors.grey.shade400,
+                        ),
+                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: Colors.grey.shade700),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(
+                            color: Colors.purple.shade400,
+                            width: 2,
+                          ), // PERUBAHAN
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isPasswordVisible
                                 ? Icons.visibility_off
                                 : Icons.visibility,
+                            color: Colors.grey.shade400,
                           ),
                           onPressed: () {
                             setState(() {
@@ -137,22 +166,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // 4. Tombol Login yang menonjol
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : ElevatedButton(
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
+                              backgroundColor:
+                                  Colors.purple.shade600, // PERUBAHAN
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
-                              elevation: 5.0,
                             ),
                             child: const Text(
-                              'LOGIN',
+                              'SIGN IN',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -164,7 +191,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Belum punya akun?"),
+                        Text(
+                          "Belum punya akun?",
+                          style: TextStyle(color: Colors.grey.shade300),
+                        ),
                         TextButton(
                           onPressed: () {
                             Navigator.push(
@@ -174,9 +204,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                          child: const Text(
+                          child: Text(
                             'Aktivasi di sini',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade300, // PERUBAHAN
+                            ),
                           ),
                         ),
                       ],
