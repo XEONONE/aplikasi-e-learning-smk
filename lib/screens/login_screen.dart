@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // Latar belakang dengan gradasi
+        // 1. Latar belakang dengan gradasi
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.indigo.shade200, Colors.indigo.shade500],
@@ -70,140 +70,118 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            // ⭐ 1. Gunakan SizedBox untuk membatasi lebar Card
-            child: SizedBox(
-              width: 400, // Lebar kotak login disesuaikan
-              child: Card(
-                elevation: 8.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ⭐ 2. Menambahkan logo dari URL
-                      Image.network(
-                        'https://elearning.bsi.ac.id/assets/img/mybest_3.png',
-                        height: 50, // Sesuaikan tinggi logo
-                        errorBuilder: (context, error, stackTrace) {
-                          // Tampilkan judul jika logo gagal dimuat
-                          return const Text(
-                            'E-Learning App',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        },
+            child: Card(
+              elevation: 8.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 2. Judul yang lebih menarik
+                    Text(
+                      'Selamat Datang',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade700,
                       ),
-                      const SizedBox(height: 24),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Masuk ke akun E-Learning Anda',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 32),
 
-                      // Input field NIP/NISN
-                      TextFormField(
-                        controller: _nipNisnController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'NIP / NISN',
-                          prefixIcon: const Icon(Icons.person_outline),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
+                    // 3. Input field dengan desain yang lebih baik
+                    TextFormField(
+                      controller: _nipNisnController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'NIP / NISN',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 16),
 
-                      // Input field Password
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_isPasswordVisible,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // ⭐ 3. Menambahkan tombol "Lupa Password?"
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
                           onPressed: () {
-                            // TODO: Buat halaman atau fungsi untuk lupa password
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
                           },
-                          child: const Text('Lupa Password?'),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 24),
 
-                      // Tombol Login
-                      _isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : ElevatedButton(
-                              onPressed: _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                elevation: 5.0,
+                    // 4. Tombol Login yang menonjol
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                            onPressed: _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
-                              child: const Text(
-                                'LOGIN',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              elevation: 5.0,
                             ),
-                      const SizedBox(height: 16),
-
-                      // Tombol Aktivasi
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Belum punya akun?"),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ActivationScreen(),
-                                ),
-                              );
-                            },
                             child: const Text(
-                              'Aktivasi di sini',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              'LOGIN',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Belum punya akun?"),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ActivationScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Aktivasi di sini',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
