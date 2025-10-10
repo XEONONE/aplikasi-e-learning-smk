@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'E-Learning App',
       theme: ThemeData(primarySwatch: Colors.indigo),
       home: const AuthGate(),

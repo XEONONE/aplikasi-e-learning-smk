@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// Widget untuk menampilkan kartu pengumuman (sudah ada sebelumnya)
 class AnnouncementCard extends StatelessWidget {
   final String judul;
   final String isi;
@@ -59,6 +60,50 @@ class AnnouncementCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ⭐️ KELAS YANG HILANG DITAMBAHKAN DI SINI ⭐️
+class StudentHomeScreen extends StatelessWidget {
+  const StudentHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      // Mengambil data dari koleksi 'pengumuman' di Firestore
+      stream: FirebaseFirestore.instance
+          .collection('pengumuman')
+          .orderBy('dibuatPada', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('Belum ada pengumuman.'));
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Terjadi error saat memuat pengumuman.'));
+        }
+
+        // Menampilkan daftar pengumuman menggunakan ListView
+        return ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            var doc = snapshot.data!.docs[index];
+            var data = doc.data() as Map<String, dynamic>;
+            // Menggunakan widget AnnouncementCard yang sudah ada
+            return AnnouncementCard(
+              judul: data['judul'],
+              isi: data['isi'],
+              dibuatPada: data['dibuatPada'],
+              dibuatOlehUid: data['dibuatOlehUid'],
+            );
+          },
+        );
+      },
     );
   }
 }
