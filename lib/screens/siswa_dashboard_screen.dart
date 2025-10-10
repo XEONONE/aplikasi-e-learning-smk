@@ -1,4 +1,4 @@
-import 'package:aplikasi_e_learning_smk/screens/student_home_screen.dart'; // Impor halaman baru
+import 'package:aplikasi_e_learning_smk/screens/student_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_task_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
@@ -14,18 +14,16 @@ class SiswaDashboardScreen extends StatefulWidget {
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   int _selectedIndex = 0;
 
-  // Tambahkan halaman Beranda di urutan pertama
   final List<Widget> _pages = [
-    const StudentHomeScreen(),         // Halaman Beranda
-    const StudentMateriListScreen(),   // Halaman Materi
-    const StudentTaskListScreen(),     // Halaman Tugas
+    const StudentHomeScreen(),
+    const StudentMateriListScreen(),
+    const StudentTaskListScreen(),
   ];
 
-  // Judul AppBar yang akan berubah sesuai tab
   final List<String> _pageTitles = [
     'Beranda',
     'Materi Pelajaran',
-    'Daftar Tugas'
+    'Daftar Tugas',
   ];
 
   void _onItemTapped(int index) {
@@ -38,29 +36,20 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitles[_selectedIndex]), // Judul dinamis
+        title: Text(_pageTitles[_selectedIndex]),
         actions: [
           IconButton(
-              onPressed: () => AuthService().signOut(),
-              icon: const Icon(Icons.logout))
+            onPressed: () => AuthService().signOut(),
+            icon: const Icon(Icons.logout),
+          ),
         ],
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          // Tambahkan item navigasi untuk Beranda
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Tugas',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Materi'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Tugas'),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

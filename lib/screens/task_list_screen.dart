@@ -16,8 +16,9 @@ class TaskListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null)
+    if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
+    }
 
     return Scaffold(
       body: FutureBuilder<UserModel?>(

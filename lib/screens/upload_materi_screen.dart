@@ -134,7 +134,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedKelas,
+                initialValue: _selectedKelas,
                 hint: const Text('Pilih Kelas'),
                 items: _daftarKelas.map((String kelas) {
                   return DropdownMenuItem<String>(

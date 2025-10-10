@@ -1,8 +1,9 @@
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/screens/create_announcement_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // <-- IMPORT PENTING YANG HILANG
 
 class GuruHomeScreen extends StatefulWidget {
   const GuruHomeScreen({super.key});
@@ -53,7 +54,6 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Kartu Ringkasan Jumlah Materi
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('materi').snapshots(),
                   builder: (context, snapshot) {
@@ -72,7 +72,6 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                   },
                 ),
 
-                // Kartu Ringkasan Jumlah Tugas
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('tugas').snapshots(),
                   builder: (context, snapshot) {
@@ -94,6 +93,16 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
+          );
+        },
+        label: const Text('Buat Pengumuman'),
+        icon: const Icon(Icons.campaign),
       ),
     );
   }
