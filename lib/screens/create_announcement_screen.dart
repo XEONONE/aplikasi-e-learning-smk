@@ -15,7 +15,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   final _isiController = TextEditingController();
   final _authService = AuthService();
 
-  List<String> _daftarKelas = ['Semua Kelas']; // Opsi default
+  final List<String> _daftarKelas = ['Semua Kelas']; // Opsi default
   String? _selectedKelas;
   bool _isLoading = false;
 
@@ -92,7 +92,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedKelas,
+                initialValue: _selectedKelas,
                 hint: const Text('Tujukan ke...'),
                 items: _daftarKelas.map((String kelas) {
                   return DropdownMenuItem<String>(value: kelas, child: Text(kelas));

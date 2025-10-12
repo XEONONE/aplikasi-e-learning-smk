@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.asset('logo_sekolah.png', height: 100),
+                    Image.asset('assets/logo_sekolah.png', height: 100),
                     const SizedBox(height: 24),
                     const Text(
                       'PORTAL E - LEARNING',
@@ -132,6 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
                       style: const TextStyle(color: Colors.white),
+                      // ## Adaptasi Kode ##
+                      // Baris ini akan memanggil fungsi _login saat tombol "Enter" ditekan.
+                      onFieldSubmitted: (_) => _login(),
+                      // ## Akhir Adaptasi ##
                       decoration: InputDecoration(
                         labelText: 'Password',
                         labelStyle: TextStyle(color: Colors.grey.shade400),
