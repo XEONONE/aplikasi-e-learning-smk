@@ -1,10 +1,11 @@
-import 'package:flutter/foundation.dart' show kIsWeb, Uint8List; // Impor yang diperlukan untuk web
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/widgets/comment_section.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final String taskId;
@@ -22,7 +23,7 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final _authService = AuthService();
-  Uint8List? _selectedFileBytes; // DIGANTI: dari File? menjadi Uint8List?
+  Uint8List? _selectedFileBytes;
   String? _fileName;
   bool _isLoading = false;
 
@@ -31,14 +32,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     if (result != null) {
       setState(() {
         _fileName = result.files.single.name;
-        // Jika di web, ambil bytes-nya. Jika tidak, ambil path-nya
-        if (kIsWeb) {
-          _selectedFileBytes = result.files.single.bytes;
-        } else {
-          // Untuk mobile/desktop, Anda masih bisa menggunakan path,
-          // tapi untuk konsistensi kita bisa juga baca bytes-nya.
-          // Untuk saat ini kita fokus di web.
-        }
+        // Ambil bytes-nya untuk semua platform demi konsistensi.
+        _selectedFileBytes = result.files.single.bytes;
       });
     }
   }
@@ -59,7 +54,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           .ref()
           .child('jawaban_tugas/${widget.taskId}/$currentUserUid-$_fileName');
       
-      // DIGANTI: Menggunakan putData() untuk web, bukan putFile()
       UploadTask uploadTask = storageRef.putData(_selectedFileBytes!);
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -94,11 +88,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
-  // Sisa kode di bawah ini tidak perlu diubah
-  // ... (widget _buildSubmissionStatus, _buildSubmissionForm, dan build tetap sama)
-  
   Widget _buildSubmissionStatus(DocumentSnapshot submissionDoc) {
-    // ... implementasi tidak berubah
     final data = submissionDoc.data() as Map<String, dynamic>;
     final nilai = data['nilai'];
     final feedback = data['feedback'];
@@ -137,7 +127,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Widget _buildSubmissionForm() {
-    // ... implementasi tidak berubah
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -168,9 +157,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... implementasi tidak berubah
     DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
-    String formattedTenggat = DateFormat('EEEE, d MMMM yyyy, HH:mm', 'id_ID').format(tenggat);
+    String formattedTenggat =
+        DateFormat('EEEE, d MMMM yyyy, HH:mm', 'id_ID').format(tenggat);
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
     return Scaffold(
@@ -180,12 +169,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Instruksi Tugas:', style: Theme.of(context).textTheme.titleLarge),
+            Text('Instruksi Tugas:',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(widget.taskData['deskripsi'], style: const TextStyle(fontSize: 16)),
+            Text(widget.taskData['deskripsi'],
+                style: const TextStyle(fontSize: 16)),
             const Divider(height: 32),
-            Text('Tenggat Waktu:', style: Theme.of(context).textTheme.titleMedium),
-            Text(formattedTenggat, style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
+            Text('Tenggat Waktu:',
+                style: Theme.of(context).textTheme.titleMedium),
+            Text(formattedTenggat,
+                style:
+                    const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
             const Divider(height: 32),
             StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
@@ -203,6 +197,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 }
                 return _buildSubmissionForm();
               },
+            ),
+            
+            const Divider(height: 48),
+            CommentSection(
+              documentId: widget.taskId,
+              collectionPath: 'tugas',
             ),
           ],
         ),
