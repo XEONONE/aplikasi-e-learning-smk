@@ -1,8 +1,13 @@
+// lib/screens/student_home_screen.dart
+
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-// Widget untuk menampilkan kartu pengumuman (sudah ada sebelumnya)
+// Widget untuk menampilkan kartu pengumuman
 class AnnouncementCard extends StatelessWidget {
   final String judul;
   final String isi;
@@ -19,7 +24,11 @@ class AnnouncementCard extends StatelessWidget {
 
   Future<String> _getAuthorName(String uid) async {
     try {
-      var userDoc = await FirebaseFirestore.instance.collection('users').where('uid', isEqualTo: uid).limit(1).get();
+      var userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
       if (userDoc.docs.isNotEmpty) {
         return userDoc.docs.first.data()['nama'] ?? 'Admin';
       }
@@ -31,7 +40,9 @@ class AnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('d MMMM yyyy, HH:mm').format(dibuatPada.toDate());
+    String formattedDate = DateFormat(
+      'd MMMM yyyy, HH:mm',
+    ).format(dibuatPada.toDate());
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -64,42 +75,65 @@ class AnnouncementCard extends StatelessWidget {
   }
 }
 
-// ⭐️ KELAS YANG HILANG DITAMBAHKAN DI SINI ⭐️
+// Widget utama untuk halaman beranda siswa
 class StudentHomeScreen extends StatelessWidget {
   const StudentHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      // Mengambil data dari koleksi 'pengumuman' di Firestore
-      stream: FirebaseFirestore.instance
-          .collection('pengumuman')
-          .orderBy('dibuatPada', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Center(child: Text('Silakan login ulang.'));
+    }
+
+    // Gunakan FutureBuilder untuk mendapatkan data kelas siswa
+    return FutureBuilder<UserModel?>(
+      future: AuthService().getUserData(currentUser.uid),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('Belum ada pengumuman.'));
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Terjadi error saat memuat pengumuman.'));
+        if (!userSnapshot.hasData || userSnapshot.data == null) {
+          return const Center(child: Text('Gagal memuat data siswa.'));
         }
 
-        // Menampilkan daftar pengumuman menggunakan ListView
-        return ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            var doc = snapshot.data!.docs[index];
-            var data = doc.data() as Map<String, dynamic>;
-            // Menggunakan widget AnnouncementCard yang sudah ada
-            return AnnouncementCard(
-              judul: data['judul'],
-              isi: data['isi'],
-              dibuatPada: data['dibuatPada'],
-              dibuatOlehUid: data['dibuatOlehUid'],
+        final userKelas = userSnapshot.data!.kelas;
+
+        // Gunakan StreamBuilder untuk memfilter pengumuman
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('pengumuman')
+              // ## PERUBAHAN DI SINI ##
+              // Ambil pengumuman untuk kelas siswa ATAU untuk "Semua Kelas"
+              .where('untukKelas', whereIn: [userKelas, 'Semua Kelas'])
+              .orderBy('dibuatPada', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(child: Text('Belum ada pengumuman.'));
+            }
+            if (snapshot.hasError) {
+              return const Center(
+                child: Text('Terjadi error saat memuat pengumuman.'),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                var doc = snapshot.data!.docs[index];
+                var data = doc.data() as Map<String, dynamic>;
+                return AnnouncementCard(
+                  judul: data['judul'],
+                  isi: data['isi'],
+                  dibuatPada: data['dibuatPada'],
+                  dibuatOlehUid: data['dibuatOlehUid'],
+                );
+              },
             );
           },
         );

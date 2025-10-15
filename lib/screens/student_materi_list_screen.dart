@@ -1,9 +1,9 @@
+// lib/screens/student_materi_list_screen.dart
+
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
-// --- PERBAIKAN DI SINI ---
 import 'package:cloud_firestore/cloud_firestore.dart';
-// --- AKHIR PERBAIKAN ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -46,16 +46,6 @@ class StudentMateriListScreen extends StatelessWidget {
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              // Pesan ini akan muncul di Debug Console untuk membantu Anda
-              print("--- DEBUG INFO ---");
-              print(
-                "Nilai 'kelas' dari data siswa saat ini adalah: '$userKelas'",
-              );
-              print(
-                "Pastikan nilai di atas SAMA PERSIS dengan field 'untukKelas' di koleksi 'materi' Anda di Firestore.",
-              );
-              print("--------------------");
-
               return Center(
                 child: Text('Belum ada materi untuk kelas $userKelas.'),
               );

@@ -26,9 +26,15 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final _authService = AuthService();
-  Uint8List? _selectedFileBytes;
-  String? _fileName;
+  // ## PERUBAHAN: Ganti variabel file dengan controller untuk link ##
+  final _linkController = TextEditingController();
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _linkController.dispose(); // Jangan lupa dispose controller
+    super.dispose();
+  }
 
   Future<void> _launchUrl(String urlString) async {
     final Uri url = Uri.parse(urlString);
@@ -37,44 +43,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
-  Future<void> _pilihFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      setState(() {
-        _fileName = result.files.single.name;
-        _selectedFileBytes = result.files.single.bytes;
-      });
-    }
-  }
-
+  // ## PERUBAHAN: Logika kumpulkan tugas diubah ##
   Future<void> _kumpulkanTugas() async {
-    if (_selectedFileBytes == null) {
+    // Validasi input link
+    if (_linkController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Silakan pilih file jawaban Anda.')),
+        const SnackBar(content: Text('Silakan masukkan link jawaban Anda.')),
       );
       return;
     }
 
     setState(() => _isLoading = true);
     final currentUserUid = _authService.getCurrentUser()!.uid;
+    final String linkJawaban = _linkController.text.trim();
 
     try {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('jawaban_tugas/${widget.taskId}/$currentUserUid-$_fileName');
-      
-      UploadTask uploadTask = storageRef.putData(_selectedFileBytes!);
-      TaskSnapshot taskSnapshot = await uploadTask;
-      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-
+      // Langsung simpan link ke Firestore, tidak perlu upload ke Storage
       await FirebaseFirestore.instance
           .collection('tugas')
           .doc(widget.taskId)
           .collection('pengumpulan')
           .doc(currentUserUid)
           .set({
-        'fileUrl': downloadUrl,
-        'fileName': _fileName,
+        'fileUrl': linkJawaban, // Simpan link dari input
+        'fileName': 'Link Google Drive', // Beri nama generik
         'dikumpulkanPada': Timestamp.now(),
         'siswaUid': currentUserUid,
         'nilai': null,
@@ -135,16 +127,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
+  // ## PERUBAHAN: Tampilan form diubah menjadi input link ##
   Widget _buildSubmissionForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Kumpulkan Jawaban Anda:', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.attach_file),
-          label: Text(_fileName ?? 'Pilih File Jawaban'),
-          onPressed: _pilihFile,
+        TextFormField(
+          controller: _linkController,
+          decoration: const InputDecoration(
+            labelText: 'Masukkan Link Google Drive Jawaban',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.link),
+          ),
+          validator: (value) => value!.trim().isEmpty ? 'Link tidak boleh kosong' : null,
         ),
         const SizedBox(height: 24),
         _isLoading
