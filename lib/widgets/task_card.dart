@@ -1,3 +1,5 @@
+// lib/widgets/task_card.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +9,7 @@ class TaskCard extends StatelessWidget {
   final String judul;
   final Timestamp tenggatWaktu;
   final VoidCallback onTap;
+  final VoidCallback? onEdit; // ## BARU: Tambahkan callback untuk edit ##
 
   const TaskCard({
     super.key,
@@ -14,6 +17,7 @@ class TaskCard extends StatelessWidget {
     required this.judul,
     required this.tenggatWaktu,
     required this.onTap,
+    this.onEdit, // ## BARU ##
   });
 
   @override
@@ -45,25 +49,37 @@ class TaskCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('tugas')
-                    .doc(taskId)
-                    .collection('pengumpulan')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  int submissionCount = 0;
-                  if (snapshot.hasData) {
-                    submissionCount = snapshot.data!.docs.length;
-                  }
-                  return Row(
-                    children: [
-                      const Icon(Icons.people_alt_outlined, size: 16, color: Colors.black54),
-                      const SizedBox(width: 4),
-                      Text('$submissionCount siswa telah mengumpulkan'),
-                    ],
-                  );
-                },
+              Row( // ## BARU: Bungkus dengan Row ##
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('tugas')
+                        .doc(taskId)
+                        .collection('pengumpulan')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      int submissionCount = 0;
+                      if (snapshot.hasData) {
+                        submissionCount = snapshot.data!.docs.length;
+                      }
+                      return Row(
+                        children: [
+                          const Icon(Icons.people_alt_outlined, size: 16, color: Colors.black54),
+                          const SizedBox(width: 4),
+                          Text('$submissionCount siswa telah mengumpulkan'),
+                        ],
+                      );
+                    },
+                  ),
+                  // ## BARU: Tambahkan tombol edit jika onEdit tidak null ##
+                  if (onEdit != null)
+                    IconButton(
+                      icon: Icon(Icons.edit_note, color: Colors.orange.shade700),
+                      onPressed: onEdit,
+                      tooltip: 'Edit Tugas',
+                    )
+                ],
               ),
             ],
           ),

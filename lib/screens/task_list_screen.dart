@@ -2,6 +2,7 @@
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
+import 'package:aplikasi_e_learning_smk/screens/edit_tugas_screen.dart'; // ## IMPORT BARU ##
 import 'package:aplikasi_e_learning_smk/screens/submission_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/task_card.dart';
@@ -72,6 +73,18 @@ class TaskListScreen extends StatelessWidget {
                           builder: (context) => SubmissionListScreen(
                             taskId: taskDoc.id,
                             taskTitle: taskData['judul'],
+                          ),
+                        ),
+                      );
+                    },
+                    // ## PERUBAHAN: Tambahkan onEdit ##
+                    onEdit: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditTaskScreen(
+                            taskId: taskDoc.id,
+                            initialData: taskData,
                           ),
                         ),
                       );

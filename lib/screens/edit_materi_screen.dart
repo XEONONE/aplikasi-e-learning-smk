@@ -1,27 +1,26 @@
-// lib/screens/create_task_screen.dart
-
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-class CreateTaskScreen extends StatefulWidget {
-  const CreateTaskScreen({super.key});
+class EditMateriScreen extends StatefulWidget {
+  final String materiId;
+  final Map<String, dynamic> initialData;
+
+  const EditMateriScreen({
+    super.key,
+    required this.materiId,
+    required this.initialData,
+  });
 
   @override
-  State<CreateTaskScreen> createState() => _CreateTaskScreenState();
+  State<EditMateriScreen> createState() => _EditMateriScreenState();
 }
 
-class _CreateTaskScreenState extends State<CreateTaskScreen> {
+class _EditMateriScreenState extends State<EditMateriScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _judulController = TextEditingController();
-  final _deskripsiController = TextEditingController();
-  final _linkController = TextEditingController(); // ## BARU: Controller untuk link
-  final _authService = AuthService();
+  late TextEditingController _judulController;
+  late TextEditingController _deskripsiController;
+  late TextEditingController _linkController;
 
-  DateTime? _tenggatWaktu;
   bool _isLoading = false;
   List<String> _daftarKelas = [];
   String? _selectedKelas;
@@ -29,6 +28,16 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   @override
   void initState() {
     super.initState();
+    // Isi controller dengan data yang ada
+    _judulController = TextEditingController(text: widget.initialData['judul']);
+    _deskripsiController = TextEditingController(
+      text: widget.initialData['deskripsi'],
+    );
+    _linkController = TextEditingController(
+      text: widget.initialData['fileUrl'],
+    );
+    _selectedKelas = widget.initialData['untukKelas'];
+
     _fetchKelas();
   }
 
@@ -43,66 +52,37 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         _daftarKelas = kelas;
       });
     } catch (e) {
-      // ... handle error
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat daftar kelas: $e')));
     }
   }
 
-  Future<void> _pilihTanggal() async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-    if (pickedDate != null && mounted) {
-      TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(DateTime.now()),
-      );
-      if (pickedTime != null) {
-        setState(() {
-          _tenggatWaktu = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
-    }
-  }
-
-  Future<void> _simpanTugas() async {
-    if (_formKey.currentState!.validate() &&
-        _tenggatWaktu != null &&
-        _selectedKelas != null) {
+  Future<void> _updateMateri() async {
+    if (_formKey.currentState!.validate() && _selectedKelas != null) {
       setState(() => _isLoading = true);
       try {
-        // Siapkan data untuk disimpan
-        final Map<String, dynamic> dataToSave = {
-          'judul': _judulController.text.trim(),
-          'deskripsi': _deskripsiController.text.trim(),
-          'tenggatWaktu': Timestamp.fromDate(_tenggatWaktu!),
-          'dibuatPada': Timestamp.now(),
-          'dibuatOlehUid': _authService.getCurrentUser()!.uid,
-          'untukKelas': _selectedKelas,
-          // ## PERUBAHAN: Simpan link jika tidak kosong ##
-          'fileUrl': _linkController.text.trim().isEmpty ? null : _linkController.text.trim(),
-        };
-
-        await FirebaseFirestore.instance.collection('tugas').add(dataToSave);
+        await FirebaseFirestore.instance
+            .collection('materi')
+            .doc(widget.materiId)
+            .update({
+              'judul': _judulController.text.trim(),
+              'deskripsi': _deskripsiController.text.trim(),
+              'fileUrl': _linkController.text.trim(),
+              'untukKelas': _selectedKelas,
+            });
 
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Tugas berhasil dibuat!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Materi berhasil diperbarui!')),
+        );
         Navigator.pop(context);
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Gagal membuat tugas: $e')));
+        ).showSnackBar(SnackBar(content: Text('Gagal memperbarui: $e')));
       } finally {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -111,9 +91,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Harap lengkapi semua field, termasuk kelas dan tenggat waktu.',
-          ),
+          content: Text('Harap lengkapi semua field dan pilih kelas.'),
         ),
       );
     }
@@ -123,14 +101,14 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   void dispose() {
     _judulController.dispose();
     _deskripsiController.dispose();
-    _linkController.dispose(); // ## BARU ##
+    _linkController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Tugas Baru')),
+      appBar: AppBar(title: const Text('Edit Materi')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -141,7 +119,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               TextFormField(
                 controller: _judulController,
                 decoration: const InputDecoration(
-                  labelText: 'Judul Tugas',
+                  labelText: 'Judul Materi',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
@@ -151,16 +129,16 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               TextFormField(
                 controller: _deskripsiController,
                 decoration: const InputDecoration(
-                  labelText: 'Instruksi/Deskripsi',
+                  labelText: 'Deskripsi',
                   border: OutlineInputBorder(),
                 ),
-                maxLines: 5,
+                maxLines: 4,
                 validator: (value) =>
                     value!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                initialValue: _selectedKelas,
+                value: _selectedKelas, // Tampilkan kelas yang sudah dipilih
                 hint: const Text('Pilih Kelas'),
                 items: _daftarKelas.map((String kelas) {
                   return DropdownMenuItem<String>(
@@ -178,33 +156,25 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               const SizedBox(height: 24),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.calendar_today),
-                label: Text(
-                  _tenggatWaktu == null
-                      ? 'Pilih Tenggat Waktu'
-                      : 'Tenggat: ${DateFormat('d MMM yyyy, HH:mm').format(_tenggatWaktu!)}',
-                ),
-                onPressed: _pilihTanggal,
-              ),
-              const SizedBox(height: 16),
-              // ## PERUBAHAN: Ganti tombol file dengan input link ##
               TextFormField(
                 controller: _linkController,
                 decoration: const InputDecoration(
-                  labelText: 'Link Soal Google Drive (Opsional)',
+                  labelText: 'Link Google Drive Materi',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.link),
                 ),
+                validator: (value) =>
+                    value!.isEmpty ? 'Link tidak boleh kosong' : null,
               ),
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton.icon(
                       icon: const Icon(Icons.save),
-                      label: const Text('SIMPAN TUGAS'),
-                      onPressed: _simpanTugas,
+                      label: const Text('UPDATE MATERI'),
+                      onPressed: _updateMateri,
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade700,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),
