@@ -1,23 +1,28 @@
-// lib/screens/create_task_screen.dart
+// lib/screens/edit_task_screen.dart
 
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class CreateTaskScreen extends StatefulWidget {
-  const CreateTaskScreen({super.key});
+class EditTaskScreen extends StatefulWidget {
+  final String taskId;
+  final Map<String, dynamic> initialData;
+
+  const EditTaskScreen({
+    super.key,
+    required this.taskId,
+    required this.initialData,
+  });
 
   @override
-  State<CreateTaskScreen> createState() => _CreateTaskScreenState();
+  State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
 
-class _CreateTaskScreenState extends State<CreateTaskScreen> {
+class _EditTaskScreenState extends State<EditTaskScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _judulController = TextEditingController();
-  final _deskripsiController = TextEditingController();
-  final _linkController = TextEditingController();
-  final _authService = AuthService();
+  late TextEditingController _judulController;
+  late TextEditingController _deskripsiController;
+  late TextEditingController _linkController;
 
   DateTime? _tenggatWaktu;
   bool _isLoading = false;
@@ -27,6 +32,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   @override
   void initState() {
     super.initState();
+    // Isi semua controller dan state dengan data awal dari tugas yang dipilih
+    _judulController = TextEditingController(text: widget.initialData['judul']);
+    _deskripsiController = TextEditingController(text: widget.initialData['deskripsi']);
+    _linkController = TextEditingController(text: widget.initialData['fileUrl'] ?? '');
+    _selectedKelas = widget.initialData['untukKelas'];
+    _tenggatWaktu = (widget.initialData['tenggatWaktu'] as Timestamp).toDate();
+
     _fetchKelas();
   }
 
@@ -39,21 +51,24 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         _daftarKelas = kelas;
       });
     } catch (e) {
-      // Handle error
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat daftar kelas: $e')),
+      );
     }
   }
 
   Future<void> _pilihTanggal() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: _tenggatWaktu ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)), // Mundur 1 tahun
       lastDate: DateTime(2101),
     );
     if (pickedDate != null && mounted) {
       TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(DateTime.now()),
+        initialTime: TimeOfDay.fromDateTime(_tenggatWaktu ?? DateTime.now()),
       );
       if (pickedTime != null) {
         setState(() {
@@ -69,38 +84,29 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
-  Future<void> _simpanTugas() async {
+  Future<void> _updateTugas() async {
     if (_formKey.currentState!.validate() && _tenggatWaktu != null && _selectedKelas != null) {
       setState(() => _isLoading = true);
       try {
-        final Map<String, dynamic> dataToSave = {
+        // Gunakan .update() untuk memperbarui dokumen yang sudah ada
+        await FirebaseFirestore.instance.collection('tugas').doc(widget.taskId).update({
           'judul': _judulController.text.trim(),
           'deskripsi': _deskripsiController.text.trim(),
           'tenggatWaktu': Timestamp.fromDate(_tenggatWaktu!),
-          'dibuatPada': Timestamp.now(),
-          'dibuatOlehUid': _authService.getCurrentUser()!.uid,
           'untukKelas': _selectedKelas,
           'fileUrl': _linkController.text.trim().isEmpty ? null : _linkController.text.trim(),
-        };
-
-        await FirebaseFirestore.instance.collection('tugas').add(dataToSave);
+        });
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tugas berhasil dibuat!')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tugas berhasil diperbarui!')));
         Navigator.pop(context);
 
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat tugas: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memperbarui tugas: $e')));
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Harap lengkapi semua field, termasuk kelas dan tenggat waktu.'),
-        ),
-      );
     }
   }
 
@@ -115,7 +121,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Tugas Baru')),
+      appBar: AppBar(title: const Text('Edit Tugas')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -137,7 +143,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                initialValue: _selectedKelas,
+                value: _selectedKelas,
                 hint: const Text('Pilih Kelas'),
                 items: _daftarKelas.map((String kelas) => DropdownMenuItem<String>(value: kelas, child: Text(kelas))).toList(),
                 onChanged: (String? newValue) => setState(() => _selectedKelas = newValue),
@@ -147,11 +153,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               const SizedBox(height: 24),
               OutlinedButton.icon(
                 icon: const Icon(Icons.calendar_today),
-                label: Text(
-                  _tenggatWaktu == null
-                      ? 'Pilih Tenggat Waktu'
-                      : 'Tenggat: ${DateFormat('d MMM yyyy, HH:mm').format(_tenggatWaktu!)}',
-                ),
+                label: Text('Tenggat: ${DateFormat('d MMM yyyy, HH:mm').format(_tenggatWaktu!)}'),
                 onPressed: _pilihTanggal,
               ),
               const SizedBox(height: 16),
@@ -168,9 +170,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton.icon(
                       icon: const Icon(Icons.save),
-                      label: const Text('SIMPAN TUGAS'),
-                      onPressed: _simpanTugas,
+                      label: const Text('UPDATE TUGAS'),
+                      onPressed: _updateTugas,
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade700,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),

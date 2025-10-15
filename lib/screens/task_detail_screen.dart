@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/comment_section.dart';
-import 'package:url_launcher/url_launcher.dart'; // ## TAMBAHKAN IMPORT INI ##
+import 'package:url_launcher/url_launcher.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final String taskId;
@@ -30,7 +30,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   String? _fileName;
   bool _isLoading = false;
 
-  // ## FUNGSI BARU UNTUK MEMBUKA URL ##
   Future<void> _launchUrl(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
@@ -60,10 +59,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
     try {
-      final storageRef = FirebaseStorage.instance.ref().child(
-        'jawaban_tugas/${widget.taskId}/$currentUserUid-$_fileName',
-      );
-
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('jawaban_tugas/${widget.taskId}/$currentUserUid-$_fileName');
+      
       UploadTask uploadTask = storageRef.putData(_selectedFileBytes!);
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -74,26 +73,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           .collection('pengumpulan')
           .doc(currentUserUid)
           .set({
-            'fileUrl': downloadUrl,
-            'fileName': _fileName,
-            'dikumpulkanPada': Timestamp.now(),
-            'siswaUid': currentUserUid,
-            'nilai': null,
-            'feedback': '',
-          });
+        'fileUrl': downloadUrl,
+        'fileName': _fileName,
+        'dikumpulkanPada': Timestamp.now(),
+        'siswaUid': currentUserUid,
+        'nilai': null,
+        'feedback': '',
+      });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Tugas berhasil dikumpulkan!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+          backgroundColor: Colors.green));
+
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -102,14 +98,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Widget _buildSubmissionStatus(DocumentSnapshot submissionDoc) {
-    // ... (Tidak ada perubahan di dalam fungsi ini)
     final data = submissionDoc.data() as Map<String, dynamic>;
     final nilai = data['nilai'];
     final feedback = data['feedback'];
     final dikumpulkanPada = (data['dikumpulkanPada'] as Timestamp).toDate();
-    final formattedDate = DateFormat(
-      'd MMM yyyy, HH:mm',
-    ).format(dikumpulkanPada);
+    final formattedDate = DateFormat('d MMM yyyy, HH:mm').format(dikumpulkanPada);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,9 +128,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           leading: const Icon(Icons.feedback, color: Colors.blue),
           title: const Text('Feedback dari Guru'),
           subtitle: Text(
-            (feedback == null || feedback.isEmpty)
-                ? 'Belum ada feedback.'
-                : feedback,
+            (feedback == null || feedback.isEmpty) ? 'Belum ada feedback.' : feedback,
           ),
         ),
       ],
@@ -145,14 +136,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Widget _buildSubmissionForm() {
-    // ... (Tidak ada perubahan di dalam fungsi ini)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Kumpulkan Jawaban Anda:',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        Text('Kumpulkan Jawaban Anda:', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           icon: const Icon(Icons.attach_file),
@@ -168,10 +155,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   label: const Text('KUMPULKAN TUGAS'),
                   onPressed: _kumpulkanTugas,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -183,13 +167,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   @override
   Widget build(BuildContext context) {
     DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
-    String formattedTenggat = DateFormat(
-      'EEEE, d MMMM yyyy, HH:mm',
-      'id_ID',
-    ).format(tenggat);
+    String formattedTenggat =
+        DateFormat('EEEE, d MMMM yyyy, HH:mm', 'id_ID').format(tenggat);
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
-    // ## AMBIL DATA FILE SOAL ##
     final String? fileSoalUrl = widget.taskData['fileUrl'];
     final String? fileSoalName = widget.taskData['fileName'];
 
@@ -200,47 +181,33 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Instruksi Tugas:',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('Instruksi Tugas:',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(
-              widget.taskData['deskripsi'],
-              style: const TextStyle(fontSize: 16),
-            ),
-
-            // ## TAMPILKAN FILE SOAL JIKA ADA ##
+            Text(widget.taskData['deskripsi'],
+                style: const TextStyle(fontSize: 16)),
+            
             if (fileSoalUrl != null) ...[
               const SizedBox(height: 24),
-              Text(
-                'Lampiran Soal:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Lampiran Soal:', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               Card(
                 elevation: 2,
                 child: ListTile(
-                  leading: const Icon(
-                    Icons.attach_file,
-                    color: Colors.deepPurple,
-                  ),
+                  leading: const Icon(Icons.attach_file, color: Colors.deepPurple,),
                   title: Text(fileSoalName ?? 'Lihat File Soal'),
                   trailing: const Icon(Icons.download_for_offline),
                   onTap: () => _launchUrl(fileSoalUrl),
                 ),
-              ),
+              )
             ],
 
             const Divider(height: 32),
-            Text(
-              'Tenggat Waktu:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              formattedTenggat,
-              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-            ),
+            Text('Tenggat Waktu:',
+                style: Theme.of(context).textTheme.titleMedium),
+            Text(formattedTenggat,
+                style:
+                    const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
             const Divider(height: 32),
             StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
@@ -259,9 +226,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 return _buildSubmissionForm();
               },
             ),
-
+            
             const Divider(height: 48),
-            CommentSection(documentId: widget.taskId, collectionPath: 'tugas'),
+            CommentSection(
+              documentId: widget.taskId,
+              collectionPath: 'tugas',
+            ),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+// lib/screens/guru_dashboard_screen.dart
+
 import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_materi_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/task_list_screen.dart';
@@ -13,12 +15,7 @@ class GuruDashboardScreen extends StatefulWidget {
 
 class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
   int _selectedIndex = 0;
-  
-  final List<Widget> _pages = [
-    const GuruHomeScreen(),
-    const GuruMateriListScreen(),
-    const TaskListScreen(),
-  ];
+  bool _showExpiredTasks = false;
 
   final List<String> _pageTitles = [
     'Beranda',
@@ -34,16 +31,40 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      const GuruHomeScreen(),
+      const GuruMateriListScreen(),
+      TaskListScreen(showExpired: _showExpiredTasks),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_pageTitles[_selectedIndex]),
         actions: [
+          if (_selectedIndex == 2)
+            IconButton(
+              icon: Icon(
+                _showExpiredTasks
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+              ),
+              tooltip: _showExpiredTasks
+                  ? 'Sembunyikan Tugas Kedaluwarsa'
+                  : 'Tampilkan Tugas Kedaluwarsa',
+              onPressed: () {
+                setState(() {
+                  _showExpiredTasks = !_showExpiredTasks;
+                });
+              },
+            ),
           IconButton(
               onPressed: () => AuthService().signOut(),
               icon: const Icon(Icons.logout))
         ],
       ),
-      body: _pages[_selectedIndex],
+      // ## PERUBAHAN DI SINI: Latar belakang dihapus ##
+      body: pages[_selectedIndex],
+      // ## AKHIR PERUBAHAN ##
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

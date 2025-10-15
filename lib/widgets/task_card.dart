@@ -9,7 +9,8 @@ class TaskCard extends StatelessWidget {
   final String judul;
   final Timestamp tenggatWaktu;
   final VoidCallback onTap;
-  final VoidCallback? onEdit; // ## BARU: Tambahkan callback untuk edit ##
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete; // ## BARU: Tambahkan callback untuk hapus ##
 
   const TaskCard({
     super.key,
@@ -17,7 +18,8 @@ class TaskCard extends StatelessWidget {
     required this.judul,
     required this.tenggatWaktu,
     required this.onTap,
-    this.onEdit, // ## BARU ##
+    this.onEdit,
+    this.onDelete, // ## BARU ##
   });
 
   @override
@@ -32,7 +34,7 @@ class TaskCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 8, 8), // Sesuaikan padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -49,7 +51,7 @@ class TaskCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Row( // ## BARU: Bungkus dengan Row ##
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   StreamBuilder<QuerySnapshot>(
@@ -72,13 +74,24 @@ class TaskCard extends StatelessWidget {
                       );
                     },
                   ),
-                  // ## BARU: Tambahkan tombol edit jika onEdit tidak null ##
-                  if (onEdit != null)
-                    IconButton(
-                      icon: Icon(Icons.edit_note, color: Colors.orange.shade700),
-                      onPressed: onEdit,
-                      tooltip: 'Edit Tugas',
-                    )
+                  // ## PERUBAHAN DI SINI: Tambahkan tombol hapus ##
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (onEdit != null)
+                        IconButton(
+                          icon: Icon(Icons.edit_note, color: Colors.orange.shade700),
+                          onPressed: onEdit,
+                          tooltip: 'Edit Tugas',
+                        ),
+                      if (onDelete != null)
+                        IconButton(
+                          icon: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                          onPressed: onDelete,
+                          tooltip: 'Hapus Tugas',
+                        ),
+                    ],
+                  )
                 ],
               ),
             ],

@@ -2,7 +2,7 @@
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/edit_tugas_screen.dart'; // ## IMPORT BARU ##
+import 'package:aplikasi_e_learning_smk/screens/edit_task_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/submission_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/task_card.dart';
@@ -11,7 +11,48 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class TaskListScreen extends StatelessWidget {
-  const TaskListScreen({super.key});
+  final bool showExpired;
+
+  const TaskListScreen({super.key, this.showExpired = true});
+
+  // ## FUNGSI BARU UNTUK HAPUS TUGAS ##
+  Future<void> _deleteTask(BuildContext context, String taskId, String taskTitle) async {
+    // Tampilkan dialog konfirmasi
+    final bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Hapus'),
+          content: Text('Apakah Anda yakin ingin menghapus tugas "$taskTitle"? Tindakan ini tidak dapat diurungkan.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), // Tutup dialog, kembalikan false
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), // Tutup dialog, kembalikan true
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Jika pengguna menekan "Hapus", maka confirmDelete akan true
+    if (confirmDelete == true) {
+      try {
+        await FirebaseFirestore.instance.collection('tugas').doc(taskId).delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tugas berhasil dihapus'), backgroundColor: Colors.green),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menghapus tugas: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,27 +80,44 @@ class TaskListScreen extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('tugas')
                 .where('untukKelas', whereIn: guruKelas)
-                .orderBy('dibuatPada', descending: true)
+                .orderBy('tenggatWaktu', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('Terjadi error. Pastikan indeks Firestore sudah dibuat.'),
+                );
               }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const Center(
                   child: Text('Belum ada tugas yang dibuat untuk kelas Anda.'),
                 );
               }
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text('Terjadi error saat memuat tugas.'),
+
+              var taskDocs = snapshot.data!.docs;
+              if (!showExpired) {
+                taskDocs = taskDocs.where((doc) {
+                  var taskData = doc.data() as Map<String, dynamic>;
+                  DateTime tenggat = (taskData['tenggatWaktu'] as Timestamp).toDate();
+                  return tenggat.isAfter(DateTime.now());
+                }).toList();
+              }
+              
+              if (taskDocs.isEmpty) {
+                 return Center(
+                  child: Text(showExpired 
+                      ? 'Tidak ada tugas sama sekali.' 
+                      : 'Tidak ada tugas aktif saat ini.'),
                 );
               }
 
               return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
+                itemCount: taskDocs.length,
                 itemBuilder: (context, index) {
-                  var taskDoc = snapshot.data!.docs[index];
+                  var taskDoc = taskDocs[index];
                   var taskData = taskDoc.data() as Map<String, dynamic>;
 
                   return TaskCard(
@@ -77,7 +135,6 @@ class TaskListScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    // ## PERUBAHAN: Tambahkan onEdit ##
                     onEdit: () {
                       Navigator.push(
                         context,
@@ -88,6 +145,10 @@ class TaskListScreen extends StatelessWidget {
                           ),
                         ),
                       );
+                    },
+                    // ## PERUBAHAN: Panggil fungsi hapus ##
+                    onDelete: () {
+                      _deleteTask(context, taskDoc.id, taskData['judul']);
                     },
                   );
                 },
