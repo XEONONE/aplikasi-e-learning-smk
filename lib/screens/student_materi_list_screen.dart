@@ -34,10 +34,8 @@ class StudentMateriListScreen extends StatelessWidget {
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('materi')
-              .where(
-                'untukKelas',
-                isEqualTo: userKelas,
-              ) // FILTER DITERAPKAN DI SINI
+              .where('untukKelas', isEqualTo: userKelas)
+              .orderBy('mataPelajaran') // ## KELOMPOKKAN BERDASARKAN MATA PELAJARAN ##
               .orderBy('diunggahPada', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
@@ -56,19 +54,42 @@ class StudentMateriListScreen extends StatelessWidget {
                 child: Text('Terjadi error saat memuat materi.'),
               );
             }
+            
+            // ## LOGIKA PENGELOMPOKAN MATERI (FOLDER) ##
+            var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
+            for (var doc in snapshot.data!.docs) {
+              var data = doc.data() as Map<String, dynamic>;
+              String mapel = data['mataPelajaran'] ?? 'Lainnya';
+              if (groupedMateri[mapel] == null) {
+                groupedMateri[mapel] = [];
+              }
+              groupedMateri[mapel]!.add(doc);
+            }
+
+            List<String> mapelKeys = groupedMateri.keys.toList();
 
             return ListView.builder(
-              itemCount: snapshot.data!.docs.length,
+              itemCount: mapelKeys.length,
               itemBuilder: (context, index) {
-                var materiData =
-                    snapshot.data!.docs[index].data() as Map<String, dynamic>;
-                return MateriCard(
-                  judul: materiData['judul'],
-                  deskripsi: materiData['deskripsi'],
-                  fileUrl: materiData['fileUrl'],
+                String mapel = mapelKeys[index];
+                List<QueryDocumentSnapshot> materis = groupedMateri[mapel]!;
+
+                // ExpansionTile bertindak sebagai "Folder"
+                return ExpansionTile(
+                  title: Text(mapel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  initiallyExpanded: true, // Folder langsung terbuka
+                  children: materis.map((materiDoc) {
+                     var materiData = materiDoc.data() as Map<String, dynamic>;
+                     return MateriCard(
+                      judul: materiData['judul'],
+                      deskripsi: materiData['deskripsi'],
+                      fileUrl: materiData['fileUrl'],
+                    );
+                  }).toList(),
                 );
               },
             );
+            // ## AKHIR LOGIKA PENGELOMPOKAN ##
           },
         );
       },

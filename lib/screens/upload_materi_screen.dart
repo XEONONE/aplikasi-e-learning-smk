@@ -1,3 +1,5 @@
+// lib/screens/upload_materi_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
@@ -13,8 +15,8 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
   final _formKey = GlobalKey<FormState>();
   final _judulController = TextEditingController();
   final _deskripsiController = TextEditingController();
-  final _linkController =
-      TextEditingController(); // Tambahkan controller untuk link
+  final _linkController = TextEditingController(); 
+  final _mapelController = TextEditingController(); // ## TAMBAHKAN CONTROLLER UNTUK MATA PELAJARAN ##
   final _authService = AuthService();
 
   bool _isLoading = false;
@@ -53,7 +55,8 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
         await FirebaseFirestore.instance.collection('materi').add({
           'judul': _judulController.text.trim(),
           'deskripsi': _deskripsiController.text.trim(),
-          'fileUrl': _linkController.text.trim(), // Simpan link Google Drive
+          'fileUrl': _linkController.text.trim(),
+          'mataPelajaran': _mapelController.text.trim(), // ## SIMPAN DATA MATA PELAJARAN ##
           'diunggahPada': Timestamp.now(),
           'diunggahOlehUid': _authService.getCurrentUser()!.uid,
           'untukKelas': _selectedKelas,
@@ -88,6 +91,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
     _judulController.dispose();
     _deskripsiController.dispose();
     _linkController.dispose();
+    _mapelController.dispose(); // ## JANGAN LUPA DISPOSE CONTROLLER BARU ##
     super.dispose();
   }
 
@@ -102,6 +106,18 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // ## TAMBAHKAN KOLOM INPUT UNTUK MATA PELAJARAN ##
+              TextFormField(
+                controller: _mapelController,
+                decoration: const InputDecoration(
+                  labelText: 'Mata Pelajaran (Contoh: Informatika)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value!.isEmpty ? 'Mata pelajaran tidak boleh kosong' : null,
+              ),
+              const SizedBox(height: 16),
+              // ## AKHIR PENAMBAHAN ##
               TextFormField(
                 controller: _judulController,
                 decoration: const InputDecoration(

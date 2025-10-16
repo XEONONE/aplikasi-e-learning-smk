@@ -109,15 +109,14 @@ class StudentHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Selamat Datang,',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+                  Text('Selamat Datang,',
+                      style: Theme.of(context).textTheme.headlineSmall),
                   Text(
                     user.nama,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   if (userKelas != null && userKelas.isNotEmpty) ...[
                     const SizedBox(height: 4),
@@ -143,7 +142,7 @@ class StudentHomeScreen extends StatelessWidget {
               ),
             ),
             // ## AKHIR PENAMBAHAN ##
-
+            
             // Bagian Daftar Pengumuman
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -166,10 +165,7 @@ class StudentHomeScreen extends StatelessWidget {
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
                       var doc = snapshot.data!.docs[index];
