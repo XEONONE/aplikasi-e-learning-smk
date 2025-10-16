@@ -65,23 +65,26 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           .collection('pengumpulan')
           .doc(currentUserUid)
           .set({
-        'fileUrl': linkJawaban, // Simpan link dari input
-        'fileName': 'Link Google Drive', // Beri nama generik
-        'dikumpulkanPada': Timestamp.now(),
-        'siswaUid': currentUserUid,
-        'nilai': null,
-        'feedback': '',
-      });
+            'fileUrl': linkJawaban, // Simpan link dari input
+            'fileName': 'Link Google Drive', // Beri nama generik
+            'dikumpulkanPada': Timestamp.now(),
+            'siswaUid': currentUserUid,
+            'nilai': null,
+            'feedback': '',
+          });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
           content: Text('Tugas berhasil dikumpulkan!'),
-          backgroundColor: Colors.green));
-
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -94,7 +97,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final nilai = data['nilai'];
     final feedback = data['feedback'];
     final dikumpulkanPada = (data['dikumpulkanPada'] as Timestamp).toDate();
-    final formattedDate = DateFormat('d MMM yyyy, HH:mm').format(dikumpulkanPada);
+    final formattedDate = DateFormat(
+      'd MMM yyyy, HH:mm',
+    ).format(dikumpulkanPada);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +125,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           leading: const Icon(Icons.feedback, color: Colors.blue),
           title: const Text('Feedback dari Guru'),
           subtitle: Text(
-            (feedback == null || feedback.isEmpty) ? 'Belum ada feedback.' : feedback,
+            (feedback == null || feedback.isEmpty)
+                ? 'Belum ada feedback.'
+                : feedback,
           ),
         ),
       ],
@@ -128,11 +135,31 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   // ## PERUBAHAN: Tampilan form diubah menjadi input link ##
-  Widget _buildSubmissionForm() {
+  Widget _buildSubmissionForm(DateTime tenggat) {
+    bool isLate = DateTime.now().isAfter(tenggat);
+
+    if (isLate) {
+      return Center(
+        child: Column(
+          children: [
+            Icon(Icons.timer_off, size: 50, color: Colors.red),
+            SizedBox(height: 16),
+            Text(
+              'Waktu pengumpulan tugas telah berakhir.',
+              style: TextStyle(fontSize: 16, color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Kumpulkan Jawaban Anda:', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Kumpulkan Jawaban Anda:',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _linkController,
@@ -141,7 +168,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.link),
           ),
-          validator: (value) => value!.trim().isEmpty ? 'Link tidak boleh kosong' : null,
+          validator: (value) =>
+              value!.trim().isEmpty ? 'Link tidak boleh kosong' : null,
         ),
         const SizedBox(height: 24),
         _isLoading
@@ -152,7 +180,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   label: const Text('KUMPULKAN TUGAS'),
                   onPressed: _kumpulkanTugas,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 24,
+                    ),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -164,8 +195,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   @override
   Widget build(BuildContext context) {
     DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
-    String formattedTenggat =
-        DateFormat('EEEE, d MMMM yyyy, HH:mm', 'id_ID').format(tenggat);
+    String formattedTenggat = DateFormat(
+      'EEEE, d MMMM yyyy, HH:mm',
+      'id_ID',
+    ).format(tenggat);
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
     final String? fileSoalUrl = widget.taskData['fileUrl'];
@@ -178,33 +211,46 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Instruksi Tugas:',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Instruksi Tugas:',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
-            Text(widget.taskData['deskripsi'],
-                style: const TextStyle(fontSize: 16)),
-            
+            Text(
+              widget.taskData['deskripsi'],
+              style: const TextStyle(fontSize: 16),
+            ),
+
             if (fileSoalUrl != null) ...[
               const SizedBox(height: 24),
-              Text('Lampiran Soal:', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Lampiran Soal:',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               Card(
                 elevation: 2,
                 child: ListTile(
-                  leading: const Icon(Icons.attach_file, color: Colors.deepPurple,),
+                  leading: const Icon(
+                    Icons.attach_file,
+                    color: Colors.deepPurple,
+                  ),
                   title: Text(fileSoalName ?? 'Lihat File Soal'),
                   trailing: const Icon(Icons.download_for_offline),
                   onTap: () => _launchUrl(fileSoalUrl),
                 ),
-              )
+              ),
             ],
 
             const Divider(height: 32),
-            Text('Tenggat Waktu:',
-                style: Theme.of(context).textTheme.titleMedium),
-            Text(formattedTenggat,
-                style:
-                    const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
+            Text(
+              'Tenggat Waktu:',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              formattedTenggat,
+              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+            ),
             const Divider(height: 32),
             StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
@@ -220,15 +266,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 if (snapshot.hasData && snapshot.data!.exists) {
                   return _buildSubmissionStatus(snapshot.data!);
                 }
-                return _buildSubmissionForm();
+                return _buildSubmissionForm(tenggat);
               },
             ),
-            
+
             const Divider(height: 48),
-            CommentSection(
-              documentId: widget.taskId,
-              collectionPath: 'tugas',
-            ),
+            CommentSection(documentId: widget.taskId, collectionPath: 'tugas'),
           ],
         ),
       ),

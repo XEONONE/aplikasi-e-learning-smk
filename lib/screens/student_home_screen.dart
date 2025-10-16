@@ -97,45 +97,95 @@ class StudentHomeScreen extends StatelessWidget {
           return const Center(child: Text('Gagal memuat data siswa.'));
         }
 
-        final userKelas = userSnapshot.data!.kelas;
+        final user = userSnapshot.data!;
+        final userKelas = user.kelas;
 
-        // Gunakan StreamBuilder untuk memfilter pengumuman
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('pengumuman')
-              // ## PERUBAHAN DI SINI ##
-              // Ambil pengumuman untuk kelas siswa ATAU untuk "Semua Kelas"
-              .where('untukKelas', whereIn: [userKelas, 'Semua Kelas'])
-              .orderBy('dibuatPada', descending: true)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('Belum ada pengumuman.'));
-            }
-            if (snapshot.hasError) {
-              return const Center(
-                child: Text('Terjadi error saat memuat pengumuman.'),
-              );
-            }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ## PENAMBAHAN HEADER NAMA DAN KELAS SISWA ##
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selamat Datang,',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  Text(
+                    user.nama,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (userKelas != null && userKelas.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Kelas: $userKelas',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    'Pengumuman Terbaru',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+            ),
+            // ## AKHIR PENAMBAHAN ##
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                var doc = snapshot.data!.docs[index];
-                var data = doc.data() as Map<String, dynamic>;
-                return AnnouncementCard(
-                  judul: data['judul'],
-                  isi: data['isi'],
-                  dibuatPada: data['dibuatPada'],
-                  dibuatOlehUid: data['dibuatOlehUid'],
-                );
-              },
-            );
-          },
+            // Bagian Daftar Pengumuman
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('pengumuman')
+                    .where('untukKelas', whereIn: [userKelas, 'Semua Kelas'])
+                    .orderBy('dibuatPada', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text('Belum ada pengumuman.'));
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text('Terjadi error saat memuat pengumuman.'),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      var doc = snapshot.data!.docs[index];
+                      var data = doc.data() as Map<String, dynamic>;
+                      return AnnouncementCard(
+                        judul: data['judul'],
+                        isi: data['isi'],
+                        dibuatPada: data['dibuatPada'],
+                        dibuatOlehUid: data['dibuatOlehUid'],
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
