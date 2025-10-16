@@ -138,7 +138,7 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedKelas, // Tampilkan kelas yang sudah dipilih
+                initialValue: _selectedKelas, // Tampilkan kelas yang sudah dipilih
                 hint: const Text('Pilih Kelas'),
                 items: _daftarKelas.map((String kelas) {
                   return DropdownMenuItem<String>(

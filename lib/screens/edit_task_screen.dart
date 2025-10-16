@@ -143,7 +143,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedKelas,
+                initialValue: _selectedKelas,
                 hint: const Text('Pilih Kelas'),
                 items: _daftarKelas.map((String kelas) => DropdownMenuItem<String>(value: kelas, child: Text(kelas))).toList(),
                 onChanged: (String? newValue) => setState(() => _selectedKelas = newValue),
