@@ -17,7 +17,7 @@ class StudentMateriListScreen extends StatelessWidget {
       return const Center(child: Text('Silakan login ulang.'));
     }
 
-    // Gunakan FutureBuilder untuk mendapatkan data kelas siswa terlebih dahulu
+    // 1. Ambil data siswa
     return FutureBuilder<UserModel?>(
       future: AuthService().getUserData(currentUser.uid),
       builder: (context, userSnapshot) {
@@ -25,17 +25,23 @@ class StudentMateriListScreen extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (!userSnapshot.hasData || userSnapshot.data == null) {
-          return const Center(child: Text('Gagal memuat data kelas siswa.'));
+          // DEBUG: Print jika data user tidak ditemukan
+          print("DEBUG: Gagal memuat data user model.");
+          return const Center(child: Text('Gagal memuat data siswa.'));
         }
 
         final userKelas = userSnapshot.data!.kelas;
+        // DEBUG: Print kelas siswa yang didapat
+        print("==============================================");
+        print("DEBUG: Mencari materi untuk kelas: '$userKelas'");
+        print("==============================================");
 
-        // Setelah kelas didapatkan, gunakan StreamBuilder untuk memfilter materi
+        // 2. Ambil data materi berdasarkan kelas siswa
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('materi')
               .where('untukKelas', isEqualTo: userKelas)
-              .orderBy('mataPelajaran') // ## KELOMPOKKAN BERDASARKAN MATA PELAJARAN ##
+              .orderBy('mataPelajaran')
               .orderBy('diunggahPada', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
@@ -43,19 +49,36 @@ class StudentMateriListScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
+            if (snapshot.hasError) {
+              // DEBUG: Print jika ada error dari Firestore
+              print("!!! FIREBASE ERROR: ${snapshot.error}");
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Terjadi error saat memuat data: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
+
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              // DEBUG: Print jika tidak ada dokumen yang ditemukan
+              print(
+                "DEBUG: Query berhasil, namun tidak ada dokumen materi yang cocok.",
+              );
               return Center(
                 child: Text('Belum ada materi untuk kelas $userKelas.'),
               );
             }
 
-            if (snapshot.hasError) {
-              return const Center(
-                child: Text('Terjadi error saat memuat materi.'),
-              );
-            }
-            
-            // ## LOGIKA PENGELOMPOKAN MATERI (FOLDER) ##
+            // DEBUG: Print jumlah dokumen yang ditemukan
+            print(
+              "DEBUG: Query berhasil! Ditemukan ${snapshot.data!.docs.length} dokumen materi.",
+            );
+
+            // 3. Logika pengelompokan
             var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
             for (var doc in snapshot.data!.docs) {
               var data = doc.data() as Map<String, dynamic>;
@@ -68,28 +91,40 @@ class StudentMateriListScreen extends StatelessWidget {
 
             List<String> mapelKeys = groupedMateri.keys.toList();
 
+            // 4. Tampilkan data
             return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               itemCount: mapelKeys.length,
               itemBuilder: (context, index) {
                 String mapel = mapelKeys[index];
                 List<QueryDocumentSnapshot> materis = groupedMateri[mapel]!;
 
-                // ExpansionTile bertindak sebagai "Folder"
-                return ExpansionTile(
-                  title: Text(mapel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  initiallyExpanded: true, // Folder langsung terbuka
-                  children: materis.map((materiDoc) {
-                     var materiData = materiDoc.data() as Map<String, dynamic>;
-                     return MateriCard(
-                      judul: materiData['judul'],
-                      deskripsi: materiData['deskripsi'],
-                      fileUrl: materiData['fileUrl'],
-                    );
-                  }).toList(),
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 4.0,
+                    horizontal: 8.0,
+                  ),
+                  child: ExpansionTile(
+                    title: Text(
+                      mapel,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    initiallyExpanded: true,
+                    children: materis.map((materiDoc) {
+                      var materiData = materiDoc.data() as Map<String, dynamic>;
+                      return MateriCard(
+                        judul: materiData['judul'],
+                        deskripsi: materiData['deskripsi'],
+                        fileUrl: materiData['fileUrl'],
+                      );
+                    }).toList(),
+                  ),
                 );
               },
             );
-            // ## AKHIR LOGIKA PENGELOMPOKAN ##
           },
         );
       },

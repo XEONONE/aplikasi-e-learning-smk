@@ -1,7 +1,7 @@
 // lib/screens/guru_materi_list_screen.dart
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
-import 'package:aplikasi_e_learning_smk/screens/edit_materi_screen.dart'; // ## IMPORT HALAMAN BARU ##
+import 'package:aplikasi_e_learning_smk/screens/edit_materi_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/upload_materi_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
@@ -15,8 +15,9 @@ class GuruMateriListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null)
+    if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
+    }
 
     return Scaffold(
       body: FutureBuilder<UserModel?>(
@@ -34,11 +35,14 @@ class GuruMateriListScreen extends StatelessWidget {
           }
 
           return StreamBuilder<QuerySnapshot>(
+            // ## PERUBAHAN PADA QUERY DIMULAI DI SINI ##
             stream: FirebaseFirestore.instance
                 .collection('materi')
                 .where('untukKelas', whereIn: guruKelas)
-                .orderBy('diunggahPada', descending: true)
+                .orderBy('mataPelajaran') // Diurutkan berdasarkan mapel
+                .orderBy('diunggahPada', descending: true) // Lalu berdasarkan tanggal
                 .snapshots(),
+            // ## AKHIR PERUBAHAN QUERY ##
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -51,36 +55,66 @@ class GuruMateriListScreen extends StatelessWidget {
                 );
               }
               if (snapshot.hasError) {
-                return const Center(child: Text('Terjadi error.'));
+                return const Center(child: Text('Terjadi error. Pastikan indeks sudah dibuat.'));
               }
 
-              return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  var materiDoc = snapshot.data!.docs[index];
-                  var materiData = materiDoc.data() as Map<String, dynamic>;
+              // ## LOGIKA PENGELOMPOKAN MATERI (FOLDER) DIMULAI DI SINI ##
+              var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
+              for (var doc in snapshot.data!.docs) {
+                var data = doc.data() as Map<String, dynamic>;
+                String mapel = data['mataPelajaran'] ?? 'Lainnya';
+                if (groupedMateri[mapel] == null) {
+                  groupedMateri[mapel] = [];
+                }
+                groupedMateri[mapel]!.add(doc);
+              }
 
-                  return MateriCard(
-                    judul: materiData['judul'],
-                    deskripsi: materiData['deskripsi'],
-                    fileUrl: materiData['fileUrl'],
-                    isGuruView: true,
-                    onEdit: () {
-                      // ## PERUBAHAN DI SINI ##
-                      // Navigasi ke halaman edit dengan membawa ID dan data materi
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditMateriScreen(
-                            materiId: materiDoc.id,
-                            initialData: materiData,
-                          ),
-                        ),
-                      );
-                    },
+              List<String> mapelKeys = groupedMateri.keys.toList();
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: mapelKeys.length,
+                itemBuilder: (context, index) {
+                  String mapel = mapelKeys[index];
+                  List<QueryDocumentSnapshot> materis = groupedMateri[mapel]!;
+
+                  // ExpansionTile bertindak sebagai "Folder" mata pelajaran
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                    child: ExpansionTile(
+                      title: Text(
+                        mapel,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      initiallyExpanded: true, // Folder langsung terbuka
+                      children: materis.map((materiDoc) {
+                        var materiData = materiDoc.data() as Map<String, dynamic>;
+                        
+                        // Menampilkan setiap materi di dalam folder
+                        return MateriCard(
+                          judul: materiData['judul'],
+                          deskripsi: materiData['deskripsi'],
+                          fileUrl: materiData['fileUrl'],
+                          isGuruView: true, // Pastikan ini true untuk menampilkan tombol Edit
+                          onEdit: () {
+                            // Fungsi Edit tetap berjalan seperti sebelumnya
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditMateriScreen(
+                                  materiId: materiDoc.id,
+                                  initialData: materiData,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    ),
                   );
                 },
               );
+              // ## AKHIR LOGIKA PENGELOMPOKAN ##
             },
           );
         },
