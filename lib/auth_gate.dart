@@ -1,12 +1,10 @@
 // lib/auth_gate.dart
 
-// PERBAIKAN: Pastikan nama paket di sini sudah benar
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/login_screen.dart';
+import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // Memastikan impor ini ada
 import 'package:aplikasi_e_learning_smk/screens/siswa_dashboard_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-// Impor di bawah ini sudah standar
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +22,7 @@ class AuthGate extends StatelessWidget {
 
         if (snapshot.hasData) {
           // User sudah login, sekarang cek perannya
-          return FutureBuilder<UserModel?>( // Beri tipe data yang jelas
+          return FutureBuilder<UserModel?>(
             future: AuthService().getUserData(snapshot.data!.uid),
             builder: (context, userModelSnapshot) {
               if (userModelSnapshot.connectionState == ConnectionState.waiting) {
@@ -38,7 +36,7 @@ class AuthGate extends StatelessWidget {
                   return const SiswaDashboardScreen();
                 }
               }
-              // Jika data user tidak ditemukan, logout saja untuk mencegah error
+              // Jika data user tidak ditemukan, logout untuk mencegah error
               AuthService().signOut();
               return const LoginScreen();
             },

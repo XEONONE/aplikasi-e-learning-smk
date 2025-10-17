@@ -1,3 +1,4 @@
+// lib/screens/loading_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
@@ -20,10 +21,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   void _navigateToDestination() async {
-    // Tunggu selama 3 detik
-    await Future.delayed(const Duration(seconds: 3));
+    // Tunggu selama 2 detik
+    await Future.delayed(const Duration(seconds: 2));
 
-    // Setelah 3 detik, ganti halaman loading ini dengan halaman tujuan
+    // Setelah 2 detik, ganti halaman loading ini dengan halaman tujuan
     // Kita gunakan pushReplacement agar pengguna tidak bisa kembali ke halaman loading
     if (mounted) {
       Navigator.pushReplacement(

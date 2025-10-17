@@ -1,3 +1,5 @@
+// lib/screens/upload_materi_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
@@ -49,8 +51,8 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
     if (_formKey.currentState!.validate() && _selectedKelas != null) {
       setState(() => _isLoading = true);
       
-      // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
-      await Future.delayed(const Duration(seconds: 3));
+      // --- PERUBAHAN DURASI MENJADI 2 DETIK ---
+      await Future.delayed(const Duration(seconds: 2));
       
       try {
         await FirebaseFirestore.instance.collection('materi').add({

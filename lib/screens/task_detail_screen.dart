@@ -1,3 +1,5 @@
+// lib/screens/task_detail_screen.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -51,9 +53,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
 
     setState(() => _isLoading = true);
-    
-    // JEDA 3 DETIK
-    await Future.delayed(const Duration(seconds: 3));
+
+    // JEDA 2 DETIK
+    await Future.delayed(const Duration(seconds: 2));
 
     final currentUserUid = _authService.getCurrentUser()!.uid;
     final String linkJawaban = _linkController.text.trim();
@@ -180,7 +182,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final String deskripsi = widget.taskData['deskripsi'];
     final String mapel = widget.taskData['mataPelajaran'];
     final String fileUrl = widget.taskData['fileUrl'] ?? '';
-    final DateTime tenggat = (widget.taskData['tenggat'] as Timestamp).toDate();
+    final DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
     final String formattedTenggat =
         DateFormat.yMMMMEEEEd('id_ID').add_Hms().format(tenggat);
     final currentUserUid = _authService.getCurrentUser()!.uid;
@@ -237,7 +239,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               },
             ),
             const Divider(height: 32),
-            // --- PERBAIKAN DI SINI ---
             CommentSection(
               collectionPath: 'tugas', 
               documentId: widget.taskId,
