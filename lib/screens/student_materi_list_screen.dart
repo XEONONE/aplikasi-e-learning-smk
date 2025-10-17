@@ -7,36 +7,44 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class StudentMateriListScreen extends StatelessWidget {
+class StudentMateriListScreen extends StatefulWidget {
   const StudentMateriListScreen({super.key});
 
   @override
+  State<StudentMateriListScreen> createState() => _StudentMateriListScreenState();
+}
+
+class _StudentMateriListScreenState extends State<StudentMateriListScreen> {
+  late Future<UserModel?> _userFuture;
+  final AuthService _authService = AuthService();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    if (currentUser != null) {
+      _userFuture = _authService.getUserData(currentUser!.uid);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
     }
 
-    // 1. Ambil data siswa
     return FutureBuilder<UserModel?>(
-      future: AuthService().getUserData(currentUser.uid),
+      future: _userFuture,
       builder: (context, userSnapshot) {
         if (userSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
         if (!userSnapshot.hasData || userSnapshot.data == null) {
-          // DEBUG: Print jika data user tidak ditemukan
-          print("DEBUG: Gagal memuat data user model.");
           return const Center(child: Text('Gagal memuat data siswa.'));
         }
 
         final userKelas = userSnapshot.data!.kelas;
-        // DEBUG: Print kelas siswa yang didapat
-        print("==============================================");
-        print("DEBUG: Mencari materi untuk kelas: '$userKelas'");
-        print("==============================================");
 
-        // 2. Ambil data materi berdasarkan kelas siswa
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('materi')
@@ -50,8 +58,6 @@ class StudentMateriListScreen extends StatelessWidget {
             }
 
             if (snapshot.hasError) {
-              // DEBUG: Print jika ada error dari Firestore
-              print("!!! FIREBASE ERROR: ${snapshot.error}");
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -64,21 +70,11 @@ class StudentMateriListScreen extends StatelessWidget {
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              // DEBUG: Print jika tidak ada dokumen yang ditemukan
-              print(
-                "DEBUG: Query berhasil, namun tidak ada dokumen materi yang cocok.",
-              );
               return Center(
                 child: Text('Belum ada materi untuk kelas $userKelas.'),
               );
             }
 
-            // DEBUG: Print jumlah dokumen yang ditemukan
-            print(
-              "DEBUG: Query berhasil! Ditemukan ${snapshot.data!.docs.length} dokumen materi.",
-            );
-
-            // 3. Logika pengelompokan
             var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
             for (var doc in snapshot.data!.docs) {
               var data = doc.data() as Map<String, dynamic>;
@@ -91,7 +87,6 @@ class StudentMateriListScreen extends StatelessWidget {
 
             List<String> mapelKeys = groupedMateri.keys.toList();
 
-            // 4. Tampilkan data
             return ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               itemCount: mapelKeys.length,

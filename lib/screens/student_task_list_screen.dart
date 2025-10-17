@@ -8,18 +8,34 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class StudentTaskListScreen extends StatelessWidget {
+class StudentTaskListScreen extends StatefulWidget {
   const StudentTaskListScreen({super.key});
 
   @override
+  State<StudentTaskListScreen> createState() => _StudentTaskListScreenState();
+}
+
+class _StudentTaskListScreenState extends State<StudentTaskListScreen> {
+  late Future<UserModel?> _userFuture;
+  final AuthService _authService = AuthService();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    if (currentUser != null) {
+      _userFuture = _authService.getUserData(currentUser!.uid);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
     }
 
     return FutureBuilder<UserModel?>(
-      future: AuthService().getUserData(currentUser.uid),
+      future: _userFuture,
       builder: (context, userSnapshot) {
         if (userSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
