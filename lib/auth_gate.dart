@@ -1,5 +1,3 @@
-// lib/auth_gate.dart
-
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // Memastikan impor ini ada
@@ -25,7 +23,8 @@ class AuthGate extends StatelessWidget {
           return FutureBuilder<UserModel?>(
             future: AuthService().getUserData(snapshot.data!.uid),
             builder: (context, userModelSnapshot) {
-              if (userModelSnapshot.connectionState == ConnectionState.waiting) {
+              if (userModelSnapshot.connectionState ==
+                  ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
               if (userModelSnapshot.hasData && userModelSnapshot.data != null) {
