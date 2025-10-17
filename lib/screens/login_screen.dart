@@ -1,6 +1,8 @@
-import 'activation_screen.dart';
-import '../services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/screens/activation_screen.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import '../widgets/custom_loading_indicator.dart';
+import 'loading_screen.dart'; // <-- IMPORT BARU
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,6 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = true;
     });
+    
+    await Future.delayed(const Duration(seconds: 3));
 
     String result = await _authService.login(
       nipNisn: _nipNisnController.text.trim(),
@@ -67,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // PERUBAHAN: Latar belakang gradasi ungu ke hitam
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.purple.shade900, Colors.black],
@@ -123,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderSide: BorderSide(
                             color: Colors.purple.shade400,
                             width: 2,
-                          ), // PERUBAHAN
+                          ),
                         ),
                       ),
                     ),
@@ -132,10 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
                       style: const TextStyle(color: Colors.white),
-                      // ## Adaptasi Kode ##
-                      // Baris ini akan memanggil fungsi _login saat tombol "Enter" ditekan.
                       onFieldSubmitted: (_) => _login(),
-                      // ## Akhir Adaptasi ##
                       decoration: InputDecoration(
                         labelText: 'Password',
                         labelStyle: TextStyle(color: Colors.grey.shade400),
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderSide: BorderSide(
                             color: Colors.purple.shade400,
                             width: 2,
-                          ), // PERUBAHAN
+                          ),
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -171,12 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     _isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const CustomLoadingIndicator(color: Colors.white)
                         : ElevatedButton(
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.purple.shade600, // PERUBAHAN
+                              backgroundColor: Colors.purple.shade600,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.0),
@@ -201,10 +200,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         TextButton(
                           onPressed: () {
+                            // --- PERUBAHAN NAVIGASI ---
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const ActivationScreen(),
+                                builder: (context) => const LoadingScreen(
+                                  destinationPage: ActivationScreen(),
+                                ),
                               ),
                             );
                           },
@@ -212,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Aktivasi di sini',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.purple.shade300, // PERUBAHAN
+                              color: Colors.purple.shade300,
                             ),
                           ),
                         ),

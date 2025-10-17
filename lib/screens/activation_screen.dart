@@ -1,6 +1,7 @@
 import '../services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../widgets/custom_loading_indicator.dart';
 
 class ActivationScreen extends StatefulWidget {
   const ActivationScreen({super.key});
@@ -25,6 +26,9 @@ class _ActivationScreenState extends State<ActivationScreen> {
   Future<void> _verifyNipNisn() async {
     if (_nipNisnController.text.isEmpty) return;
     setState(() => _isLoading = true);
+    
+    // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
+    await Future.delayed(const Duration(seconds: 3));
 
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -61,9 +65,9 @@ class _ActivationScreenState extends State<ActivationScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Terjadi error: $e')));
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Terjadi error: $e')));
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -74,6 +78,9 @@ class _ActivationScreenState extends State<ActivationScreen> {
   Future<void> _activateAccount() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+
+      // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
+      await Future.delayed(const Duration(seconds: 3));
 
       String result = await _authService.activateAccount(
         nipNisn: _nipNisnController.text.trim(),
@@ -186,7 +193,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                         ),
                         const SizedBox(height: 24),
                         _isLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const CustomLoadingIndicator(color: Colors.white)
                             : ElevatedButton(
                                 onPressed: _verifyNipNisn,
                                 style: ElevatedButton.styleFrom(
@@ -308,7 +315,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                         ),
                         const SizedBox(height: 24),
                         _isLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const CustomLoadingIndicator(color: Colors.white)
                             : ElevatedButton(
                                 onPressed: _activateAccount,
                                 style: ElevatedButton.styleFrom(

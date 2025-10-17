@@ -1,8 +1,7 @@
-// lib/screens/upload_materi_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import '../widgets/custom_loading_indicator.dart';
 
 class UploadMateriScreen extends StatefulWidget {
   const UploadMateriScreen({super.key});
@@ -15,8 +14,8 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
   final _formKey = GlobalKey<FormState>();
   final _judulController = TextEditingController();
   final _deskripsiController = TextEditingController();
-  final _linkController = TextEditingController(); 
-  final _mapelController = TextEditingController(); // ## TAMBAHKAN CONTROLLER UNTUK MATA PELAJARAN ##
+  final _linkController = TextEditingController();
+  final _mapelController = TextEditingController();
   final _authService = AuthService();
 
   bool _isLoading = false;
@@ -42,21 +41,23 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat daftar kelas: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memuat daftar kelas: $e')));
     }
   }
 
   Future<void> _uploadMateri() async {
     if (_formKey.currentState!.validate() && _selectedKelas != null) {
       setState(() => _isLoading = true);
+      
+      // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
+      await Future.delayed(const Duration(seconds: 3));
+      
       try {
         await FirebaseFirestore.instance.collection('materi').add({
           'judul': _judulController.text.trim(),
           'deskripsi': _deskripsiController.text.trim(),
           'fileUrl': _linkController.text.trim(),
-          'mataPelajaran': _mapelController.text.trim(), // ## SIMPAN DATA MATA PELAJARAN ##
+          'mataPelajaran': _mapelController.text.trim(),
           'diunggahPada': Timestamp.now(),
           'diunggahOlehUid': _authService.getCurrentUser()!.uid,
           'untukKelas': _selectedKelas,
@@ -69,9 +70,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
         Navigator.pop(context);
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal mengunggah: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunggah: $e')));
       } finally {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -91,7 +90,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
     _judulController.dispose();
     _deskripsiController.dispose();
     _linkController.dispose();
-    _mapelController.dispose(); // ## JANGAN LUPA DISPOSE CONTROLLER BARU ##
+    _mapelController.dispose();
     super.dispose();
   }
 
@@ -106,7 +105,6 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ## TAMBAHKAN KOLOM INPUT UNTUK MATA PELAJARAN ##
               TextFormField(
                 controller: _mapelController,
                 decoration: const InputDecoration(
@@ -117,7 +115,6 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
                     value!.isEmpty ? 'Mata pelajaran tidak boleh kosong' : null,
               ),
               const SizedBox(height: 16),
-              // ## AKHIR PENAMBAHAN ##
               TextFormField(
                 controller: _judulController,
                 decoration: const InputDecoration(
@@ -170,7 +167,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
               ),
               const SizedBox(height: 24),
               _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const CustomLoadingIndicator()
                   : ElevatedButton.icon(
                       icon: const Icon(Icons.upload_file),
                       label: const Text('UPLOAD MATERI'),

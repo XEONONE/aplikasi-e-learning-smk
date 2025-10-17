@@ -1,10 +1,9 @@
-// lib/screens/task_detail_screen.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/widgets/comment_section.dart';
+import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -23,26 +22,27 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final _authService = AuthService();
-  // ## PERUBAHAN: Ganti variabel file dengan controller untuk link ##
   final _linkController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _linkController.dispose(); // Jangan lupa dispose controller
+    _linkController.dispose();
     super.dispose();
   }
 
   Future<void> _launchUrl(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tidak bisa membuka link $urlString')),
+        );
+      }
     }
   }
 
-  // ## PERUBAHAN: Logika kumpulkan tugas diubah ##
   Future<void> _kumpulkanTugas() async {
-    // Validasi input link
     if (_linkController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Silakan masukkan link jawaban Anda.')),
@@ -51,24 +51,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
 
     setState(() => _isLoading = true);
+    
+    // JEDA 3 DETIK
+    await Future.delayed(const Duration(seconds: 3));
+
     final currentUserUid = _authService.getCurrentUser()!.uid;
     final String linkJawaban = _linkController.text.trim();
 
     try {
-      // Langsung simpan link ke Firestore, tidak perlu upload ke Storage
       await FirebaseFirestore.instance
           .collection('tugas')
           .doc(widget.taskId)
           .collection('pengumpulan')
           .doc(currentUserUid)
           .set({
-            'fileUrl': linkJawaban, // Simpan link dari input
-            'fileName': 'Link Google Drive', // Beri nama generik
-            'dikumpulkanPada': Timestamp.now(),
-            'siswaUid': currentUserUid,
-            'nilai': null,
-            'feedback': '',
-          });
+        'fileUrl': linkJawaban,
+        'fileName': 'Link Jawaban',
+        'dikumpulkanPada': Timestamp.now(),
+        'siswaUid': currentUserUid,
+        'nilai': null,
+        'feedback': '',
+      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,11 +80,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           backgroundColor: Colors.green,
         ),
       );
+      _linkController.clear();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal mengumpulkan: $e')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -91,72 +94,62 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   Widget _buildSubmissionStatus(DocumentSnapshot submissionDoc) {
     final data = submissionDoc.data() as Map<String, dynamic>;
-    final nilai = data['nilai'];
-    final feedback = data['feedback'];
     final dikumpulkanPada = (data['dikumpulkanPada'] as Timestamp).toDate();
-    final formattedDate = DateFormat(
-      'd MMM yyyy, HH:mm',
-    ).format(dikumpulkanPada);
+    final nilai = data['nilai'];
+    final feedback = data['feedback'] ?? '';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Status Anda:', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
-        ListTile(
-          leading: const Icon(Icons.check_circle, color: Colors.green),
-          title: const Text('Tugas Sudah Dikumpulkan'),
-          subtitle: Text('Pada: $formattedDate'),
-        ),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.grade, color: Colors.amber),
-          title: const Text('Nilai'),
-          subtitle: Text(
-            nilai == null ? 'Belum dinilai' : nilai.toString(),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Anda Sudah Mengumpulkan',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.green.shade800,
+              fontSize: 16,
+            ),
           ),
-        ),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.feedback, color: Colors.blue),
-          title: const Text('Feedback dari Guru'),
-          subtitle: Text(
-            (feedback == null || feedback.isEmpty)
-                ? 'Belum ada feedback.'
-                : feedback,
-          ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+              'Pada: ${DateFormat.yMMMMEEEEd('id_ID').add_Hms().format(dikumpulkanPada)}'),
+          const Divider(height: 24),
+          Text('Nilai: ${nilai ?? "Belum dinilai"}',
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          if (feedback.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('Feedback Guru: $feedback'),
+          ]
+        ],
+      ),
     );
   }
 
-  // ## PERUBAHAN: Tampilan form diubah menjadi input link ##
   Widget _buildSubmissionForm(DateTime tenggat) {
     bool isLate = DateTime.now().isAfter(tenggat);
-
-    if (isLate) {
-      return Center(
-        child: Column(
-          children: [
-            Icon(Icons.timer_off, size: 50, color: Colors.red),
-            SizedBox(height: 16),
-            Text(
-              'Waktu pengumpulan tugas telah berakhir.',
-              style: TextStyle(fontSize: 16, color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Kumpulkan Jawaban Anda:',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        if (isLate)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Anda terlambat mengumpulkan tugas. Anda tetap bisa mengumpulkan, namun akan ditandai terlambat.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _linkController,
@@ -165,24 +158,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.link),
           ),
-          validator: (value) =>
-              value!.trim().isEmpty ? 'Link tidak boleh kosong' : null,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Center(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.upload),
-                  label: const Text('KUMPULKAN TUGAS'),
-                  onPressed: _kumpulkanTugas,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24,
-                    ),
-                    textStyle: const TextStyle(fontSize: 16),
-                  ),
+            ? const CustomLoadingIndicator()
+            : ElevatedButton.icon(
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: const Text('KUMPULKAN'),
+                onPressed: _kumpulkanTugas,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
       ],
@@ -191,63 +176,48 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime tenggat = (widget.taskData['tenggatWaktu'] as Timestamp).toDate();
-    String formattedTenggat = DateFormat(
-      'EEEE, d MMMM yyyy, HH:mm',
-      'id_ID',
-    ).format(tenggat);
+    final String judul = widget.taskData['judul'];
+    final String deskripsi = widget.taskData['deskripsi'];
+    final String mapel = widget.taskData['mataPelajaran'];
+    final String fileUrl = widget.taskData['fileUrl'] ?? '';
+    final DateTime tenggat = (widget.taskData['tenggat'] as Timestamp).toDate();
+    final String formattedTenggat =
+        DateFormat.yMMMMEEEEd('id_ID').add_Hms().format(tenggat);
     final currentUserUid = _authService.getCurrentUser()!.uid;
 
-    final String? fileSoalUrl = widget.taskData['fileUrl'];
-    final String? fileSoalName = widget.taskData['fileName'];
-
     return Scaffold(
-      appBar: AppBar(title: Text(widget.taskData['judul'])),
+      appBar: AppBar(
+        title: Text(mapel),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Instruksi Tugas:',
-              style: Theme.of(context).textTheme.titleLarge,
+              judul,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
-              widget.taskData['deskripsi'],
-              style: const TextStyle(fontSize: 16),
+              'Tenggat: $formattedTenggat',
+              style: TextStyle(color: Colors.red.shade700),
             ),
-
-            if (fileSoalUrl != null) ...[
-              const SizedBox(height: 24),
-              Text(
-                'Lampiran Soal:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Card(
-                elevation: 2,
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.attach_file,
-                    color: Colors.deepPurple,
-                  ),
-                  title: Text(fileSoalName ?? 'Lihat File Soal'),
-                  trailing: const Icon(Icons.download_for_offline),
-                  onTap: () => _launchUrl(fileSoalUrl),
-                ),
+            const Divider(height: 24),
+            Text(
+              deskripsi,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            if (fileUrl.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.link),
+                label: const Text('Lihat Lampiran/Soal'),
+                onPressed: () => _launchUrl(fileUrl),
               ),
             ],
-
-            const Divider(height: 32),
-            Text(
-              'Tenggat Waktu:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              formattedTenggat,
-              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-            ),
             const Divider(height: 32),
             StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
@@ -258,7 +228,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const CustomLoadingIndicator();
                 }
                 if (snapshot.hasData && snapshot.data!.exists) {
                   return _buildSubmissionStatus(snapshot.data!);
@@ -266,9 +236,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 return _buildSubmissionForm(tenggat);
               },
             ),
-
-            const Divider(height: 48),
-            CommentSection(documentId: widget.taskId, collectionPath: 'tugas'),
+            const Divider(height: 32),
+            // --- PERBAIKAN DI SINI ---
+            CommentSection(
+              collectionPath: 'tugas', 
+              documentId: widget.taskId,
+            ),
           ],
         ),
       ),
