@@ -10,7 +10,7 @@ class TaskCard extends StatelessWidget {
   final Timestamp tenggatWaktu;
   final VoidCallback onTap;
   final VoidCallback? onEdit;
-  final VoidCallback? onDelete; // ## BARU: Tambahkan callback untuk hapus ##
+  final VoidCallback? onDelete;
 
   const TaskCard({
     super.key,
@@ -19,7 +19,7 @@ class TaskCard extends StatelessWidget {
     required this.tenggatWaktu,
     required this.onTap,
     this.onEdit,
-    this.onDelete, // ## BARU ##
+    this.onDelete,
   });
 
   @override
@@ -31,29 +31,48 @@ class TaskCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 8, 8), // Sesuaikan padding
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(judul, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.timer_outlined, size: 16, color: isLate ? Colors.red : Colors.black54),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Tenggat: $formattedTenggat',
-                    style: TextStyle(color: isLate ? Colors.red : Colors.black54),
-                  ),
-                ],
+              Text(
+                judul,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Icon(
+                    Icons.timer_outlined,
+                    size: 16,
+                    color: isLate ? Colors.red : Colors.black54,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Tenggat: $formattedTenggat',
+                    style: TextStyle(
+                      color: isLate ? Colors.red : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // ## PERUBAHAN UTAMA: MENGGUNAKAN WRAP ##
+              Wrap(
+                spacing: 8.0, // Jarak horizontal antar item
+                runSpacing: 4.0, // Jarak vertikal jika ada baris baru
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  // Widget untuk menampilkan jumlah pengumpul
                   StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('tugas')
@@ -66,34 +85,52 @@ class TaskCard extends StatelessWidget {
                         submissionCount = snapshot.data!.docs.length;
                       }
                       return Row(
+                        mainAxisSize:
+                            MainAxisSize.min, // Agar tidak memakan semua lebar
                         children: [
-                          const Icon(Icons.people_alt_outlined, size: 16, color: Colors.black54),
+                          const Icon(
+                            Icons.people_alt_outlined,
+                            size: 16,
+                            color: Colors.black54,
+                          ),
                           const SizedBox(width: 4),
                           Text('$submissionCount siswa telah mengumpulkan'),
                         ],
                       );
                     },
                   ),
-                  // ## PERUBAHAN DI SINI: Tambahkan tombol hapus ##
+                  // Widget untuk tombol-tombol
                   Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize:
+                        MainAxisSize.min, // Agar tidak memakan semua lebar
                     children: [
                       if (onEdit != null)
                         IconButton(
-                          icon: Icon(Icons.edit_note, color: Colors.orange.shade700),
+                          icon: Icon(
+                            Icons.edit_note,
+                            color: Colors.orange.shade700,
+                          ),
                           onPressed: onEdit,
                           tooltip: 'Edit Tugas',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
                       if (onDelete != null)
                         IconButton(
-                          icon: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red.shade700,
+                          ),
                           onPressed: onDelete,
                           tooltip: 'Hapus Tugas',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
                     ],
-                  )
+                  ),
                 ],
               ),
+              // ## AKHIR PERUBAHAN ##
             ],
           ),
         ),

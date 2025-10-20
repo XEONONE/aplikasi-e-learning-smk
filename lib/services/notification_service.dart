@@ -1,61 +1,58 @@
 // lib/services/notification_service.dart
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationService {
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final AuthService _authService = AuthService();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> initialize() async {
-    // Meminta izin notifikasi dari pengguna (penting untuk iOS dan Android 13+)
-    NotificationSettings settings = await _fcm.requestPermission(
+    // 1. Meminta izin notifikasi dari pengguna (untuk iOS & Android 13+)
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
+      announcement: false,
       badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
       sound: true,
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      if (kDebugMode) {
-        print('Izin notifikasi diberikan oleh pengguna.');
+      print('Izin notifikasi diberikan oleh pengguna.');
+      // 2. Dapatkan token FCM
+      String? token = await _firebaseMessaging.getToken();
+      if (token != null) {
+        print('FCM Token: $token');
+        // 3. Simpan token ke database
+        await _saveTokenToDatabase(token);
       }
-      // Dapatkan token perangkat dan simpan ke database
-      await _saveTokenToDatabase();
-
-      // Dengarkan jika token diperbarui, lalu simpan lagi
-      _fcm.onTokenRefresh.listen((token) async {
-        await _saveTokenToDatabase(token: token);
-      });
     } else {
-      if (kDebugMode) {
-        print('Pengguna menolak atau belum memberikan izin notifikasi.');
-      }
+      print('Pengguna menolak izin notifikasi.');
     }
   }
 
-  // Fungsi untuk menyimpan token FCM ke dokumen pengguna di Firestore
-  Future<void> _saveTokenToDatabase({String? token}) async {
-    final currentUser = _authService.getCurrentUser();
-    if (currentUser == null) return;
+  // ## FUNGSI YANG DIPERBAIKI ##
+  Future<void> _saveTokenToDatabase(String token) async {
+    // Dapatkan UID pengguna yang sedang login
+    String? uid = _auth.currentUser?.uid;
 
-    String? fcmToken = token ?? await _fcm.getToken();
-    if (fcmToken == null) return;
+    if (uid != null) {
+      try {
+        // Gunakan .set() dengan merge:true.
+        // Ini akan membuat dokumen/field jika belum ada,
+        // atau memperbaruinya jika sudah ada. Ini lebih aman daripada .update().
+        await _firestore.collection('users').doc(uid).set({
+          'fcmTokens': FieldValue.arrayUnion([token]),
+        }, SetOptions(merge: true));
 
-    // Cari dokumen pengguna berdasarkan UID
-    var userDocQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('uid', isEqualTo: currentUser.uid)
-        .limit(1)
-        .get();
-
-    if (userDocQuery.docs.isNotEmpty) {
-      DocumentReference userDocRef = userDocQuery.docs.first.reference;
-      // Simpan token ke dalam sebuah array. Ini berguna jika pengguna login di beberapa perangkat.
-      await userDocRef.update({
-        'fcmTokens': FieldValue.arrayUnion([fcmToken])
-      });
+        print('Token berhasil disimpan ke Firestore untuk user: $uid');
+      } catch (e) {
+        print('Gagal menyimpan token ke Firestore: $e');
+      }
     }
   }
 }

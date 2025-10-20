@@ -5,6 +5,7 @@ import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart'
 import 'package:aplikasi_e_learning_smk/screens/student_task_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_nilai_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/services/notification_service.dart'; // <-- 1. TAMBAHKAN IMPORT INI
 import 'package:flutter/material.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
@@ -16,6 +17,15 @@ class SiswaDashboardScreen extends StatefulWidget {
 
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   int _selectedIndex = 0;
+
+  // ++ 2. TAMBAHKAN BLOK KODE INITSTATE INI ++
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi layanan notifikasi saat pengguna masuk ke dasbor
+    NotificationService().initialize();
+  }
+  // ++ AKHIR PERUBAHAN ++
 
   static const List<Widget> _pages = <Widget>[
     StudentHomeScreen(),
@@ -50,13 +60,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           ),
         ],
       ),
-      body: IndexedStack(
-        // Menggunakan IndexedStack untuk menjaga state setiap halaman
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Agar semua item terlihat
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

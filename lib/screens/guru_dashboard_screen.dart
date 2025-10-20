@@ -4,6 +4,7 @@ import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_materi_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/task_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/services/notification_service.dart'; // <-- 1. TAMBAHKAN IMPORT INI
 import 'package:flutter/material.dart';
 
 class GuruDashboardScreen extends StatefulWidget {
@@ -16,6 +17,15 @@ class GuruDashboardScreen extends StatefulWidget {
 class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
   int _selectedIndex = 0;
   bool _showExpiredTasks = false;
+
+  // ++ 2. TAMBAHKAN BLOK KODE INITSTATE INI ++
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi layanan notifikasi saat pengguna masuk ke dasbor
+    NotificationService().initialize();
+  }
+  // ++ AKHIR PERUBAHAN ++
 
   final List<String> _pageTitles = [
     'Beranda',
@@ -62,9 +72,10 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
               icon: const Icon(Icons.logout))
         ],
       ),
-      // ## PERUBAHAN DI SINI: Latar belakang dihapus ##
-      body: pages[_selectedIndex],
-      // ## AKHIR PERUBAHAN ##
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
