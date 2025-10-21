@@ -1,30 +1,98 @@
 mutation CreateSeedData @transaction @auth(level: PUBLIC, insecureReason: "This mutation is safe to expose to the public because it is only used for seeding the database with initial data.") {
-  # Example: Inserting data into a User table
+  # Inserting sample users
   user_insertMany(data: [
     {
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      username: "demouser1",
-      email: "demouser1@example.com",
+      id: "1234567890",
+      nama: "Guru Demo",
+      email: "guru@example.com",
+      role: "guru",
+      isActivated: true,
       createdAt: "2024-01-01T00:00:00Z"
     },
     {
-      id: "550e8400-e29b-41d4-a716-446655440001",
-      username: "demouser2",
-      email: "demouser2@example.com",
+      id: "0987654321",
+      nama: "Siswa Demo",
+      email: "siswa@example.com",
+      role: "siswa",
+      kelas: "XII RPL",
+      isActivated: true,
       createdAt: "2024-01-01T00:00:00Z"
     }
   ])
-  # Example: Inserting data into a Comment table, referencing the User table
-  comment_insertMany(data: [
+
+  # Inserting sample materi
+  materi_insertMany(data: [
     {
-      user: "550e8400-e29b-41d4-a716-446655440000",
-      content: "Example comment from demouser1",
-      createdAt: "2024-01-01T00:00:00Z"
+      id: "550e8400-e29b-41d4-a716-446655440002",
+      title: "Pengenalan Flutter",
+      description: "Materi dasar tentang Flutter framework",
+      content: "https://example.com/flutter-intro",
+      createdById: "1234567890",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z"
     },
     {
-      user: "550e8400-e29b-41d4-a716-446655440001",
-      content: "Example comment from demouser2",
+      id: "550e8400-e29b-41d4-a716-446655440003",
+      title: "State Management",
+      description: "Cara mengelola state di Flutter",
+      content: "https://example.com/state-management",
+      createdById: "1234567890",
+      createdAt: "2024-01-02T00:00:00Z",
+      updatedAt: "2024-01-02T00:00:00Z"
+    }
+  ])
+
+  # Inserting sample tugas
+  tugas_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440004",
+      title: "Tugas Flutter Dasar",
+      description: "Buat aplikasi Hello World dengan Flutter",
+      dueDate: "2024-01-15",
+      createdById: "1234567890",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z"
+    }
+  ])
+
+  # Inserting sample pengumuman
+  pengumuman_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440005",
+      title: "Selamat Datang",
+      content: "Selamat datang di aplikasi e-learning SMK",
+      createdById: "1234567890",
       createdAt: "2024-01-01T00:00:00Z"
+    }
+  ])
+
+  # Inserting sample submission
+  submission_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440006",
+      tugasId: "550e8400-e29b-41d4-a716-446655440004",
+      submittedById: "0987654321",
+      content: "Link ke submission: https://example.com/submission",
+      submittedAt: "2024-01-10T00:00:00Z",
+      nilai: 85
+    }
+  ])
+
+  # Inserting sample comments
+  comment_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440007",
+      content: "Materi sangat membantu!",
+      createdById: "0987654321",
+      onMateriId: "550e8400-e29b-41d4-a716-446655440002",
+      createdAt: "2024-01-03T00:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440008",
+      content: "Tugas ini menarik",
+      createdById: "0987654321",
+      onTugasId: "550e8400-e29b-41d4-a716-446655440004",
+      createdAt: "2024-01-02T00:00:00Z"
     }
   ])
 }

@@ -1,49 +1,54 @@
 type User @table {
-  displayName: String!
+  id: String!  # NIP/NISN
+  nama: String!
+  role: String!  # 'guru' or 'siswa'
   email: String
-  photoUrl: String
+  kelas: String  # For siswa
+  mengajarKelas: [String]  # For guru
+  isActivated: Boolean!
+  fcmTokens: [String]
+  uid: String  # Firebase Auth UID
   createdAt: Timestamp!
 }
 
-type Movie @table {
+type Materi @table {
   title: String!
-  year: Int!
-  summary: String
-  genres: [String]
-  runtime: Int
-  createdAt: Timestamp!
-}
-
-type Watch @table {
-  user: User!
-  movie: Movie!
-  watchDate: Date!
-  location: String
-  createdAt: Timestamp!
-}
-
-type Review @table {
-  movie: Movie!
-  user: User!
-  watch: Watch!
-  rating: Int!
-  review: String
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-}
-
-type List @table {
-  user: User!
-  name: String!
-  public: Boolean!
   description: String
+  content: String  # URL or text content
+  createdBy: User!
   createdAt: Timestamp!
   updatedAt: Timestamp!
 }
 
-type ListMovie @table(key: ["list", "movie"]) {
-  list: List!
-  movie: Movie!
-  position: Int!
-  note: String
+type Tugas @table {
+  title: String!
+  description: String
+  dueDate: Date!
+  createdBy: User!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+}
+
+type Pengumuman @table {
+  title: String!
+  content: String!
+  createdBy: User!
+  createdAt: Timestamp!
+}
+
+type Submission @table {
+  tugas: Tugas!
+  submittedBy: User!
+  content: String  # URL or text
+  submittedAt: Timestamp!
+  nilai: Int  # score, optional
+}
+
+type Comment @table {
+  content: String!
+  createdBy: User!
+  onMateri: Materi
+  onTugas: Tugas
+  onPengumuman: Pengumuman
+  createdAt: Timestamp!
 }
