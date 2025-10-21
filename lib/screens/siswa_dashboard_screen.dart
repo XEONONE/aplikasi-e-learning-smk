@@ -13,8 +13,7 @@ const Color kBackgroundColor = Color(0xFFF3F4F6); // Gray-100/50
 
 class SiswaDashboardScreen extends StatefulWidget {
   final UserModel userModel;
-  final int destinationPage;
-  const SiswaDashboardScreen({super.key, required this.userModel, required this.destinationPage});
+  const SiswaDashboardScreen({super.key, required this.userModel});
 
   @override
   State<SiswaDashboardScreen> createState() => _SiswaDashboardScreenState();
@@ -47,8 +46,8 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     // Inisialisasi daftar halaman
     _pages = [
       StudentHomeScreen(userModel: widget.userModel), // Halaman Beranda baru (akan dibuat)
-      StudentMateriListScreen(userModel: widget.userModel), // Halaman Materi (akan dirombak)
-      StudentTaskListScreen(userModel: widget.userModel), // Halaman Tugas (akan dirombak)
+      StudentMateriListScreen(kelasId: widget.userModel.kelas ?? ''), // Halaman Materi (akan dirombak)
+      StudentTaskListScreen(kelasId: widget.userModel.kelas ?? '', siswaId: widget.userModel.id), // Halaman Tugas (akan dirombak)
       StudentProfileScreen(userModel: widget.userModel), // Halaman Profil (akan dibuat)
     ];
   }

@@ -1,4 +1,4 @@
-import 'package.aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart'; // Halaman buat tugas
 import 'package:aplikasi_e_learning_smk/screens/edit_task_screen.dart'; // Halaman edit tugas (akan kita rombak)
 import 'package:aplikasi_e_learning_smk/screens/submission_list_screen.dart'; // Halaman lihat pengumpulan (akan kita rombak)

@@ -1,9 +1,9 @@
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_announcement_screen.dart'; // Halaman untuk buat pengumuman
-import 'package.aplikasi_e_learning_smk/screens/guru_home_screen.dart'; // Halaman Beranda baru
+import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart'; // Halaman Beranda baru
 import 'package:aplikasi_e_learning_smk/screens/guru_materi_list_screen.dart'; // (Akan kita rombak di tahap selanjutnya)
 import 'package:aplikasi_e_learning_smk/screens/guru_profile_screen.dart'; // Halaman Profil baru (Akan kita buat)
-import 'package.aplikasi_e_learning_smk/screens/task_list_screen.dart'; // (Akan kita rombak di tahap selanjutnya)
+import 'package:aplikasi_e_learning_smk/screens/task_list_screen.dart'; // (Akan kita rombak di tahap selanjutnya)
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,8 +14,7 @@ const Color kBackgroundColor = Color(0xFFF3F4F6); // Gray-100/50
 
 class GuruDashboardScreen extends StatefulWidget {
   final UserModel userModel;
-  final int destinationPage;
-  const GuruDashboardScreen({super.key, required this.userModel, required this.destinationPage});
+  const GuruDashboardScreen({super.key, required this.userModel});
 
   @override
   State<GuruDashboardScreen> createState() => _GuruDashboardScreenState();
@@ -40,7 +39,7 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
-    
+
     // Inisialisasi daftar halaman
     _pages = [
       GuruHomeScreen(userModel: widget.userModel), // Halaman Beranda baru
@@ -127,9 +126,9 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
               icon: const Icon(Icons.arrow_back, color: Colors.black54),
               onPressed: () { /* Logika back */ },
             ),
-          
+
           if (config['showAvatar']) const SizedBox(width: 12),
-          
+
           // Judul dan Subjudul
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +182,7 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
               child: const Icon(Icons.campaign, color: Colors.white), // Ikon bullhorn
             )
           : null, // Sembunyikan di halaman lain
-      
+
       // Navigasi Bawah
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

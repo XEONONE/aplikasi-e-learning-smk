@@ -1,4 +1,4 @@
-import 'package:aplikasi_e_learning_smk/models/user_model.dart'; // Model baru kita
+ import 'package:aplikasi_e_learning_smk/models/user_model.dart'; // Model baru kita
 import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/loading_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // UI Login baru kita
@@ -32,7 +32,7 @@ class AuthGate extends StatelessWidget {
             future: authService.getUserData(user.uid), // Gunakan fungsi dari auth_service
             builder: (context, userSnapshot) {
               if (userSnapshot.connectionState == ConnectionState.waiting) {
-                return const LoadingScreen(); // Tampilkan loading selagi ambil data
+                return const LoadingScreen(destinationPage: LoginScreen()); // Tampilkan loading selagi ambil data
               }
 
               if (userSnapshot.hasError || !userSnapshot.hasData || userSnapshot.data == null) {
@@ -46,9 +46,9 @@ class AuthGate extends StatelessWidget {
 
               // Arahkan berdasarkan role dari UserModel
               if (userModel.role == 'guru') {
-                return GuruDashboardScreen(userModel: userModel, destinationPage: 0);
+                return GuruDashboardScreen(userModel: userModel);
               } else if (userModel.role == 'siswa') {
-                return SiswaDashboardScreen(userModel: userModel, destinationPage: 0);
+                return SiswaDashboardScreen(userModel: userModel);
               } else {
                 // Jika role tidak dikenal, kembali ke login
                 return const LoginScreen();
@@ -57,7 +57,7 @@ class AuthGate extends StatelessWidget {
           );
         } else {
           // Sedang loading auth state
-          return const LoadingScreen();
+          return const LoadingScreen(destinationPage: LoginScreen());
         }
       },
     );
