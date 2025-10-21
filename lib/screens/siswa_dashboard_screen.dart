@@ -5,7 +5,7 @@ import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart'
 import 'package:aplikasi_e_learning_smk/screens/student_task_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_nilai_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:aplikasi_e_learning_smk/services/notification_service.dart'; // <-- 1. TAMBAHKAN IMPORT INI
+import 'package:aplikasi_e_learning_smk/services/notification_service.dart';
 import 'package:flutter/material.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
@@ -18,21 +18,28 @@ class SiswaDashboardScreen extends StatefulWidget {
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   int _selectedIndex = 0;
 
-  // ++ 2. TAMBAHKAN BLOK KODE INITSTATE INI ++
+  // --- PERUBAHAN 1: Deklarasi _pages di sini ---
+  late final List<Widget> _pages;
+
   @override
   void initState() {
     super.initState();
-    // Inisialisasi layanan notifikasi saat pengguna masuk ke dasbor
     NotificationService().initialize();
-  }
-  // ++ AKHIR PERUBAHAN ++
 
-  static const List<Widget> _pages = <Widget>[
-    StudentHomeScreen(),
-    StudentMateriListScreen(),
-    StudentTaskListScreen(),
-    StudentNilaiScreen(),
-  ];
+    // --- PERUBAHAN 2: Inisialisasi _pages di dalam initState ---
+    _pages = <Widget>[
+      StudentHomeScreen(
+        // --- PERUBAHAN 3: Tambahkan callback ini ---
+        // Ini akan memanggil _onItemTapped(1) saat tombol ditekan
+        onLihatSemuaMateri: () => _onItemTapped(1),
+      ),
+      const StudentMateriListScreen(),
+      const StudentTaskListScreen(),
+      const StudentNilaiScreen(),
+    ];
+  }
+
+  // --- PERUBAHAN 4: Hapus 'static const List<Widget> _pages' dari sini ---
 
   static const List<String> _pageTitles = <String>[
     'Beranda',
@@ -60,6 +67,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           ),
         ],
       ),
+      // --- PERUBAHAN 5: Pastikan body menggunakan _pages (non-static) ---
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

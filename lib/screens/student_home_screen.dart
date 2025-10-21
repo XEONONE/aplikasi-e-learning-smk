@@ -1,9 +1,9 @@
 // lib/screens/student_home_screen.dart
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
-import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart'; // <-- IMPORT BARU
-import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart'; // <-- IMPORT BARU
-import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart'; // <-- IMPORT BARU
+import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
+// import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart'; // <-- Hapus import ini, sudah tidak perlu
+import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +12,14 @@ import 'package:intl/intl.dart';
 
 // Widget utama untuk halaman beranda siswa
 class StudentHomeScreen extends StatefulWidget {
-  const StudentHomeScreen({super.key});
+  // --- PERUBAHAN 1: Tambahkan parameter callback ---
+  final VoidCallback onLihatSemuaMateri;
+
+  // --- PERUBAHAN 2: Update constructor ---
+  const StudentHomeScreen({
+    super.key,
+    required this.onLihatSemuaMateri,
+  });
 
   @override
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
@@ -277,15 +284,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   TextButton(
-                    onPressed: () {
-                      // --- NAVIGASI KE DAFTAR MATERI ---
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const StudentMateriListScreen(),
-                        ),
-                      );
-                    },
+                    // --- PERUBAHAN 3: Ganti onPressed dengan callback ---
+                    onPressed: widget.onLihatSemuaMateri,
                     child: const Text('Lihat Semua'),
                   )
                 ],
