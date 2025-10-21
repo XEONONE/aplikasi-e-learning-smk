@@ -156,8 +156,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
           );
         },
         backgroundColor: Colors.indigo,
-        child: const Icon(Icons.add_task),
         tooltip: 'Buat Tugas Baru',
+        child: const Icon(Icons.add_task),
       ),
     );
   }

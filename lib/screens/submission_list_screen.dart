@@ -38,7 +38,7 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
         TextEditingController(text: currentNilai?.toString());
     final TextEditingController feedbackController =
         TextEditingController(text: currentFeedback);
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     return showDialog(
       context: context,
@@ -46,7 +46,7 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
         return AlertDialog(
           title: const Text('Beri Nilai dan Feedback'),
           content: Form(
-            key: _formKey,
+            key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -93,7 +93,7 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   try {
                     await _firestore
                         .collection('submissions')

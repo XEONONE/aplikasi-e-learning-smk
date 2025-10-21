@@ -122,8 +122,8 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
           );
         },
         backgroundColor: Colors.indigo,
-        child: const Icon(Icons.add),
         tooltip: 'Unggah Materi Baru',
+        child: const Icon(Icons.add),
       ),
     );
   }

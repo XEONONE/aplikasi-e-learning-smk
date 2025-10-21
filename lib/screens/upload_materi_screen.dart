@@ -177,7 +177,7 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _selectedKelas,
+                      initialValue: _selectedKelas,
                       decoration: const InputDecoration(
                         labelText: 'Tujukan Untuk Kelas',
                         border: OutlineInputBorder(),

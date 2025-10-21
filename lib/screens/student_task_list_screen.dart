@@ -25,7 +25,7 @@ class _StudentTaskListScreenState extends State<StudentTaskListScreen> {
         .map((snapshot) {
       Map<String, Map<String, dynamic>> submissionsMap = {};
       for (var doc in snapshot.docs) {
-        submissionsMap[doc['tugasId']] = doc.data() as Map<String, dynamic>;
+        submissionsMap[doc['tugasId']] = doc.data();
       }
       return submissionsMap;
     });

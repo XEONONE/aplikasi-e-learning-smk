@@ -1,7 +1,6 @@
 import 'package:aplikasi_e_learning_smk/screens/create_announcement_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class GuruHomeScreen extends StatefulWidget {
