@@ -1,37 +1,328 @@
-// lib/screens/guru_dashboard_screen.dart
-
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_materi_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/task_list_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:aplikasi_e_learning_smk/services/notification_service.dart'; // <-- 1. TAMBAHKAN IMPORT INI
+import 'package:aplikasi_e_learning_smk/services/notification_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// -------------------------------------------------------------------
+// WIDGET HALAMAN PROFIL (Helper untuk Dashboard)
+// -------------------------------------------------------------------
+class GuruProfileScreen extends StatefulWidget {
+  const GuruProfileScreen({super.key});
+
+  @override
+  State<GuruProfileScreen> createState() => _GuruProfileScreenState();
+}
+
+class _GuruProfileScreenState extends State<GuruProfileScreen> {
+  final AuthService _authService = AuthService();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+  late Future<UserModel?> _userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (currentUser != null) {
+      _userFuture = _authService.getUserData(currentUser!.uid);
+    } else {
+      _userFuture = Future.value(null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Akun Saya',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: Colors.grey[400]),
+            ),
+            const Text(
+              'Profil',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        elevation: 0,
+      ),
+      body: FutureBuilder<UserModel?>(
+        future: _userFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('Gagal memuat data profil.'));
+          }
+
+          final user = snapshot.data!;
+          final initial = user.nama.isNotEmpty
+              ? user.nama.split(' ').map((e) => e[0]).take(2).join()
+              : '?';
+          final roleDescription =
+              'Guru ${user.mengajarKelas?.join(', ') ?? 'Mapel'}';
+
+          return SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 45,
+                      backgroundColor: Colors.grey[700],
+                      child: Text(
+                        initial.toUpperCase(),
+                        style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      user.nama,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'NIP: ${user.id}',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      roleDescription,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildProfileActionTile(
+                      icon: Icons.edit_outlined,
+                      text: 'Edit Profil',
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Fitur Edit Profil belum tersedia.')),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildProfileActionTile(
+                      icon: Icons.settings_outlined,
+                      text: 'Pengaturan Akun',
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Fitur Pengaturan Akun belum tersedia.')),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.logout, size: 20),
+                      label: const Text('Keluar'),
+                      onPressed: () async {
+                        bool? confirmLogout = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Konfirmasi Keluar'),
+                              content: const Text(
+                                  'Apakah Anda yakin ingin keluar?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Batal'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Keluar',
+                                      style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirmLogout == true) {
+                          await _authService.signOut();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Colors.redAccent.withAlpha(220),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProfileActionTile(
+      {required IconData icon, required String text, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey[400], size: 22),
+            const SizedBox(width: 16),
+            Expanded(
+                child: Text(text,
+                    style: const TextStyle(color: Colors.white, fontSize: 16))),
+            Icon(Icons.chevron_right, color: Colors.grey[600]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------------
+// WIDGET HALAMAN TUGAS (Helper untuk Dashboard)
+// -------------------------------------------------------------------
+class GuruTaskManagementScreen extends StatefulWidget {
+  const GuruTaskManagementScreen({super.key});
+  @override
+  State<GuruTaskManagementScreen> createState() =>
+      _GuruTaskManagementScreenState();
+}
+
+class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
+  int _selectedToggleIndex = 0;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Manajemen',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(color: Colors.grey[400])),
+                  Text('Tugas',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: ToggleButtons(
+                      isSelected: [
+                        _selectedToggleIndex == 0,
+                        _selectedToggleIndex == 1
+                      ],
+                      onPressed: (index) {
+                        setState(() {
+                          _selectedToggleIndex = index;
+                        });
+                      },
+                      children: const [
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            child: Text('Tugas Aktif')),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            child: Text('Riwayat')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TaskListScreen(
+                showExpired: _selectedToggleIndex == 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Buat Tugas Baru (belum diimplementasikan)')),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------------
+// CLASS DASHBOARD UTAMA
+// -------------------------------------------------------------------
 class GuruDashboardScreen extends StatefulWidget {
   const GuruDashboardScreen({super.key});
 
+  // ## PERBAIKAN: Tambahkan implementasi createState ##
   @override
   State<GuruDashboardScreen> createState() => _GuruDashboardScreenState();
 }
 
 class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
   int _selectedIndex = 0;
-  bool _showExpiredTasks = false;
 
-  // ++ 2. TAMBAHKAN BLOK KODE INITSTATE INI ++
   @override
   void initState() {
     super.initState();
-    // Inisialisasi layanan notifikasi saat pengguna masuk ke dasbor
     NotificationService().initialize();
   }
-  // ++ AKHIR PERUBAHAN ++
-
-  final List<String> _pageTitles = [
-    'Beranda',
-    'Manajemen Materi',
-    'Manajemen Tugas',
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -39,56 +330,49 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     });
   }
 
+  // ## PERBAIKAN: Pindahkan daftar _pages ke DALAM class State ##
+  // Ini memperbaiki error 'creation_with_non_type'
+  static final List<Widget> _pages = <Widget>[
+    const GuruHomeScreen(),
+    Scaffold(
+      appBar: AppBar(title: const Text('Manajemen Materi')),
+      body: const GuruMateriListScreen(),
+    ),
+    const GuruTaskManagementScreen(),
+    const GuruProfileScreen(),
+  ];
+  // ## AKHIR PERBAIKAN ##
+
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      const GuruHomeScreen(),
-      const GuruMateriListScreen(),
-      TaskListScreen(showExpired: _showExpiredTasks),
-    ];
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_pageTitles[_selectedIndex]),
-        actions: [
-          if (_selectedIndex == 2)
-            IconButton(
-              icon: Icon(
-                _showExpiredTasks
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-              ),
-              tooltip: _showExpiredTasks
-                  ? 'Sembunyikan Tugas Kedaluwarsa'
-                  : 'Tampilkan Tugas Kedaluwarsa',
-              onPressed: () {
-                setState(() {
-                  _showExpiredTasks = !_showExpiredTasks;
-                });
-              },
-            ),
-          IconButton(
-              onPressed: () => AuthService().signOut(),
-              icon: const Icon(Icons.logout))
-        ],
-      ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: pages,
+      body: SafeArea(
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: 'Beranda',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
+            icon: Icon(Icons.book_outlined),
+            activeIcon: Icon(Icons.book),
             label: 'Materi',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
+            icon: Icon(Icons.assignment_outlined),
+            activeIcon: Icon(Icons.assignment),
             label: 'Tugas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,

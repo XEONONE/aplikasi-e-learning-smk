@@ -26,8 +26,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
   Future<void> _verifyNipNisn() async {
     if (_nipNisnController.text.isEmpty) return;
     setState(() => _isLoading = true);
-    
-    // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
+
     await Future.delayed(const Duration(seconds: 3));
 
     try {
@@ -79,7 +78,6 @@ class _ActivationScreenState extends State<ActivationScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // --- PERUBAHAN DURASI MENJADI 3 DETIK ---
       await Future.delayed(const Duration(seconds: 3));
 
       String result = await _authService.activateAccount(
@@ -148,7 +146,9 @@ class _ActivationScreenState extends State<ActivationScreen> {
               child: Container(
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
+                  // ## PERBAIKAN: Gunakan withAlpha ##
+                  color: Colors.black.withAlpha((255 * 0.4).round()),
+                  // ## AKHIR PERBAIKAN ##
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.purple.shade700, width: 1),
                 ),
@@ -176,19 +176,6 @@ class _ActivationScreenState extends State<ActivationScreen> {
                               Icons.person_outline,
                               color: Colors.grey.shade400,
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.purple.shade400,
-                                width: 2,
-                              ),
-                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -196,22 +183,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                             ? const CustomLoadingIndicator(color: Colors.white)
                             : ElevatedButton(
                                 onPressed: _verifyNipNisn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple.shade600,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'VERIFIKASI',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: const Text('VERIFIKASI'),
                               ),
                       ],
                       if (_isVerified) ...[
@@ -231,30 +203,12 @@ class _ActivationScreenState extends State<ActivationScreen> {
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             labelText: 'Password Baru',
-                            labelStyle: TextStyle(color: Colors.grey.shade400),
-                            prefixIcon: Icon(
-                              Icons.lock_outline,
-                              color: Colors.grey.shade400,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.purple.shade400,
-                                width: 2,
-                              ),
-                            ),
+                            prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: Colors.grey.shade400,
                               ),
                               onPressed: () => setState(
                                 () => _isPasswordVisible = !_isPasswordVisible,
@@ -275,30 +229,12 @@ class _ActivationScreenState extends State<ActivationScreen> {
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             labelText: 'Konfirmasi Password',
-                            labelStyle: TextStyle(color: Colors.grey.shade400),
-                            prefixIcon: Icon(
-                              Icons.lock_outline,
-                              color: Colors.grey.shade400,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              borderSide: BorderSide(
-                                color: Colors.purple.shade400,
-                                width: 2,
-                              ),
-                            ),
+                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isConfirmPasswordVisible
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: Colors.grey.shade400,
                               ),
                               onPressed: () => setState(
                                 () => _isConfirmPasswordVisible =
@@ -318,22 +254,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                             ? const CustomLoadingIndicator(color: Colors.white)
                             : ElevatedButton(
                                 onPressed: _activateAccount,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple.shade600,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'AKTIFKAN AKUN',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: const Text('AKTIFKAN AKUN'),
                               ),
                       ],
                     ],

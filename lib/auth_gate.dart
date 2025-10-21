@@ -1,6 +1,6 @@
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // Memastikan impor ini ada
+import 'package:aplikasi_e_learning_smk/screens/login_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/siswa_dashboard_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +19,7 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          // User sudah login, sekarang cek perannya
+          // User sudah login, cek peran
           return FutureBuilder<UserModel?>(
             future: AuthService().getUserData(snapshot.data!.uid),
             builder: (context, userModelSnapshot) {
@@ -30,19 +30,23 @@ class AuthGate extends StatelessWidget {
               if (userModelSnapshot.hasData && userModelSnapshot.data != null) {
                 final userRole = userModelSnapshot.data!.role;
                 if (userRole == 'guru') {
+                  // Jika const tidak bisa, hapus const
                   return const GuruDashboardScreen();
                 } else {
+                  // Jika const tidak bisa, hapus const
                   return const SiswaDashboardScreen();
                 }
               }
-              // Jika data user tidak ditemukan, logout untuk mencegah error
+              // Data user tidak ditemukan, paksa logout
               AuthService().signOut();
-              return const LoginScreen();
+              // ## PERBAIKAN: Hapus const ##
+              return LoginScreen();
             },
           );
         } else {
           // User belum login
-          return const LoginScreen();
+          // ## PERBAIKAN: Hapus const ##
+          return LoginScreen();
         }
       },
     );
