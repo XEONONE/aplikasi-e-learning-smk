@@ -7,6 +7,10 @@ import 'package:aplikasi_e_learning_smk/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// --- TAMBAHKAN IMPORT INI ---
+import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
+// -----------------------------
+
 // -------------------------------------------------------------------
 // WIDGET HALAMAN PROFIL (Helper untuk Dashboard)
 // -------------------------------------------------------------------
@@ -129,17 +133,23 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
+
+                    // --- INI PERUBAHANNYA ---
                     _buildProfileActionTile(
                       icon: Icons.settings_outlined,
                       text: 'Pengaturan Akun',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Fitur Pengaturan Akun belum tersedia.')),
+                        // Mengganti SnackBar dengan Navigasi
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AccountSettingsScreen(),
+                          ),
                         );
                       },
                     ),
+                    // --- AKHIR PERUBAHAN ---
+
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.logout, size: 20),
@@ -310,7 +320,6 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
 class GuruDashboardScreen extends StatefulWidget {
   const GuruDashboardScreen({super.key});
 
-  // ## PERBAIKAN: Tambahkan implementasi createState ##
   @override
   State<GuruDashboardScreen> createState() => _GuruDashboardScreenState();
 }
@@ -330,8 +339,6 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     });
   }
 
-  // ## PERBAIKAN: Pindahkan daftar _pages ke DALAM class State ##
-  // Ini memperbaiki error 'creation_with_non_type'
   static final List<Widget> _pages = <Widget>[
     const GuruHomeScreen(),
     Scaffold(
@@ -341,7 +348,6 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     const GuruTaskManagementScreen(),
     const GuruProfileScreen(),
   ];
-  // ## AKHIR PERBAIKAN ##
 
   @override
   Widget build(BuildContext context) {
