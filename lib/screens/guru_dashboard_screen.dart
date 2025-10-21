@@ -14,7 +14,8 @@ const Color kBackgroundColor = Color(0xFFF3F4F6); // Gray-100/50
 
 class GuruDashboardScreen extends StatefulWidget {
   final UserModel userModel;
-  const GuruDashboardScreen({super.key, required this.userModel});
+  final int destinationPage;
+  const GuruDashboardScreen({super.key, required this.userModel, required this.destinationPage});
 
   @override
   State<GuruDashboardScreen> createState() => _GuruDashboardScreenState();

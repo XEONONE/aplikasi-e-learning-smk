@@ -104,7 +104,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   }
 
   // Fungsi untuk update tugas
-  Future<void> _updateTask() async {
+  void _updateTask() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -263,7 +263,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPrimaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorde(
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),

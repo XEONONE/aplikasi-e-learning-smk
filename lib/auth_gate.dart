@@ -6,7 +6,7 @@ import 'package:aplikasi_e_learning_smk/screens/siswa_dashboard_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; // Service baru kita
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/Provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -46,5 +46,20 @@ class AuthGate extends StatelessWidget {
 
               // Arahkan berdasarkan role dari UserModel
               if (userModel.role == 'guru') {
-                return GuruDashboardScreen(userModel: userModel);
-              } else if (userModel.role ==
+                return GuruDashboardScreen(userModel: userModel, destinationPage: 0);
+              } else if (userModel.role == 'siswa') {
+                return SiswaDashboardScreen(userModel: userModel, destinationPage: 0);
+              } else {
+                // Jika role tidak dikenal, kembali ke login
+                return const LoginScreen();
+              }
+            },
+          );
+        } else {
+          // Sedang loading auth state
+          return const LoadingScreen();
+        }
+      },
+    );
+  }
+}
