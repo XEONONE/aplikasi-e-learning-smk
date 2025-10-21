@@ -2,7 +2,7 @@
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
+import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart'; // Pastikan ini di-import
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +32,8 @@ class _StudentMateriListScreenState extends State<StudentMateriListScreen> {
     if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
     }
+    // Dapatkan tema saat ini
+    final theme = Theme.of(context);
 
     return FutureBuilder<UserModel?>(
       future: _userFuture,
@@ -95,11 +97,18 @@ class _StudentMateriListScreenState extends State<StudentMateriListScreen> {
                 List<QueryDocumentSnapshot> materis = groupedMateri[mapel]!;
 
                 return Card(
+                  // ## INI CARD UNTUK MATA PELAJARAN (GROUP) ##
+                  color: theme.cardColor,
                   margin: const EdgeInsets.symmetric(
                     vertical: 4.0,
                     horizontal: 8.0,
                   ),
                   child: ExpansionTile(
+                    // Warna ikon dan teks untuk ExpansionTile
+                    iconColor: Colors.white70,
+                    collapsedIconColor: Colors.white70,
+                    textColor: Colors.white,
+                    collapsedTextColor: Colors.white,
                     title: Text(
                       mapel,
                       style: const TextStyle(
@@ -108,8 +117,10 @@ class _StudentMateriListScreenState extends State<StudentMateriListScreen> {
                       ),
                     ),
                     initiallyExpanded: true,
+                    // ## DAFTAR MATERI CARD SEBAGAI CHILDREN ##
                     children: materis.map((materiDoc) {
                       var materiData = materiDoc.data() as Map<String, dynamic>;
+                      // Panggil MateriCard yang sudah diperbaiki
                       return MateriCard(
                         judul: materiData['judul'],
                         deskripsi: materiData['deskripsi'],

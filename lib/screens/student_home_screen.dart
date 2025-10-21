@@ -1,6 +1,9 @@
 // lib/screens/student_home_screen.dart
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart'; // <-- IMPORT BARU
+import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart'; // <-- IMPORT BARU
+import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart'; // <-- IMPORT BARU
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,13 +31,132 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
+  // --- WIDGET KARTU RINGKASAN MATERI & TUGAS ---
+  Widget _buildSummaryCard(
+      IconData icon, String label, String value, Color color) {
+    return Expanded(
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 30),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                  ),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET KARTU RINGKASAN MATA PELAJARAN ---
+  Widget _buildSubjectCard(
+      IconData icon, String subject, String progress, Color color) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 30),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subject,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    progress,
+                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: 0.8, // Contoh progress 80%
+                    backgroundColor: Colors.grey[700],
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET KARTU TUGAS MENDATANG ---
+  Widget _buildUpcomingTaskCard(String title, String deadline) {
+    // !! CONTOH DATA STATIS - HARUS DIAMBIL DARI FIREBASE !!
+    // Anda perlu query ke 'tugas' dan ambil data sebenarnya
+    // Ini hanyalah placeholder
+    const String placeholderTaskId = "id_tugas_contoh";
+    final Map<String, dynamic> placeholderTaskData = {
+      'judul': title,
+      'deskripsi': 'Deskripsi placeholder untuk tugas ini.',
+      'tenggatWaktu': Timestamp.now(), // Ganti dengan tenggat sebenarnya
+      'fileUrl': null,
+      'untukKelas': 'Kelas Contoh',
+      'dibuatPada': Timestamp.now(),
+      'dibuatOlehUid': 'uid_guru_contoh',
+      'mataPelajaran': 'Mapel Contoh',
+    };
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: const Icon(Icons.assignment_outlined, color: Colors.orange),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        subtitle: Text(deadline, style: TextStyle(color: Colors.grey[400])),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () {
+          // --- NAVIGASI KE DETAIL TUGAS ---
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(
+                taskId: placeholderTaskId, // Ganti dengan ID tugas asli
+                taskData: placeholderTaskData, // Ganti dengan data tugas asli
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
     }
+    final theme = Theme.of(context);
 
-    // Gunakan FutureBuilder untuk mendapatkan data kelas siswa
     return FutureBuilder<UserModel?>(
       future: _userFuture,
       builder: (context, userSnapshot) {
@@ -47,94 +169,154 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
         final user = userSnapshot.data!;
         final userKelas = user.kelas;
+        final initial = user.nama.isNotEmpty
+            ? user.nama.split(' ').map((e) => e[0]).take(2).join()
+            : '?';
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Nama dan Kelas Siswa
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // -- BAGIAN HEADER --
+              Row(
                 children: [
-                  Text('Selamat Datang,',
-                      style: Theme.of(context).textTheme.headlineSmall),
-                  Text(
-                    user.nama,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  if (userKelas != null && userKelas.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Kelas: $userKelas',
-                      style: Theme.of(context).textTheme.titleMedium,
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.grey[700],
+                    child: Text(
+                      initial.toUpperCase(),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
-                  ],
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  Text(
-                    'Pengumuman Terbaru',
-                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                ],
-              ),
-            ),
-            // Bagian Daftar Pengumuman
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('pengumuman')
-                    .where('untukKelas', whereIn: [userKelas, 'Semua Kelas'])
-                    .orderBy('dibuatPada', descending: true)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text('Belum ada pengumuman.'));
-                  }
-                  if (snapshot.hasError) {
-                    return const Center(
-                      child: Text('Terjadi error saat memuat pengumuman.'),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      var doc = snapshot.data!.docs[index];
-                      var data = doc.data() as Map<String, dynamic>;
-                      return AnnouncementCard(
-                        judul: data['judul'],
-                        isi: data['isi'],
-                        dibuatPada: data['dibuatPada'],
-                        dibuatOlehUid: data['dibuatOlehUid'],
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Selamat datang,',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: Colors.grey[400]),
+                      ),
+                      Text(
+                        user.nama,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.notifications_none, color: Colors.grey[400]),
+                    onPressed: () {},
+                    tooltip: 'Notifikasi',
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.settings_outlined, color: Colors.grey[400]),
+                    onPressed: () {
+                      // --- NAVIGASI KE PENGATURAN ---
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AccountSettingsScreen(),
+                        ),
                       );
                     },
-                  );
-                },
+                    tooltip: 'Pengaturan',
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              // -- KARTU SAPAAN DAN KELAS --
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userKelas ?? 'Kelas Tidak Diketahui',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Semangatmu hari ini adalah kunci kesuksesan di masa depan!',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: Colors.grey[400]),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // -- RINGKASAN MATERI & TUGAS --
+              Row(
+                children: [
+                  _buildSummaryCard(Icons.library_books_outlined, 'Materi', '12/20', Colors.green.shade400),
+                  const SizedBox(width: 16),
+                  _buildSummaryCard(Icons.edit_note_outlined, 'Tugas', '5/8', Colors.orange.shade400),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // -- DAFTAR MATA PELAJARAN --
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Mata Pelajaran',
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // --- NAVIGASI KE DAFTAR MATERI ---
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StudentMateriListScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Lihat Semua'),
+                  )
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Contoh Card Mapel (Gantilah dengan data dinamis nanti)
+              _buildSubjectCard(Icons.computer_outlined, 'Informatika', 'Progress 8 dari 10 modul', Colors.blue.shade400),
+              const SizedBox(height: 12),
+              _buildSubjectCard(Icons.calculate_outlined, 'Matematika', 'Progress 8 dari 12 modul', Colors.green.shade400),
+              const SizedBox(height: 32),
+
+              // -- TUGAS MENDATANG --
+              Text(
+                'Tugas Mendatang',
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              // Contoh Card Tugas Mendatang (Gantilah dengan data dinamis nanti)
+              _buildUpcomingTaskCard('Tugas Algoritma Dasar', 'Tenggat: 25 Okt 2025'),
+              const SizedBox(height: 12),
+              _buildUpcomingTaskCard('Latihan Soal Vektor', 'Tenggat: 28 Okt 2025'),
+            ],
+          ),
         );
       },
     );
   }
 }
 
-// Widget untuk menampilkan kartu pengumuman (diubah jadi StatefulWidget)
+// Widget untuk menampilkan kartu pengumuman (Tidak ada perubahan di sini)
+// ... (Kode AnnouncementCard tetap sama) ...
 class AnnouncementCard extends StatefulWidget {
   final String judul;
   final String isi;
@@ -181,7 +363,7 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat(
-      'd MMMM yyyy, HH:mm',
+      'd MMMM yyyy, HH:mm', 'id_ID'
     ).format(widget.dibuatPada.toDate());
 
     return Card(
