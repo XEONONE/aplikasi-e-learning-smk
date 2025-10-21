@@ -1,281 +1,292 @@
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; // Untuk format tanggal
+
+// Import warna dari dashboard
+import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
 
 class CreateTaskScreen extends StatefulWidget {
-  const CreateTaskScreen({super.key});
+  final UserModel userModel;
+  const CreateTaskScreen({super.key, required this.userModel});
 
   @override
   State<CreateTaskScreen> createState() => _CreateTaskScreenState();
 }
 
 class _CreateTaskScreenState extends State<CreateTaskScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _judulController = TextEditingController();
-  final TextEditingController _deskripsiController = TextEditingController();
-  final TextEditingController _mapelController = TextEditingController();
-  final TextEditingController _linkController = TextEditingController();
+  final TextEditingController _instruksiController = TextEditingController();
+  final TextEditingController _linkController = TextEditingController(); // Link Soal Opsional
+  final TextEditingController _deadlineController = TextEditingController(); // Hanya untuk tampilan
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
-
-  String? _guruNama;
-  List<String> _kelasMengajar = [];
   String? _selectedKelas;
+  DateTime? _selectedDeadline; // Untuk menyimpan DateTime
   bool _isLoading = false;
-  bool _isFetchingData = true;
 
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  List<String> _dropdownItems = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchGuruData();
+    // Siapkan item untuk dropdown
+    _dropdownItems = [
+      "Semua Kelas", // Opsi pertama
+      ...?widget.userModel.mengajarKelas // Tambahkan semua kelas yang diajar guru
+    ];
+    _selectedKelas = _dropdownItems[0]; // Set default
   }
 
-  void _fetchGuruData() async {
-    String? guruId = _authService.getCurrentUser()?.uid;
-    if (guruId != null) {
-      UserModel? guruData = await _authService.getUserData(guruId);
-      if (guruData != null) {
-        List<String> kelasList = ['Semua Kelas'];
-        if (guruData.mengajarKelas != null &&
-            guruData.mengajarKelas!.isNotEmpty) {
-          kelasList.addAll(guruData.mengajarKelas!);
-        }
-
-        setState(() {
-          _guruNama = guruData.nama;
-          _kelasMengajar = kelasList;
-          _selectedKelas =
-              _kelasMengajar.isNotEmpty ? _kelasMengajar[0] : null;
-          _isFetchingData = false;
-        });
-      } else {
-        setState(() {
-          _isFetchingData = false;
-        });
-      }
-    }
+  @override
+  void dispose() {
+    _judulController.dispose();
+    _instruksiController.dispose();
+    _linkController.dispose();
+    _deadlineController.dispose();
+    super.dispose();
   }
 
-  // Fungsi untuk memilih tanggal
-  Future<void> _pilihTanggal(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  // Fungsi untuk memilih tanggal dan waktu
+  Future<void> _pickDeadline() async {
+    // 1. Pilih Tanggal
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
+      initialDate: _selectedDeadline ?? DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
 
-  // Fungsi untuk memilih waktu
-  Future<void> _pilihWaktu(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
-    );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
-
-  void _submitTugas() async {
-    if (_formKey.currentState!.validate() &&
-        _selectedKelas != null &&
-        _selectedDate != null &&
-        _selectedTime != null) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Gabungkan tanggal dan waktu menjadi satu DateTime
-      final DateTime deadline = DateTime(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        _selectedDate!.day,
-        _selectedTime!.hour,
-        _selectedTime!.minute,
+    if (pickedDate != null) {
+      // 2. Pilih Waktu
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDeadline ?? DateTime.now()),
       );
 
-      try {
-        await _firestore.collection('tugas').add({
-          'judul': _judulController.text,
-          'deskripsi': _deskripsiController.text,
-          'mapel': _mapelController.text,
-          'linkLampiran': _linkController.text, // Link opsional
-          'deadline': Timestamp.fromDate(deadline),
-          'authorName': _guruNama ?? 'Guru',
-          'guruId': _authService.getCurrentUser()?.uid,
-          'targetKelas': _selectedKelas,
-          'timestamp': FieldValue.serverTimestamp(),
+      if (pickedTime != null) {
+        // Gabungkan tanggal dan waktu
+        setState(() {
+          _selectedDeadline = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          // Format untuk ditampilkan di TextField
+          _deadlineController.text = DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(_selectedDeadline!);
         });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tugas berhasil dibuat!')),
-          );
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal membuat tugas: $e')),
-          );
-        }
       }
-    } else if (_selectedDate == null || _selectedTime == null) {
+    }
+  }
+
+  // Fungsi untuk submit tugas
+  Future<void> _submitTask() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop jika form tidak valid
+    }
+    
+    if (_selectedDeadline == null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih tenggat waktu terlebih dahulu.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() { _isLoading = true; });
+
+    try {
+      // Kirim data ke Firestore
+      await FirebaseFirestore.instance.collection('tugas').add({
+        'judul': _judulController.text.trim(),
+        'deskripsi': _instruksiController.text.trim(),
+        'fileUrl': _linkController.text.trim(), // Sesuai field Firestore (Link Soal Opsional)
+        'untukKelas': _selectedKelas,
+        'tenggatWaktu': Timestamp.fromDate(_selectedDeadline!), // Sesuai field Firestore
+        'diBuatOlehId': widget.userModel.uid, // Sesuai field Firestore
+        'diBuatOleh': widget.userModel.nama, // Menambahkan nama pembuat
+        'diBuatPada': FieldValue.serverTimestamp(), // Sesuai field Firestore
+      });
+
+      // Tampilkan notifikasi sukses
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tenggat waktu belum lengkap.')),
+        const SnackBar(
+          content: Text('Tugas berhasil dibuat!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Kembali ke halaman sebelumnya
+      Navigator.of(context).pop();
+
+    } catch (e) {
+      if (mounted) {
+        setState(() { _isLoading = false; });
+      }
+      // Tampilkan notifikasi error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuat tugas: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
+  }
+
+  // Helper untuk styling input
+  InputDecoration _inputDecoration({required String hint, String? label, Widget? suffixIcon}) {
+    return InputDecoration(
+      hintText: hint,
+      labelText: label ?? hint,
+      alignLabelWithHint: true,
+      filled: true,
+      fillColor: Colors.grey[50],
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Format tanggal dan waktu yang dipilih
-    String formattedDate = _selectedDate == null
-        ? 'Pilih Tanggal'
-        : DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate!);
-    String formattedTime = _selectedTime == null
-        ? 'Pilih Waktu'
-        : _selectedTime!.format(context);
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Buat Tugas Baru'),
-        backgroundColor: Colors.indigo,
+        title: const Text(
+          'Buat Tugas Baru',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: _isFetchingData
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _judulController,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul Tugas',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.title),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Judul tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _deskripsiController,
-                      decoration: const InputDecoration(
-                        labelText: 'Deskripsi Tugas',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.description),
-                      ),
-                      maxLines: 5,
-                      validator: (value) => value!.isEmpty
-                          ? 'Deskripsi tidak boleh kosong'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _mapelController,
-                      decoration: const InputDecoration(
-                        labelText: 'Mata Pelajaran',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.book),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Mapel tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _linkController,
-                      decoration: const InputDecoration(
-                        labelText: 'Link Lampiran (Opsional)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.link),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedKelas,
-                      decoration: const InputDecoration(
-                        labelText: 'Tujukan Untuk Kelas',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.class_),
-                      ),
-                      items: _kelasMengajar.map((String kelas) {
-                        return DropdownMenuItem<String>(
-                          value: kelas,
-                          child: Text(kelas),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedKelas = newValue;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Pilih kelas tujuan' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    // Input Tenggat Waktu (Tanggal & Jam)
-                    const Text('Tenggat Waktu:',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _pilihTanggal(context),
-                            icon: const Icon(Icons.calendar_today),
-                            label: Text(formattedDate),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _pilihWaktu(context),
-                            icon: const Icon(Icons.access_time),
-                            label: Text(formattedTime),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton.icon(
-                            onPressed: _submitTugas,
-                            icon: const Icon(Icons.save),
-                            label: const Text('BUAT TUGAS'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16.0),
-                              textStyle: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Judul Tugas
+              TextFormField(
+                controller: _judulController,
+                decoration: _inputDecoration(hint: 'Judul Tugas'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Judul tidak boleh kosong';
+                  }
+                  return null;
+                },
               ),
-            ),
+              const SizedBox(height: 16),
+
+              // 2. Instruksi Tugas
+              TextFormField(
+                controller: _instruksiController,
+                decoration: _inputDecoration(
+                  hint: 'Instruksi tugas...',
+                  label: 'Instruksi',
+                ),
+                maxLines: 4,
+                keyboardType: TextInputType.multiline,
+                 validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Instruksi tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Dropdown Target Kelas
+              DropdownButtonFormField<String>(
+                value: _selectedKelas,
+                decoration: _inputDecoration(hint: 'Untuk', label: 'Tujukan Untuk'),
+                items: _dropdownItems.map((String kelas) {
+                  return DropdownMenuItem<String>(
+                    value: kelas,
+                    child: Text(kelas),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedKelas = newValue;
+                  });
+                },
+                 validator: (value) {
+                  if (value == null) {
+                    return 'Silakan pilih target kelas';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // 4. Input Tenggat Waktu (DateTimePicker)
+              TextFormField(
+                controller: _deadlineController,
+                readOnly: true, // Tidak bisa diketik manual
+                decoration: _inputDecoration(
+                  hint: 'Pilih Tenggat Waktu',
+                  suffixIcon: const Icon(Icons.calendar_month, color: kPrimaryColor),
+                ),
+                onTap: _pickDeadline, // Panggil picker saat diklik
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Tenggat waktu tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              
+               // 5. Link Soal (Opsional)
+              TextFormField(
+                controller: _linkController,
+                decoration: _inputDecoration(hint: 'Link Soal (Opsional)'),
+                keyboardType: TextInputType.url,
+                 validator: (value) { // Opsional, jadi tidak perlu validasi
+                  if (value != null && value.trim().isNotEmpty && !Uri.parse(value.trim()).isAbsolute) {
+                     return 'Masukkan URL yang valid (e.g. https://...)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+
+              // 6. Tombol Simpan
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
+                  : ElevatedButton.icon(
+                      icon: const Icon(Icons.save, color: Colors.white),
+                      label: const Text('Simpan', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      onPressed: _submitTask,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

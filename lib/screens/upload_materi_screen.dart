@@ -1,232 +1,243 @@
-import 'dart:io';
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
+// Import warna dari dashboard
+import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
+
 class UploadMateriScreen extends StatefulWidget {
-  const UploadMateriScreen({super.key});
+  final UserModel userModel;
+  const UploadMateriScreen({super.key, required this.userModel});
 
   @override
   State<UploadMateriScreen> createState() => _UploadMateriScreenState();
 }
 
 class _UploadMateriScreenState extends State<UploadMateriScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _mapelController = TextEditingController();
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
-  final TextEditingController _mapelController = TextEditingController();
+  final TextEditingController _linkController = TextEditingController(); // Untuk link GDrive
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final AuthService _authService = AuthService();
-
-  String? _guruNama;
-  List<String> _kelasMengajar = [];
   String? _selectedKelas;
   bool _isLoading = false;
-  bool _isFetchingData = true;
-  PlatformFile? _pickedFile; // File yang dipilih
+
+  List<String> _dropdownItems = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchGuruData();
+    // Siapkan item untuk dropdown
+    _dropdownItems = [
+      "Semua Kelas", // Opsi pertama
+      ...?widget.userModel.mengajarKelas // Tambahkan semua kelas yang diajar guru
+    ];
+    _selectedKelas = _dropdownItems[0]; // Set default
   }
 
-  void _fetchGuruData() async {
-    String? guruId = _authService.getCurrentUser()?.uid;
-    if (guruId != null) {
-      UserModel? guruData = await _authService.getUserData(guruId);
-      if (guruData != null) {
-        List<String> kelasList = ['Semua Kelas'];
-        if (guruData.mengajarKelas != null &&
-            guruData.mengajarKelas!.isNotEmpty) {
-          kelasList.addAll(guruData.mengajarKelas!);
-        }
+  @override
+  void dispose() {
+    _mapelController.dispose();
+    _judulController.dispose();
+    _deskripsiController.dispose();
+    _linkController.dispose();
+    super.dispose();
+  }
 
-        setState(() {
-          _guruNama = guruData.nama;
-          _kelasMengajar = kelasList;
-          _selectedKelas =
-              _kelasMengajar.isNotEmpty ? _kelasMengajar[0] : null;
-          _isFetchingData = false;
-        });
-      } else {
-        setState(() {
-          _isFetchingData = false;
-        });
-      }
+  // Fungsi untuk submit materi
+  Future<void> _submitMateri() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop jika form tidak valid
     }
-  }
 
-  Future<void> _pilihFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      setState(() {
-        _pickedFile = result.files.first;
-      });
-    }
-  }
+    setState(() { _isLoading = true; });
 
-  Future<String> _uploadFile(PlatformFile file) async {
-    String filePath = 'materi/${_guruNama ?? 'guru'}/${file.name}';
-    File fileOnPlatform = File(file.path!);
-
-    TaskSnapshot snapshot = await _storage.ref(filePath).putFile(fileOnPlatform);
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    return downloadUrl;
-  }
-
-  void _submitMateri() async {
-    if (_formKey.currentState!.validate() &&
-        _selectedKelas != null &&
-        _pickedFile != null) {
-      setState(() {
-        _isLoading = true;
+    try {
+      // Kirim data ke Firestore
+      await FirebaseFirestore.instance.collection('materi').add({
+        'mapel': _mapelController.text.trim(),
+        'judul': _judulController.text.trim(),
+        'deskripsi': _deskripsiController.text.trim(),
+        'fileUrl': _linkController.text.trim(), // Sesuai field Firestore & desain
+        'untukKelas': _selectedKelas,
+        'diBuatOlehId': widget.userModel.uid, // Sesuai field Firestore
+        'diBuatOleh': widget.userModel.nama, // Menambahkan nama pembuat
+        'diBuatPada': FieldValue.serverTimestamp(), // Sesuai field Firestore
       });
 
-      try {
-        // 1. Upload file ke Firebase Storage
-        String fileUrl = await _uploadFile(_pickedFile!);
-
-        // 2. Simpan metadata ke Firestore
-        await _firestore.collection('materi').add({
-          'judul': _judulController.text,
-          'deskripsi': _deskripsiController.text,
-          'mapel': _mapelController.text,
-          'fileUrl': fileUrl,
-          'fileName': _pickedFile!.name,
-          'authorName': _guruNama ?? 'Guru',
-          'guruId': _authService.getCurrentUser()?.uid,
-          'targetKelas': _selectedKelas,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Materi berhasil diunggah!')),
-          );
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal mengunggah materi: $e')),
-          );
-        }
-      }
-    } else if (_pickedFile == null) {
+      // Tampilkan notifikasi sukses
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Anda belum memilih file.')),
+        const SnackBar(
+          content: Text('Materi berhasil di-upload!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Kembali ke halaman sebelumnya
+      Navigator.of(context).pop();
+
+    } catch (e) {
+      if (mounted) {
+        setState(() { _isLoading = false; });
+      }
+      // Tampilkan notifikasi error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal upload materi: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
+  }
+
+  // Helper untuk styling input
+  InputDecoration _inputDecoration({required String hint, String? label}) {
+    return InputDecoration(
+      hintText: hint,
+      labelText: label ?? hint,
+      alignLabelWithHint: true,
+      filled: true,
+      fillColor: Colors.grey[50],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Unggah Materi Baru'),
-        backgroundColor: Colors.indigo,
+        title: const Text(
+          'Tambah Materi Baru',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: _isFetchingData
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _judulController,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul Materi',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.title),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Judul tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _deskripsiController,
-                      decoration: const InputDecoration(
-                        labelText: 'Deskripsi Singkat',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.description),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _mapelController,
-                      decoration: const InputDecoration(
-                        labelText: 'Mata Pelajaran',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.book),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Mapel tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedKelas,
-                      decoration: const InputDecoration(
-                        labelText: 'Tujukan Untuk Kelas',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.class_),
-                      ),
-                      items: _kelasMengajar.map((String kelas) {
-                        return DropdownMenuItem<String>(
-                          value: kelas,
-                          child: Text(kelas),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedKelas = newValue;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Pilih kelas tujuan' : null,
-                    ),
-                    const SizedBox(height: 24),
-                    // Tampilan File Picker
-                    OutlinedButton.icon(
-                      onPressed: _pilihFile,
-                      icon: const Icon(Icons.attach_file),
-                      label: Text(_pickedFile == null
-                          ? 'Pilih File Materi'
-                          : 'File: ${_pickedFile!.name}'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton.icon(
-                            onPressed: _submitMateri,
-                            icon: const Icon(Icons.upload_file),
-                            label: const Text('UNGGAH MATERI'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16.0),
-                              textStyle: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Mata Pelajaran
+              TextFormField(
+                controller: _mapelController,
+                decoration: _inputDecoration(hint: 'Mata Pelajaran (e.g. Informatika)'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Mata pelajaran tidak boleh kosong';
+                  }
+                  return null;
+                },
               ),
-            ),
+              const SizedBox(height: 16),
+              
+              // 2. Judul Materi
+              TextFormField(
+                controller: _judulController,
+                decoration: _inputDecoration(hint: 'Judul Materi'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Judul tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Deskripsi
+              TextFormField(
+                controller: _deskripsiController,
+                decoration: _inputDecoration(
+                  hint: 'Deskripsi singkat...',
+                  label: 'Deskripsi',
+                ),
+                maxLines: 3,
+                keyboardType: TextInputType.multiline,
+                 validator: (value) { // Deskripsi bisa opsional, hapus validator jika boleh kosong
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Deskripsi tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 4. Dropdown Target Kelas
+              DropdownButtonFormField<String>(
+                value: _selectedKelas,
+                decoration: _inputDecoration(hint: 'Untuk', label: 'Tujukan Untuk'),
+                items: _dropdownItems.map((String kelas) {
+                  return DropdownMenuItem<String>(
+                    value: kelas,
+                    child: Text(kelas),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedKelas = newValue;
+                  });
+                },
+                 validator: (value) {
+                  if (value == null) {
+                    return 'Silakan pilih target kelas';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              
+               // 5. Link Materi
+              TextFormField(
+                controller: _linkController,
+                decoration: _inputDecoration(hint: 'Link Google Drive Materi'),
+                keyboardType: TextInputType.url,
+                 validator: (value) { // Link bisa opsional, hapus validator jika boleh kosong
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Link materi tidak boleh kosong';
+                  }
+                  if (!Uri.parse(value.trim()).isAbsolute) {
+                    return 'Masukkan URL yang valid (e.g. https://...)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+
+              // 6. Tombol Upload
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
+                  : ElevatedButton.icon(
+                      icon: const Icon(Icons.upload, color: Colors.white),
+                      label: const Text('Upload', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      onPressed: _submitMateri,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

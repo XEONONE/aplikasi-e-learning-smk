@@ -2,80 +2,115 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class CommentCard extends StatelessWidget {
-  final String author;
-  final String role;
-  final String text;
-  final Timestamp timestamp;
+// Import warna
+import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
 
-  const CommentCard({
-    super.key,
-    required this.author,
-    required this.role,
-    required this.text,
-    required this.timestamp,
-  });
+class CommentCard extends StatelessWidget {
+  final QueryDocumentSnapshot commentDoc; // Menerima data komentar
+
+  const CommentCard({super.key, required this.commentDoc});
 
   @override
   Widget build(BuildContext context) {
-    String formattedTime =
-        DateFormat('dd MMM yyyy, HH:mm', 'id_ID').format(timestamp.toDate());
+    final data = commentDoc.data() as Map<String, dynamic>;
+    final String authorName = data['authorName'] ?? 'Anonim';
+    final String text = data['text'] ?? '';
+    final String authorRole = data['authorRole'] ?? 'siswa';
+    final Timestamp? timestamp = data['timestamp'];
 
-    // Tentukan warna chip berdasarkan peran
-    Color chipColor = (role == 'guru') ? Colors.indigo : Colors.blueGrey;
-    Color chipTextColor = Colors.white;
+    // Format tanggal
+    String formattedDate = "Waktu tidak diketahui";
+    if (timestamp != null) {
+      formattedDate = DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(timestamp.toDate());
+    }
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(color: Colors.grey.shade200),
+    // Ambil inisial nama untuk avatar
+    String initials = authorName.isNotEmpty
+        ? authorName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
+        : '?';
+
+    // Tentukan warna latar belakang berdasarkan role (sesuai desain HTML)
+    Color backgroundColor = authorRole == 'guru' ? const Color(0xFFE0E7FF) : Colors.white; // Indigo-50 for guru, white for others
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+         boxShadow: [ // Tambahkan shadow tipis jika background putih
+            if (backgroundColor == Colors.white)
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+         ],
       ),
-      margin: const EdgeInsets.only(bottom: 12.0),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Avatar
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: authorRole == 'guru' ? kPrimaryColor.withOpacity(0.2) : Colors.grey[200],
+            // TODO: Ganti dengan NetworkImage jika user punya foto profil
+            child: Text(
+              initials.toUpperCase(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: authorRole == 'guru' ? kPrimaryColor : Colors.grey[700],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // 2. Konten Komentar (Nama, Badge Role, Teks, Waktu)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nama Author
-                Text(
-                  author,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
+                // Baris Nama & Badge
+                Row(
+                  children: [
+                    Text(
+                      authorName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+                    ),
+                    // Tampilkan badge 'Guru' jika role adalah guru
+                    if (authorRole == 'guru')
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Guru',
+                          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                // Chip Peran (Guru/Siswa)
-                Chip(
-                  label: Text(role == 'guru' ? 'Guru' : 'Siswa'),
-                  backgroundColor: chipColor,
-                  labelStyle: TextStyle(
-                      color: chipTextColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0),
-                  visualDensity: VisualDensity.compact,
-                ),
-                const Spacer(),
-                // Waktu
+                const SizedBox(height: 4),
+                
+                // Teks Komentar
                 Text(
-                  formattedTime,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  text,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                const SizedBox(height: 8),
+
+                // Waktu Komentar
+                Text(
+                  formattedDate,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            // Isi Komentar
-            Text(
-              text,
-              style: const TextStyle(fontSize: 14, height: 1.4),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

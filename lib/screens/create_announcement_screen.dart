@@ -1,179 +1,207 @@
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+// Import warna dari dashboard
+import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
+
 class CreateAnnouncementScreen extends StatefulWidget {
-  const CreateAnnouncementScreen({super.key});
+  final UserModel userModel;
+  const CreateAnnouncementScreen({super.key, required this.userModel});
 
   @override
-  State<CreateAnnouncementScreen> createState() =>
-      _CreateAnnouncementScreenState();
+  State<CreateAnnouncementScreen> createState() => _CreateAnnouncementScreenState();
 }
 
 class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _isiController = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
 
-  String? _guruNama;
-  List<String> _kelasMengajar = [];
   String? _selectedKelas;
   bool _isLoading = false;
-  bool _isFetchingData = true;
+
+  List<String> _dropdownItems = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchGuruData();
+    // Siapkan item untuk dropdown
+    _dropdownItems = [
+      "Semua Kelas", // Opsi pertama
+      ...?widget.userModel.mengajarKelas // Tambahkan semua kelas yang diajar guru
+    ];
+    _selectedKelas = _dropdownItems[0]; // Set default
   }
 
-  void _fetchGuruData() async {
-    String? guruId = _authService.getCurrentUser()?.uid;
-    if (guruId != null) {
-      UserModel? guruData = await _authService.getUserData(guruId);
-      if (guruData != null) {
-        // Ambil data kelas yang diajar guru
-        List<String> kelasList = ['Semua Kelas']; // Tambahkan opsi 'Semua Kelas'
-        if (guruData.mengajarKelas != null &&
-            guruData.mengajarKelas!.isNotEmpty) {
-          kelasList.addAll(guruData.mengajarKelas!);
-        }
+  @override
+  void dispose() {
+    _judulController.dispose();
+    _isiController.dispose();
+    super.dispose();
+  }
 
-        setState(() {
-          _guruNama = guruData.nama;
-          _kelasMengajar = kelasList;
-          _selectedKelas =
-              _kelasMengajar.isNotEmpty ? _kelasMengajar[0] : null;
-          _isFetchingData = false;
-        });
-      } else {
-        setState(() {
-          _isFetchingData = false;
-        });
-        // Handle error jika data guru tidak ditemukan
-      }
+  // Fungsi untuk kirim pengumuman
+  Future<void> _submitAnnouncement() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop jika form tidak valid
     }
-  }
 
-  void _submitPengumuman() async {
-    if (_formKey.currentState!.validate() && _selectedKelas != null) {
-      setState(() {
-        _isLoading = true;
+    setState(() { _isLoading = true; });
+
+    try {
+      // Kirim data ke Firestore
+      await FirebaseFirestore.instance.collection('pengumuman').add({
+        'judul': _judulController.text.trim(),
+        'isi': _isiController.text.trim(),
+        'untukKelas': _selectedKelas,
+        'diBuatOlehId': widget.userModel.uid, // Sesuai field Firestore
+        'diBuatOleh': widget.userModel.nama, // Menambahkan nama pembuat
+        'diBuatPada': FieldValue.serverTimestamp(), // Sesuai field Firestore
       });
 
-      try {
-        await _firestore.collection('pengumuman').add({
-          'judul': _judulController.text,
-          'isi': _isiController.text,
-          'authorName': _guruNama ?? 'Guru',
-          'authorId': _authService.getCurrentUser()?.uid,
-          'targetKelas': _selectedKelas,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+      // Tampilkan notifikasi sukses
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pengumuman berhasil dikirim!'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Pengumuman berhasil dipublikasikan!')),
-          );
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal membuat pengumuman: $e')),
-          );
-        }
+      // Kembali ke halaman sebelumnya
+      Navigator.of(context).pop();
+
+    } catch (e) {
+      if (mounted) {
+        setState(() { _isLoading = false; });
       }
+      // Tampilkan notifikasi error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengirim pengumuman: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
+  
+  // Helper untuk styling input
+  InputDecoration _inputDecoration({required String hint, String? label}) {
+    return InputDecoration(
+      hintText: hint,
+      labelText: label ?? hint,
+      alignLabelWithHint: true,
+      filled: true,
+      fillColor: Colors.grey[50],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Buat Pengumuman Baru'),
-        backgroundColor: Colors.indigo,
+        title: const Text(
+          'Buat Pengumuman',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: _isFetchingData
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _judulController,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul Pengumuman',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.title),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Judul
+              TextFormField(
+                controller: _judulController,
+                decoration: _inputDecoration(hint: 'Judul Pengumuman'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Judul tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 2. Isi Pengumuman
+              TextFormField(
+                controller: _isiController,
+                decoration: _inputDecoration(
+                  hint: 'Isi Pengumuman...',
+                  label: 'Isi Pengumuman',
+                ),
+                maxLines: 5,
+                keyboardType: TextInputType.multiline,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Isi pengumuman tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Dropdown Target Kelas
+              DropdownButtonFormField<String>(
+                value: _selectedKelas,
+                decoration: _inputDecoration(hint: 'Untuk', label: 'Tujukan Untuk'),
+                items: _dropdownItems.map((String kelas) {
+                  return DropdownMenuItem<String>(
+                    value: kelas,
+                    child: Text(kelas),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedKelas = newValue;
+                  });
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Silakan pilih target kelas';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+
+              // 4. Tombol Kirim
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
+                  : ElevatedButton.icon(
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      label: const Text('Kirim', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      onPressed: _submitAnnouncement,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Judul tidak boleh kosong';
-                        }
-                        return null;
-                      },
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _isiController,
-                      decoration: const InputDecoration(
-                        labelText: 'Isi Pengumuman',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.description),
-                      ),
-                      maxLines: 5,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Isi pengumuman tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedKelas,
-                      decoration: const InputDecoration(
-                        labelText: 'Tujukan Untuk Kelas',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.class_),
-                      ),
-                      items: _kelasMengajar.map((String kelas) {
-                        return DropdownMenuItem<String>(
-                          value: kelas,
-                          child: Text(kelas),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedKelas = newValue;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Pilih kelas tujuan';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton.icon(
-                            onPressed: _submitPengumuman,
-                            icon: const Icon(Icons.send),
-                            label: const Text('PUBLIKASIKAN'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

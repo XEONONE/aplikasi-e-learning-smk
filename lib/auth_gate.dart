@@ -1,56 +1,50 @@
-import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/models/user_model.dart'; // Model baru kita
 import 'package:aplikasi_e_learning_smk/screens/guru_dashboard_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // Memastikan impor ini ada
+import 'package:aplikasi_e_learning_smk/screens/loading_screen.dart';
+import 'package:aplikasi_e_learning_smk/screens/login_screen.dart'; // UI Login baru kita
 import 'package:aplikasi_e_learning_smk/screens/siswa_dashboard_screen.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; // Service baru kita
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: AuthService().authStateChanges,
-      builder: (context, snapshot) {
-        // Jika status koneksi masih menunggu, tampilkan loading
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    final authService = Provider.of<AuthService>(context, listen: false);
 
-        // Jika ada data user (sudah login)
-        if (snapshot.hasData) {
-          // Ambil data detail user dari Firestore berdasarkan UID
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, snapshot) {
+        // User sedang login (Firebase Auth state)
+        if (snapshot.connectionState == ConnectionState.active) {
+          User? user = snapshot.data;
+
+          // Jika tidak ada user, tampilkan LoginScreen
+          if (user == null) {
+            return const LoginScreen(); // Arahkan ke LoginScreen yang sudah di-revamp
+          }
+
+          // Jika ada user, ambil data detailnya dari Firestore
           return FutureBuilder<UserModel?>(
-            future: AuthService().getUserData(snapshot.data!.uid),
-            builder: (context, userModelSnapshot) {
-              // Jika data detail user masih loading
-              if (userModelSnapshot.connectionState ==
-                  ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+            future: authService.getUserData(user.uid), // Gunakan fungsi dari auth_service
+            builder: (context, userSnapshot) {
+              if (userSnapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingScreen(); // Tampilkan loading selagi ambil data
               }
-              // Jika data detail user berhasil didapatkan
-              if (userModelSnapshot.hasData && userModelSnapshot.data != null) {
-                final userRole = userModelSnapshot.data!.role;
-                // Arahkan ke dasbor berdasarkan peran
-                if (userRole == 'guru') {
-                  return const GuruDashboardScreen();
-                } else {
-                  return const SiswaDashboardScreen();
-                }
+
+              if (userSnapshot.hasError || !userSnapshot.hasData || userSnapshot.data == null) {
+                // Jika gagal ambil data (mungkin user dihapus?), logout dan ke login
+                // Anda bisa tambahkan logging error di sini
+                // Future.microtask(() => authService.signOut()); // Hati-hati jika ini menyebabkan loop
+                return const LoginScreen();
               }
-              // Jika data user tidak ditemukan di Firestore (kasus aneh),
-              // logout pengguna untuk mencegah error dan arahkan ke login
-              AuthService().signOut();
-              return const LoginScreen();
-            },
-          );
-        } else {
-          // Jika tidak ada data user (belum login), tampilkan halaman login
-          return const LoginScreen();
-        }
-      },
-    );
-  }
-}
+
+              final userModel = userSnapshot.data!;
+
+              // Arahkan berdasarkan role dari UserModel
+              if (userModel.role == 'guru') {
+                return GuruDashboardScreen(userModel: userModel);
+              } else if (userModel.role ==
