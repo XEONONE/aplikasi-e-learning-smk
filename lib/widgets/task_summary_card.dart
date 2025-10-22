@@ -1,6 +1,8 @@
+// lib/widgets/task_summary_card.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Pastikan intl sudah di pubspec.yaml
+import 'package:intl/intl.dart';
 
 class TaskSummaryCard extends StatelessWidget {
   final String taskId;
@@ -20,27 +22,24 @@ class TaskSummaryCard extends StatelessWidget {
 
   Future<int> _getSubmissionCount(String taskId) async {
     try {
-      // ## CATATAN: Pastikan koleksi ini 'submissions' atau 'pengumpulan' ##
-      // Berdasarkan file task_detail_screen.dart Anda, sepertinya namanya 'pengumpulan'
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('tugas')
           .doc(taskId)
-          .collection('pengumpulan') // Saya ganti ke 'pengumpulan'
+          .collection('pengumpulan')
           .get();
       return snapshot.docs.length;
     } catch (e) {
       print("Error counting submissions: $e");
-      // Jika koleksi 'submissions' yang benar, ganti 'pengumpulan' di atas
       try {
-         QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('tugas')
-          .doc(taskId)
-          .collection('submissions')
-          .get();
-         return snapshot.docs.length;
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('tugas')
+            .doc(taskId)
+            .collection('submissions')
+            .get();
+        return snapshot.docs.length;
       } catch (e2) {
-         print("Error counting submissions (fallback): $e2");
-         return 0;
+        print("Error counting submissions (fallback): $e2");
+        return 0;
       }
     }
   }
@@ -48,19 +47,16 @@ class TaskSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Tentukan warna teks subtitle berdasarkan tema
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withOpacity(0.7);
     final now = DateTime.now();
 
     final String judul = taskData['judul'] ?? 'Tanpa Judul';
-    
-    // ## PERBAIKAN: 'untukKelas' adalah String, bukan List ##
     final String untukKelas =
         taskData['untukKelas'] as String? ?? 'Tidak Diketahui';
-    // ## AKHIR PERBAIKAN ##
-
     final Timestamp tenggatTimestamp =
         taskData['tenggatWaktu'] as Timestamp? ?? Timestamp.now();
     final DateTime dueDate = tenggatTimestamp.toDate();
-
     final difference = dueDate.difference(now);
     bool isOverdue = dueDate.isBefore(now);
 
@@ -70,28 +66,25 @@ class TaskSummaryCard extends StatelessWidget {
     if (isOverdue) {
       deadlineText =
           'Tenggat: ${DateFormat('dd MMM yyyy', 'id_ID').format(dueDate)} (Berakhir)';
-      deadlineColor = Colors.redAccent;
+      deadlineColor = theme.colorScheme.error; // Warna error dari tema
     } else if (difference.inDays >= 1) {
       deadlineText =
           'Sisa ${difference.inDays + 1} hari (${DateFormat('dd MMM yyyy', 'id_ID').format(dueDate)})';
-      deadlineColor = Colors.orangeAccent;
+      deadlineColor = Colors.orangeAccent; // Orange cukup kontras
     } else if (difference.inHours >= 1) {
       deadlineText =
           'Sisa ${difference.inHours} jam (${DateFormat('HH:mm', 'id_ID').format(dueDate)})';
       deadlineColor = Colors.orangeAccent;
     } else {
       deadlineText = 'Kurang dari 1 jam lagi';
-      deadlineColor = Colors.redAccent;
+      deadlineColor = theme.colorScheme.error; // Warna error dari tema
     }
 
     return GestureDetector(
       onTap: onTap,
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        // Style Card diambil dari tema
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -99,19 +92,21 @@ class TaskSummaryCard extends StatelessWidget {
             children: [
               Text(
                 judul,
+                // --- PERBAIKAN: Ambil warna dari tema ---
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  // color: Colors.white, <-- HAPUS
                 ),
               ),
               const SizedBox(height: 8),
-              // ## PERBAIKAN: Tampilkan String 'untukKelas' secara langsung ##
               Text(
                 'Untuk: $untukKelas',
-                style:
-                    theme.textTheme.bodySmall?.copyWith(color: Colors.grey[400]),
+                // --- PERBAIKAN: Gunakan subtitleColor ---
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: subtitleColor,
+                  // color: Colors.grey[400], <-- HAPUS
+                ),
               ),
-              // ## AKHIR PERBAIKAN ##
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -120,8 +115,9 @@ class TaskSummaryCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       deadlineText,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: deadlineColor),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: deadlineColor, // Warna deadline tetap spesifik
+                      ),
                     ),
                   ),
                 ],
@@ -136,15 +132,21 @@ class TaskSummaryCard extends StatelessWidget {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Text(
                           'Memuat...',
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey[400]),
+                          // --- PERBAIKAN: Gunakan subtitleColor ---
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: subtitleColor,
+                            // color: Colors.grey[400], <-- HAPUS
+                          ),
                         );
                       }
                       final count = snapshot.data ?? 0;
                       return Text(
                         '$count Siswa Mengumpulkan',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: Colors.grey[400]),
+                        // --- PERBAIKAN: Gunakan subtitleColor ---
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: subtitleColor,
+                          // color: Colors.grey[400], <-- HAPUS
+                        ),
                       );
                     },
                   ),
@@ -153,7 +155,8 @@ class TaskSummaryCard extends StatelessWidget {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit_outlined, size: 20),
-                        color: Colors.blueAccent,
+                        // Warna ikon tombol bisa spesifik atau dari tema
+                        color: theme.colorScheme.primary,
                         onPressed: onEdit,
                         tooltip: 'Edit Tugas',
                         padding: EdgeInsets.zero,
@@ -162,7 +165,8 @@ class TaskSummaryCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       IconButton(
                         icon: const Icon(Icons.delete_outline, size: 20),
-                        color: Colors.redAccent,
+                        // Warna ikon tombol bisa spesifik atau dari tema
+                        color: theme.colorScheme.error,
                         onPressed: onDelete,
                         tooltip: 'Hapus Tugas',
                         padding: EdgeInsets.zero,

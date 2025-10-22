@@ -104,8 +104,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
               onEdit: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text(
-                          'Edit Tugas: $taskTitle (belum diimplementasikan)')),
+                    content: Text(
+                      'Edit Tugas: $taskTitle (belum diimplementasikan)',
+                    ),
+                  ),
                 );
               },
               onDelete: () async {
@@ -115,7 +117,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     return AlertDialog(
                       title: const Text('Konfirmasi Hapus'),
                       content: Text(
-                          'Apakah Anda yakin ingin menghapus tugas "$taskTitle"?'),
+                        'Apakah Anda yakin ingin menghapus tugas "$taskTitle"?',
+                      ),
                       actions: <Widget>[
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
@@ -123,8 +126,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Hapus',
-                              style: TextStyle(color: Colors.red)),
+                          child: const Text(
+                            'Hapus',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
                       ],
                     );
@@ -136,8 +141,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       .collection('tugas')
                       .doc(taskDoc.id)
                       .delete();
-                  
-                  if (!mounted) return; // Cek mounted sebelum pakai BuildContext
+
+                  if (!mounted)
+                    return; // Cek mounted sebelum pakai BuildContext
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Tugas "$taskTitle" dihapus.')),
                   );

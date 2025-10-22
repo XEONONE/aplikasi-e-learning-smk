@@ -3,15 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'auth_gate.dart'; //
-import 'firebase_options.dart'; //
+import 'package:shared_preferences/shared_preferences.dart'; // Impor SharedPreferences
+import 'auth_gate.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ); //
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -23,22 +22,44 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-  ThemeMode _currentThemeMode = ThemeMode.dark;
-
-  void changeTheme(ThemeMode newThemeMode) {
-    setState(() {
-      _currentThemeMode = newThemeMode;
-    });
-    // TODO: Simpan preferensi tema ke SharedPreferences
-  }
-
-  ThemeMode get currentThemeMode => _currentThemeMode;
+  ThemeMode _currentThemeMode = ThemeMode.dark; // Default ke gelap
+  static const String _themeKey = 'themeMode'; // Kunci untuk SharedPreferences
 
   @override
   void initState() {
     super.initState();
-    // TODO: Muat preferensi tema dari SharedPreferences saat app start
+    // Muat preferensi tema saat app start
+    _loadThemePreference();
   }
+
+  // Fungsi untuk memuat preferensi tema
+  Future<void> _loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeIndex = prefs.getInt(_themeKey);
+    if (themeIndex != null) {
+      setState(() {
+        _currentThemeMode = themeIndex == 1 ? ThemeMode.dark : ThemeMode.light;
+      });
+    }
+  }
+
+  // Fungsi untuk menyimpan preferensi tema
+  Future<void> _saveThemePreference(ThemeMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 0 untuk light, 1 untuk dark
+    await prefs.setInt(_themeKey, mode == ThemeMode.dark ? 1 : 0);
+  }
+
+  // Fungsi ini dipanggil dari account_settings_screen.dart
+  void changeTheme(ThemeMode newThemeMode) {
+    setState(() {
+      _currentThemeMode = newThemeMode;
+    });
+    // Simpan preferensi tema ke SharedPreferences
+    _saveThemePreference(newThemeMode);
+  }
+
+  ThemeMode get currentThemeMode => _currentThemeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -391,7 +412,7 @@ class MyAppState extends State<MyApp> {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: _currentThemeMode,
-      home: const AuthGate(), //
+      home: const AuthGate(),
     );
   }
 }

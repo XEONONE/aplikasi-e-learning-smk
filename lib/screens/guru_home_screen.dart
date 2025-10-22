@@ -1,7 +1,9 @@
+// lib/screens/guru_home_screen.dart
+
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_announcement_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:aplikasi_e_learning_smk/widgets/announcement_card.dart'; // Import AnnouncementCard
+import 'package:aplikasi_e_learning_smk/widgets/announcement_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +20,19 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   // Helper widget untuk membuat kartu ringkasan
-  Widget _buildSummaryCard(IconData icon, String label,
-      Stream<QuerySnapshot> stream, Color iconColor) {
+  Widget _buildSummaryCard(
+    IconData icon,
+    String label,
+    Stream<QuerySnapshot> stream,
+    Color iconColor,
+  ) {
+    final theme = Theme.of(context);
+    // Tentukan warna teks subtitle berdasarkan tema
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withOpacity(0.7);
+
     return Expanded(
       child: Card(
-        // elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // Style Card diambil dari tema
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -35,20 +44,23 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    // --- PERBAIKAN: Gunakan subtitleColor ---
+                    style: TextStyle(
+                      color: subtitleColor,
+                      // color: Colors.grey[400], <-- HAPUS
+                      fontSize: 14,
+                    ),
                   ),
                   StreamBuilder<QuerySnapshot>(
                     stream: stream,
                     builder: (context, snapshot) {
-                      // Filter by UID guru jika diperlukan
-                      // final count = snapshot.data?.docs.where((doc) => doc['dibuatOlehUid'] == currentUser?.uid).length ?? 0;
-                      final count = snapshot.data?.docs.length ?? 0; // Total
+                      final count = snapshot.data?.docs.length ?? 0;
                       return Text(
                         count.toString(),
-                        style: const TextStyle(
-                          fontSize: 22,
+                        // --- PERBAIKAN: Ambil warna dari tema ---
+                        style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          // color: Colors.white, <-- HAPUS
                         ),
                       );
                     },
@@ -64,10 +76,11 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Ambil tema
+    final theme = Theme.of(context);
+    // Tentukan warna teks subtitle berdasarkan tema
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withOpacity(0.7);
 
     return Scaffold(
-      // Background diset di main.dart
       body: FutureBuilder<UserModel?>(
         future: _authService.getUserData(currentUser!.uid),
         builder: (context, userSnapshot) {
@@ -79,12 +92,12 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
           }
 
           final user = userSnapshot.data!;
-          final initial =
-              user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?';
+          final initial = user.nama.isNotEmpty
+              ? user.nama[0].toUpperCase()
+              : '?';
 
-          // ++ GUNAKAN SINGLECHILDSCROLLVIEW ++
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0), // Padding utama
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -93,13 +106,18 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: Colors.grey[700],
+                      backgroundColor: theme.brightness == Brightness.dark
+                          ? Colors.grey[700]
+                          : theme.colorScheme.primary.withOpacity(0.1),
                       child: Text(
                         initial,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white
+                              : theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -108,29 +126,28 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                       children: [
                         Text(
                           'Selamat datang,',
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[400]),
+                          // --- PERBAIKAN: Gunakan subtitleColor ---
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: subtitleColor,
+                            // color: Colors.grey[400], <-- HAPUS
+                          ),
                         ),
                         Text(
                           user.nama,
+                          // --- PERBAIKAN: Ambil warna dari tema ---
                           style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontWeight: FontWeight.bold,
+                            // color: Colors.white, <-- HAPUS
+                          ),
                         ),
                       ],
                     ),
-                    // Spacer(),
-                    // IconButton(
-                    //   icon: Icon(Icons.notifications_none, color: Colors.grey[400]),
-                    //   onPressed: () {},
-                    // ),
                   ],
                 ),
                 const SizedBox(height: 24),
+
                 // Card sapaan yang lebih besar
                 Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -138,17 +155,22 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                       children: [
                         Text(
                           'Selamat Datang, Bpk. ${user.nama.split(' ').first}!',
+                          // --- PERBAIKAN: Ambil warna dari tema ---
                           style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontWeight: FontWeight.bold,
+                            // color: Colors.white, <-- HAPUS
+                          ),
                         ),
                         if (user.mengajarKelas != null &&
                             user.mengajarKelas!.isNotEmpty) ...[
                           const SizedBox(height: 8),
                           Text(
                             'Mengajar: ${user.mengajarKelas!.join(', ')}',
-                            style: theme.textTheme.bodyMedium
-                                ?.copyWith(color: Colors.grey[400]),
+                            // --- PERBAIKAN: Gunakan subtitleColor ---
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: subtitleColor,
+                              // color: Colors.grey[400], <-- HAPUS
+                            ),
                           ),
                         ],
                       ],
@@ -161,23 +183,21 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                 Row(
                   children: [
                     _buildSummaryCard(
-                      Icons.library_books, // Icon buku
+                      Icons.library_books,
                       'Total Materi',
                       FirebaseFirestore.instance
                           .collection('materi')
-                          // .where('dibuatOlehUid', isEqualTo: currentUser?.uid) // Filter by guru
                           .snapshots(),
-                      Colors.green.shade400, // Warna hijau
+                      Colors.green.shade400,
                     ),
                     const SizedBox(width: 16),
                     _buildSummaryCard(
-                      Icons.edit_note, // Icon pensil/catatan
+                      Icons.edit_note,
                       'Total Tugas',
                       FirebaseFirestore.instance
                           .collection('tugas')
-                          // .where('dibuatOlehUid', isEqualTo: currentUser?.uid) // Filter by guru
                           .snapshots(),
-                      Colors.orange.shade400, // Warna orange/kuning
+                      Colors.orange.shade400,
                     ),
                   ],
                 ),
@@ -186,15 +206,20 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                 // -- BAGIAN PENGUMUMAN --
                 Text(
                   'Pengumuman Terkini',
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                  // --- PERBAIKAN: Ambil warna dari tema ---
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    // color: Colors.white, <-- HAPUS
+                  ),
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('pengumuman')
-                      .where('untukKelas',
-                          whereIn: [...?user.mengajarKelas, 'Semua Kelas'])
+                      .where(
+                        'untukKelas',
+                        whereIn: [...?user.mengajarKelas, 'Semua Kelas'],
+                      )
                       .orderBy('dibuatPada', descending: true)
                       .limit(5)
                       .snapshots(),
@@ -203,15 +228,25 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                          child: Text('Belum ada pengumuman.',
-                              style: TextStyle(color: Colors.grey)));
+                      return Center(
+                        child: Text(
+                          'Belum ada pengumuman.',
+                          // Ambil warna teks dari tema (lebih redup)
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withOpacity(0.7),
+                          ),
+                        ),
+                      );
                     }
                     if (snapshot.hasError) {
                       print("Error loading announcements: ${snapshot.error}");
                       return const Center(
-                          child: Text('Gagal memuat pengumuman.',
-                              style: TextStyle(color: Colors.red)));
+                        child: Text(
+                          'Gagal memuat pengumuman.',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      );
                     }
 
                     return Column(
@@ -220,8 +255,7 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                         return AnnouncementCard(
                           judul: data['judul'] ?? 'Tanpa Judul',
                           isi: data['isi'] ?? 'Tidak ada isi.',
-                          dibuatPada:
-                              data['dibuatPada'] ?? Timestamp.now(),
+                          dibuatPada: data['dibuatPada'] ?? Timestamp.now(),
                           dibuatOlehUid: data['dibuatOlehUid'] ?? '',
                           untukKelas: data['untukKelas'] ?? 'Tidak diketahui',
                         );
@@ -229,22 +263,21 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                     );
                   },
                 ),
-                // -- AKHIR BAGIAN PENGUMUMAN --
 
-                const SizedBox(
-                    height: 80), // Ruang untuk FAB
+                // -- AKHIR BAGIAN PENGUMUMAN --
+                const SizedBox(height: 80), // Ruang untuk FAB
               ],
             ),
           );
         },
       ),
-      // Tombol FAB
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => const CreateAnnouncementScreen()),
+              builder: (context) => const CreateAnnouncementScreen(),
+            ),
           );
         },
         label: const Text('Buat Pengumuman'),

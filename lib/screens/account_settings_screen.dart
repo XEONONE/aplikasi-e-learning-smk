@@ -19,13 +19,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   bool _isLoading = false;
 
   final User? _currentUser = FirebaseAuth.instance.currentUser;
-  int _selectedThemeIndex = 1; // 0: Terang, 1: Gelap
+  int _selectedThemeIndex =
+      1; // 0: Terang, 1: Gelap (sesuai default di main.dart)
 
   @override
   void initState() {
     super.initState();
     _emailController.text = _currentUser?.email ?? 'Email tidak ditemukan';
 
+    // Ambil state tema saat ini setelah frame pertama selesai build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final myAppState = context.findAncestorStateOfType<MyAppState>();
@@ -45,7 +47,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     super.dispose();
   }
 
-  // Fungsi ini HANYA menyimpan password dan notifikasi (dan preferensi tema nanti)
+  // Fungsi ini HANYA menyimpan password dan notifikasi
   Future<void> _saveSettings() async {
     final newPassword = _newPasswordController.text.trim();
     if (newPassword.isNotEmpty && newPassword.length < 6) {
@@ -79,7 +81,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       // TODO: Implementasi simpan status notifikasi
 
       // 3. Simpan PREFERENSI TEMA
-      // TODO: Simpan _selectedThemeIndex ke SharedPreferences di sini
+      // (Tidak perlu lagi di sini, sudah disimpan langsung saat tombol ditekan)
+      // TODO: Simpan _selectedThemeIndex ke SharedPreferences di sini <-- DIHAPUS
 
       if (newPassword.isEmpty) {
         if (!mounted) return;
@@ -243,14 +246,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   _selectedThemeIndex == 1, // Gelap
                 ],
                 onPressed: (index) {
+                  // 1. Update UI lokal
                   setState(() {
                     _selectedThemeIndex = index;
                   });
+
+                  // 2. Panggil MyAppState untuk mengubah tema
                   final myAppState = context
                       .findAncestorStateOfType<MyAppState>();
                   final newThemeMode = index == 1
                       ? ThemeMode.dark
                       : ThemeMode.light;
+
+                  // 3. changeTheme sekarang juga akan *menyimpan* preferensi
                   myAppState?.changeTheme(newThemeMode);
                 },
                 // Ambil style dari toggleButtonsTheme
@@ -267,7 +275,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   minWidth: 100.0,
                 ), // Beri minWidth
                 children: [
-                  // ** PERBAIKAN: Hapus Expanded **
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
@@ -279,7 +286,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       ],
                     ),
                   ),
-                  // ** PERBAIKAN: Hapus Expanded **
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(

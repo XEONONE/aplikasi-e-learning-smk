@@ -11,9 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
-// Import untuk halaman upload materi
 import 'package:aplikasi_e_learning_smk/screens/upload_materi_screen.dart';
-// Import untuk halaman edit profil
 import 'package:aplikasi_e_learning_smk/screens/edit_profile_screen.dart';
 
 // --- Widget GuruProfileScreen ---
@@ -42,6 +40,8 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Tentukan warna teks subtitle berdasarkan tema
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withOpacity(0.7);
 
     return Scaffold(
       appBar: AppBar(
@@ -51,7 +51,7 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
             Text(
               'Akun Saya',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.grey[400],
+                color: subtitleColor, // Gunakan subtitleColor
               ),
             ),
             const Text(
@@ -60,7 +60,8 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
             ),
           ],
         ),
-        backgroundColor: theme.scaffoldBackgroundColor,
+        // Style AppBar otomatis dari tema
+        backgroundColor: Colors.transparent, // Transparan agar menyatu
         elevation: 0,
       ),
       body: FutureBuilder<UserModel?>(
@@ -93,41 +94,51 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 45,
-                      backgroundColor: Colors.grey[700],
+                      // Background Avatar bisa kontras
+                      backgroundColor: theme.brightness == Brightness.dark
+                          ? Colors.grey[700]
+                          : theme.colorScheme.primary.withOpacity(0.1),
                       child: Text(
                         initial.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          // Warna teks Avatar kontras dengan backgroundnya
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white
+                              : theme.colorScheme.primary,
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       user.nama,
+                      // --- PERBAIKAN: Ambil warna dari tema ---
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        // color: Colors.white, <-- HAPUS
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'NIP: ${user.id}',
+                      // --- PERBAIKAN: Gunakan subtitleColor ---
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[400],
+                        color: subtitleColor,
+                        // color: Colors.grey[400], <-- HAPUS
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       roleDescription,
+                      // --- PERBAIKAN: Gunakan subtitleColor ---
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[400],
+                        color: subtitleColor,
+                        // color: Colors.grey[400], <-- HAPUS
                       ),
                     ),
                     const SizedBox(height: 32),
-                    // Tombol Edit Profil (sudah berfungsi dari perbaikan sebelumnya)
                     _buildProfileActionTile(
                       icon: Icons.edit_outlined,
                       text: 'Edit Profil',
@@ -184,9 +195,12 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                                 TextButton(
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
-                                  child: const Text(
+                                  child: Text(
                                     'Keluar',
-                                    style: TextStyle(color: Colors.red),
+                                    // Ambil warna error dari tema
+                                    style: TextStyle(
+                                      color: theme.colorScheme.error,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -199,8 +213,8 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent.withAlpha(220),
-                        foregroundColor: Colors.white,
+                        backgroundColor: theme.colorScheme.error,
+                        foregroundColor: theme.colorScheme.onError,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -222,26 +236,33 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
     required String text,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    // Tentukan warna ikon dan teks berdasarkan tema
+    final iconColor = theme.iconTheme.color?.withOpacity(0.7);
+    final textColor = theme.textTheme.bodyLarge?.color;
+    final chevronColor = theme.iconTheme.color?.withOpacity(0.5);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          // Gunakan warna card dari tema dengan opacity
+          color: theme.cardColor.withOpacity(0.8),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.grey[400], size: 22),
+            Icon(icon, color: iconColor, size: 22),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 text,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: theme.textTheme.bodyLarge?.copyWith(color: textColor),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[600]),
+            Icon(Icons.chevron_right, color: chevronColor),
           ],
         ),
       ),
@@ -262,6 +283,10 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
   int _selectedToggleIndex = 0;
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Tentukan warna teks subtitle berdasarkan tema
+    final subtitleColor = theme.textTheme.titleLarge?.color?.withOpacity(0.7);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -274,15 +299,16 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
                 children: [
                   Text(
                     'Manajemen',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.grey[400]),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: subtitleColor, // Gunakan subtitleColor
+                      // color: Colors.grey[400] <-- HAPUS
+                    ),
                   ),
                   Text(
                     'Tugas',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      // color: Colors.white <-- HAPUS (ambil dari tema)
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -297,11 +323,14 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
                           _selectedToggleIndex = index;
                         });
                       },
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.blue[700],
-                      selectedColor: Colors.white,
-                      fillColor: Colors.blue[900],
-                      color: Colors.grey[400],
+                      // Style diambil dari tema
+                      borderRadius: theme.toggleButtonsTheme.borderRadius,
+                      selectedBorderColor:
+                          theme.toggleButtonsTheme.selectedBorderColor,
+                      selectedColor: theme.toggleButtonsTheme.selectedColor,
+                      fillColor: theme.toggleButtonsTheme.fillColor,
+                      color: theme.toggleButtonsTheme.color,
+                      borderColor: theme.toggleButtonsTheme.borderColor,
                       constraints: const BoxConstraints(
                         minHeight: 40.0,
                         minWidth: 120.0,
@@ -328,9 +357,8 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
           ],
         ),
       ),
-      // --- PERBAIKAN HERO TAG UNIK ---
       floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_tugas', // Berikan tag unik
+        heroTag: 'fab_tugas',
         onPressed: () {
           Navigator.push(
             context,
@@ -340,7 +368,6 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
         label: const Text('Tambah Tugas'),
         icon: const Icon(Icons.add),
       ),
-      // --- AKHIR PERBAIKAN ---
     );
   }
 }
@@ -375,28 +402,39 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     // --- Halaman Materi (Indeks 1) ---
     Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Manajemen',
-              style: TextStyle(color: Colors.grey[400], fontSize: 16),
-            ),
-            const Text(
-              'Materi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-            ),
-          ],
+        title: Builder(
+          // Gunakan Builder agar bisa akses Theme
+          builder: (context) {
+            final theme = Theme.of(context);
+            final subtitleColor = theme.textTheme.titleLarge?.color
+                ?.withOpacity(0.7);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Manajemen',
+                  // --- PERBAIKAN: Gunakan subtitleColor ---
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: subtitleColor,
+                    fontSize: 16, // Sedikit lebih kecil
+                  ),
+                ),
+                const Text(
+                  'Materi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                ),
+              ],
+            );
+          },
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: const GuruMateriListScreen(),
-      // --- PERBAIKAN HERO TAG UNIK ---
       floatingActionButton: Builder(
         builder: (BuildContext context) {
           return FloatingActionButton.extended(
-            heroTag: 'fab_materi', // Berikan tag unik yang BERBEDA
+            heroTag: 'fab_materi',
             onPressed: () {
               Navigator.push(
                 context,
@@ -410,7 +448,6 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
           );
         },
       ),
-      // --- AKHIR PERBAIKAN ---
     ),
     // --- Halaman Tugas (Indeks 2) ---
     const GuruTaskManagementScreen(),
@@ -449,7 +486,7 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
+        // Style BottomNavBar otomatis dari tema
       ),
     );
   }
