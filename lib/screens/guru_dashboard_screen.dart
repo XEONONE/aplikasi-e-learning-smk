@@ -13,9 +13,10 @@ import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
 // Import untuk halaman upload materi
 import 'package:aplikasi_e_learning_smk/screens/upload_materi_screen.dart';
+// Import untuk halaman edit profil
+import 'package:aplikasi_e_learning_smk/screens/edit_profile_screen.dart';
 
 // --- Widget GuruProfileScreen ---
-// (Tidak ada perubahan di sini, tetap sama)
 class GuruProfileScreen extends StatefulWidget {
   const GuruProfileScreen({super.key});
 
@@ -126,15 +127,26 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
+                    // Tombol Edit Profil (sudah berfungsi dari perbaikan sebelumnya)
                     _buildProfileActionTile(
                       icon: Icons.edit_outlined,
                       text: 'Edit Profil',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Fitur Edit Profil belum tersedia.'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditProfileScreen(userData: user),
                           ),
-                        );
+                        ).then((berhasilUpdate) {
+                          if (berhasilUpdate == true) {
+                            setState(() {
+                              _userFuture = _authService.getUserData(
+                                currentUser!.uid,
+                              );
+                            });
+                          }
+                        });
                       },
                     ),
                     const SizedBox(height: 12),
@@ -239,7 +251,6 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
 // ... (Akhir GuruProfileScreen) ...
 
 // --- Widget GuruTaskManagementScreen ---
-// (Perubahan: heroTag diubah menjadi null)
 class GuruTaskManagementScreen extends StatefulWidget {
   const GuruTaskManagementScreen({super.key});
   @override
@@ -317,9 +328,9 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
           ],
         ),
       ),
-      // --- PERBAIKAN PASTI DI SINI ---
+      // --- PERBAIKAN HERO TAG UNIK ---
       floatingActionButton: FloatingActionButton.extended(
-        heroTag: null, // Nonaktifkan Hero Tag untuk FAB Tugas
+        heroTag: 'fab_tugas', // Berikan tag unik
         onPressed: () {
           Navigator.push(
             context,
@@ -336,7 +347,6 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
 // ... (Akhir GuruTaskManagementScreen) ...
 
 // --- CLASS DASHBOARD UTAMA ---
-// (Perubahan: heroTag diubah menjadi null)
 class GuruDashboardScreen extends StatefulWidget {
   const GuruDashboardScreen({super.key});
 
@@ -382,11 +392,11 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
         elevation: 0,
       ),
       body: const GuruMateriListScreen(),
-      // --- PERBAIKAN PASTI DI SINI ---
+      // --- PERBAIKAN HERO TAG UNIK ---
       floatingActionButton: Builder(
         builder: (BuildContext context) {
           return FloatingActionButton.extended(
-            heroTag: null, // Nonaktifkan Hero Tag untuk FAB Materi
+            heroTag: 'fab_materi', // Berikan tag unik yang BERBEDA
             onPressed: () {
               Navigator.push(
                 context,
