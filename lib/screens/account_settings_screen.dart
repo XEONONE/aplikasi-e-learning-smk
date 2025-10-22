@@ -1,8 +1,8 @@
 // lib/screens/account_settings_screen.dart
 
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; // Untuk mendapatkan email user
-import 'package:firebase_auth/firebase_auth.dart'; // Untuk update password
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:aplikasi_e_learning_smk/main.dart'; // Impor MyAppState
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -14,25 +14,29 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final _emailController = TextEditingController();
   final _newPasswordController = TextEditingController();
-  bool _notificationsEnabled = true; // Nilai default
+  bool _notificationsEnabled = true;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  final AuthService _authService = AuthService();
   final User? _currentUser = FirebaseAuth.instance.currentUser;
+  int _selectedThemeIndex = 1; // 0: Terang, 1: Gelap
 
   @override
   void initState() {
     super.initState();
-    // Isi email dari user yang sedang login
     _emailController.text = _currentUser?.email ?? 'Email tidak ditemukan';
-    // TODO: Ambil status notifikasi dari penyimpanan (misal: Firestore/SharedPreferences)
-    // _loadNotificationSetting();
-  }
 
-  // Future<void> _loadNotificationSetting() async {
-  //   // Implementasi ambil data notifikasi
-  // }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final myAppState = context.findAncestorStateOfType<MyAppState>();
+        setState(() {
+          _selectedThemeIndex = myAppState?.currentThemeMode == ThemeMode.dark
+              ? 1
+              : 0;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -41,11 +45,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     super.dispose();
   }
 
-  // Fungsi untuk menyimpan pengaturan
+  // Fungsi ini HANYA menyimpan password dan notifikasi (dan preferensi tema nanti)
   Future<void> _saveSettings() async {
-    // Validasi dasar (minimal password jika diisi)
     final newPassword = _newPasswordController.text.trim();
     if (newPassword.isNotEmpty && newPassword.length < 6) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password baru minimal harus 6 karakter.'),
@@ -60,9 +64,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     try {
       // 1. Update password jika diisi
       if (newPassword.isNotEmpty && _currentUser != null) {
-        await _currentUser!.updatePassword(newPassword);
-        // Kosongkan field setelah berhasil update
+        await _currentUser.updatePassword(newPassword);
         _newPasswordController.clear();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Password berhasil diperbarui!'),
@@ -72,33 +76,39 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       }
 
       // 2. Simpan status notifikasi
-      // TODO: Implementasi simpan status notifikasi ke Firestore/SharedPreferences
-      // await _saveNotificationSetting(_notificationsEnabled);
+      // TODO: Implementasi simpan status notifikasi
 
-      // Tampilkan pesan sukses umum jika tidak ada error password
+      // 3. Simpan PREFERENSI TEMA
+      // TODO: Simpan _selectedThemeIndex ke SharedPreferences di sini
+
       if (newPassword.isEmpty) {
-         ScaffoldMessenger.of(context).showSnackBar(
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Pengaturan berhasil disimpan!'),
             backgroundColor: Colors.green,
           ),
         );
       }
-
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Gagal memperbarui password.';
       if (e.code == 'requires-recent-login') {
-        errorMessage = 'Sesi login Anda sudah terlalu lama. Silakan logout dan login kembali untuk mengubah password.';
+        errorMessage =
+            'Sesi login Anda sudah terlalu lama. Silakan logout dan login kembali untuk mengubah password.';
       } else if (e.code == 'weak-password') {
         errorMessage = 'Password terlalu lemah.';
       }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     } catch (e) {
-      // Handle error penyimpanan notifikasi atau error lainnya
-       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan pengaturan: $e'), backgroundColor: Colors.red),
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan pengaturan: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) {
@@ -107,36 +117,32 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     }
   }
 
-  // Future<void> _saveNotificationSetting(bool enabled) async {
-  //   // Implementasi simpan data notifikasi
-  // }
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Warna field disesuaikan tema gelap
-    final fieldColor = theme.brightness == Brightness.dark
-        ? Colors.grey.shade800.withOpacity(0.5)
-        : Colors.grey.shade200;
-    final textColor = theme.textTheme.bodyLarge!.color;
-    final iconColor = Colors.grey.shade400;
+    // Ambil warna dari ColorScheme yang sudah didefinisikan di main.dart
+    final fieldColor =
+        theme.inputDecorationTheme.fillColor ?? Colors.grey.shade200;
+    final textColor = theme.textTheme.bodyMedium?.color ?? Colors.black87;
+    final hintColor =
+        theme.inputDecorationTheme.hintStyle?.color ?? Colors.grey.shade500;
+    final iconColor = theme.iconTheme.color ?? Colors.grey.shade700;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan Akun'),
+        // Tombol back akan muncul otomatis jika halaman dibuka via push
+        // leading: IconButton( ... ), // Tidak perlu jika dibuka via push
+        title: const Text('Pengaturan'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // Aksi notifikasi jika perlu
-            },
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: theme.appBarTheme.foregroundColor?.withOpacity(0.7),
+            ),
+            onPressed: () {},
           ),
         ],
-        // Styling AppBar agar sesuai gambar
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false, // Judul rata kiri
+        // Style AppBar diambil dari tema
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -146,22 +152,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             // --- Field Email (Read Only) ---
             TextField(
               controller: _emailController,
-              readOnly: true, // Tidak bisa diubah
+              readOnly: true,
+              style: TextStyle(
+                color: textColor.withOpacity(0.7),
+              ), // Sedikit pudar
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.grey.shade400),
-                filled: true,
-                fillColor: fieldColor, // Warna latar field
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                 focusedBorder: OutlineInputBorder( // Border saat focus
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blueAccent),
-                  ),
+                // Style lain diambil dari inputDecorationTheme
               ),
-              style: TextStyle(color: textColor?.withOpacity(0.7)),
             ),
             const SizedBox(height: 16),
 
@@ -169,25 +167,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             TextField(
               controller: _newPasswordController,
               obscureText: !_isPasswordVisible,
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 labelText: 'Ganti Password',
-                labelStyle: TextStyle(color: Colors.grey.shade400),
                 hintText: 'Masukkan password baru',
-                hintStyle: TextStyle(color: Colors.grey.shade600),
-                filled: true,
-                fillColor: fieldColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                 focusedBorder: OutlineInputBorder( // Border saat focus
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blueAccent),
-                  ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                    color: iconColor,
+                    _isPasswordVisible
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                   ),
                   onPressed: () {
                     setState(() {
@@ -195,8 +183,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     });
                   },
                 ),
+                // Style lain diambil dari inputDecorationTheme
               ),
-              style: TextStyle(color: textColor),
             ),
             const SizedBox(height: 24),
 
@@ -212,9 +200,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.notifications_active_outlined, color: iconColor),
+                      Icon(
+                        Icons.notifications_active_outlined,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 12),
-                      Text('Notifikasi Push', style: TextStyle(color: textColor, fontSize: 16)),
+                      Text(
+                        'Notifikasi Push',
+                        style: TextStyle(color: textColor, fontSize: 16),
+                      ),
                     ],
                   ),
                   Switch(
@@ -224,8 +218,78 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         _notificationsEnabled = value;
                       });
                     },
-                    activeTrackColor: Colors.blueAccent.shade100,
-                    activeColor: Colors.blueAccent.shade700,
+                    // Warna switch diambil dari tema
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // --- PILIHAN TEMA TAMPILAN ---
+            Text(
+              'Tema Tampilan',
+              style: TextStyle(color: hintColor, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: fieldColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ToggleButtons(
+                isSelected: [
+                  _selectedThemeIndex == 0, // Terang
+                  _selectedThemeIndex == 1, // Gelap
+                ],
+                onPressed: (index) {
+                  setState(() {
+                    _selectedThemeIndex = index;
+                  });
+                  final myAppState = context
+                      .findAncestorStateOfType<MyAppState>();
+                  final newThemeMode = index == 1
+                      ? ThemeMode.dark
+                      : ThemeMode.light;
+                  myAppState?.changeTheme(newThemeMode);
+                },
+                // Ambil style dari toggleButtonsTheme
+                borderRadius: theme.toggleButtonsTheme.borderRadius,
+                selectedBorderColor:
+                    theme.toggleButtonsTheme.selectedBorderColor,
+                selectedColor: theme.toggleButtonsTheme.selectedColor,
+                fillColor: theme.toggleButtonsTheme.fillColor,
+                color: theme.toggleButtonsTheme.color,
+                borderColor: theme.toggleButtonsTheme.borderColor,
+                textStyle: theme.toggleButtonsTheme.textStyle,
+                constraints: const BoxConstraints(
+                  minHeight: 40.0,
+                  minWidth: 100.0,
+                ), // Beri minWidth
+                children: [
+                  // ** PERBAIKAN: Hapus Expanded **
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.wb_sunny_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Terang'),
+                      ],
+                    ),
+                  ),
+                  // ** PERBAIKAN: Hapus Expanded **
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.nightlight_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Gelap'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -233,25 +297,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             const SizedBox(height: 32),
 
             // --- Tombol Simpan ---
-             _isLoading
+            _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: _saveSettings,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent, // Warna biru
-                      foregroundColor: Colors.white, // Teks putih
-                      minimumSize: const Size(double.infinity, 50), // Lebar penuh
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Simpan Pengaturan',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // Style diambil dari elevatedButtonTheme
+                    child: const Text('Simpan Pengaturan'),
                   ),
           ],
         ),
