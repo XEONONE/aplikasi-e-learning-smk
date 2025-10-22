@@ -1,4 +1,4 @@
-// lib/screens/guru_dashboard_screen.dart
+// Lokasi: lib/screens/guru_dashboard_screen.dart
 
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart';
@@ -10,16 +10,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
-
-// --- PERUBAHAN DI SINI: (1) Tambahkan import untuk halaman baru ---
 import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
-// -----------------------------------------------------------------
+// Import untuk halaman upload materi
+import 'package:aplikasi_e_learning_smk/screens/upload_materi_screen.dart';
 
-// -------------------------------------------------------------------
-// WIDGET HALAMAN PROFIL (Helper untuk Dashboard)
-// -------------------------------------------------------------------
+// --- Widget GuruProfileScreen ---
+// (Tidak ada perubahan di sini, tetap sama)
 class GuruProfileScreen extends StatefulWidget {
-  // ... (Tidak ada perubahan di sini, semua kode GuruProfileScreen tetap sama) ...
   const GuruProfileScreen({super.key});
 
   @override
@@ -239,11 +236,10 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
     );
   }
 }
-// ... (Akhir dari GuruProfileScreen) ...
+// ... (Akhir GuruProfileScreen) ...
 
-// -------------------------------------------------------------------
-// WIDGET HALAMAN TUGAS (Helper untuk Dashboard)
-// -------------------------------------------------------------------
+// --- Widget GuruTaskManagementScreen ---
+// (Perubahan: heroTag diubah menjadi null)
 class GuruTaskManagementScreen extends StatefulWidget {
   const GuruTaskManagementScreen({super.key});
   @override
@@ -290,19 +286,22 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
                           _selectedToggleIndex = index;
                         });
                       },
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                      selectedBorderColor: Colors.blue[700],
+                      selectedColor: Colors.white,
+                      fillColor: Colors.blue[900],
+                      color: Colors.grey[400],
+                      constraints: const BoxConstraints(
+                        minHeight: 40.0,
+                        minWidth: 120.0,
+                      ),
                       children: const [
                         Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text('Tugas Aktif'),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text('Riwayat'),
                         ),
                       ],
@@ -318,33 +317,27 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        // --- PERUBAHAN DI SINI: (2) Ganti aksi onPressed ---
+      // --- PERBAIKAN PASTI DI SINI ---
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: null, // Nonaktifkan Hero Tag untuk FAB Tugas
         onPressed: () {
-          // Kode lama yang diganti:
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   const SnackBar(
-          //       content: Text('Buat Tugas Baru (belum diimplementasikan)')),
-          // );
-
-          // Kode baru untuk navigasi:
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
           );
         },
-        // ---------------------------------------------------
-        child: const Icon(Icons.add),
+        label: const Text('Tambah Tugas'),
+        icon: const Icon(Icons.add),
       ),
+      // --- AKHIR PERBAIKAN ---
     );
   }
 }
+// ... (Akhir GuruTaskManagementScreen) ...
 
-// -------------------------------------------------------------------
-// CLASS DASHBOARD UTAMA
-// -------------------------------------------------------------------
+// --- CLASS DASHBOARD UTAMA ---
+// (Perubahan: heroTag diubah menjadi null)
 class GuruDashboardScreen extends StatefulWidget {
-  // ... (Tidak ada perubahan di sini, semua kode GuruDashboardScreen tetap sama) ...
   const GuruDashboardScreen({super.key});
 
   @override
@@ -366,13 +359,52 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     });
   }
 
+  // Daftar halaman
   static final List<Widget> _pages = <Widget>[
     const GuruHomeScreen(),
+    // --- Halaman Materi (Indeks 1) ---
     Scaffold(
-      appBar: AppBar(title: const Text('Manajemen Materi')),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Manajemen',
+              style: TextStyle(color: Colors.grey[400], fontSize: 16),
+            ),
+            const Text(
+              'Materi',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: const GuruMateriListScreen(),
+      // --- PERBAIKAN PASTI DI SINI ---
+      floatingActionButton: Builder(
+        builder: (BuildContext context) {
+          return FloatingActionButton.extended(
+            heroTag: null, // Nonaktifkan Hero Tag untuk FAB Materi
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UploadMateriScreen(),
+                ),
+              );
+            },
+            label: const Text('Tambah Materi'),
+            icon: const Icon(Icons.add),
+          );
+        },
+      ),
+      // --- AKHIR PERBAIKAN ---
     ),
+    // --- Halaman Tugas (Indeks 2) ---
     const GuruTaskManagementScreen(),
+    // --- Halaman Profil (Indeks 3) ---
     const GuruProfileScreen(),
   ];
 
@@ -407,8 +439,8 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
 }
-// ... (Akhir dari GuruDashboardScreen) ...
