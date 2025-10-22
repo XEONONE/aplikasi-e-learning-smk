@@ -163,7 +163,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         _notificationsEnabled = value;
                       });
                     },
-                    activeColor: Colors.blueAccent, // Warna saat aktif
+                    activeThumbColor: Colors.blueAccent, // Warna saat aktif
                   ),
                 ],
               ),

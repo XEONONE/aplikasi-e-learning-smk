@@ -1,3 +1,5 @@
+// lib/screens/guru_dashboard_screen.dart
+
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/guru_materi_list_screen.dart';
@@ -7,14 +9,17 @@ import 'package:aplikasi_e_learning_smk/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-// --- TAMBAHKAN IMPORT INI ---
 import 'package:aplikasi_e_learning_smk/screens/account_settings_screen.dart';
-// -----------------------------
+
+// --- PERUBAHAN DI SINI: (1) Tambahkan import untuk halaman baru ---
+import 'package:aplikasi_e_learning_smk/screens/create_task_screen.dart';
+// -----------------------------------------------------------------
 
 // -------------------------------------------------------------------
 // WIDGET HALAMAN PROFIL (Helper untuk Dashboard)
 // -------------------------------------------------------------------
 class GuruProfileScreen extends StatefulWidget {
+  // ... (Tidak ada perubahan di sini, semua kode GuruProfileScreen tetap sama) ...
   const GuruProfileScreen({super.key});
 
   @override
@@ -47,15 +52,13 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
           children: [
             Text(
               'Akun Saya',
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: Colors.grey[400]),
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.grey[400],
+              ),
             ),
             const Text(
               'Profil',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
             ),
           ],
         ),
@@ -80,8 +83,10 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
               'Guru ${user.mengajarKelas?.join(', ') ?? 'Mapel'}';
 
           return SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
@@ -94,9 +99,10 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                       child: Text(
                         initial.toUpperCase(),
                         style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -111,14 +117,16 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'NIP: ${user.id}',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: Colors.grey[400]),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[400],
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       roleDescription,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: Colors.grey[400]),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[400],
+                      ),
                     ),
                     const SizedBox(height: 32),
                     _buildProfileActionTile(
@@ -127,19 +135,16 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content:
-                                  Text('Fitur Edit Profil belum tersedia.')),
+                            content: Text('Fitur Edit Profil belum tersedia.'),
+                          ),
                         );
                       },
                     ),
                     const SizedBox(height: 12),
-
-                    // --- INI PERUBAHANNYA ---
                     _buildProfileActionTile(
                       icon: Icons.settings_outlined,
                       text: 'Pengaturan Akun',
                       onTap: () {
-                        // Mengganti SnackBar dengan Navigasi
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -148,8 +153,6 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                         );
                       },
                     ),
-                    // --- AKHIR PERUBAHAN ---
-
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.logout, size: 20),
@@ -161,7 +164,8 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                             return AlertDialog(
                               title: const Text('Konfirmasi Keluar'),
                               content: const Text(
-                                  'Apakah Anda yakin ingin keluar?'),
+                                'Apakah Anda yakin ingin keluar?',
+                              ),
                               actions: <Widget>[
                                 TextButton(
                                   onPressed: () =>
@@ -171,8 +175,10 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                                 TextButton(
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
-                                  child: const Text('Keluar',
-                                      style: TextStyle(color: Colors.red)),
+                                  child: const Text(
+                                    'Keluar',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ),
                               ],
                             );
@@ -184,8 +190,7 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.redAccent.withAlpha(220),
+                        backgroundColor: Colors.redAccent.withAlpha(220),
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
@@ -203,8 +208,11 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
     );
   }
 
-  Widget _buildProfileActionTile(
-      {required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildProfileActionTile({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -219,8 +227,11 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
             Icon(icon, color: Colors.grey[400], size: 22),
             const SizedBox(width: 16),
             Expanded(
-                child: Text(text,
-                    style: const TextStyle(color: Colors.white, fontSize: 16))),
+              child: Text(
+                text,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
             Icon(Icons.chevron_right, color: Colors.grey[600]),
           ],
         ),
@@ -228,6 +239,7 @@ class _GuruProfileScreenState extends State<GuruProfileScreen> {
     );
   }
 }
+// ... (Akhir dari GuruProfileScreen) ...
 
 // -------------------------------------------------------------------
 // WIDGET HALAMAN TUGAS (Helper untuk Dashboard)
@@ -253,24 +265,25 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Manajemen',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(color: Colors.grey[400])),
-                  Text('Tugas',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
+                  Text(
+                    'Manajemen',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(color: Colors.grey[400]),
+                  ),
+                  Text(
+                    'Tugas',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Center(
                     child: ToggleButtons(
                       isSelected: [
                         _selectedToggleIndex == 0,
-                        _selectedToggleIndex == 1
+                        _selectedToggleIndex == 1,
                       ],
                       onPressed: (index) {
                         setState(() {
@@ -279,13 +292,19 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
                       },
                       children: const [
                         Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            child: Text('Tugas Aktif')),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          child: Text('Tugas Aktif'),
+                        ),
                         Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            child: Text('Riwayat')),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          child: Text('Riwayat'),
+                        ),
                       ],
                     ),
                   ),
@@ -294,20 +313,27 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
               ),
             ),
             Expanded(
-              child: TaskListScreen(
-                showExpired: _selectedToggleIndex == 1,
-              ),
+              child: TaskListScreen(showExpired: _selectedToggleIndex == 1),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        // --- PERUBAHAN DI SINI: (2) Ganti aksi onPressed ---
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Buat Tugas Baru (belum diimplementasikan)')),
+          // Kode lama yang diganti:
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(
+          //       content: Text('Buat Tugas Baru (belum diimplementasikan)')),
+          // );
+
+          // Kode baru untuk navigasi:
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
           );
         },
+        // ---------------------------------------------------
         child: const Icon(Icons.add),
       ),
     );
@@ -318,6 +344,7 @@ class _GuruTaskManagementScreenState extends State<GuruTaskManagementScreen> {
 // CLASS DASHBOARD UTAMA
 // -------------------------------------------------------------------
 class GuruDashboardScreen extends StatefulWidget {
+  // ... (Tidak ada perubahan di sini, semua kode GuruDashboardScreen tetap sama) ...
   const GuruDashboardScreen({super.key});
 
   @override
@@ -353,10 +380,7 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: _pages),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -387,3 +411,4 @@ class _GuruDashboardScreenState extends State<GuruDashboardScreen> {
     );
   }
 }
+// ... (Akhir dari GuruDashboardScreen) ...

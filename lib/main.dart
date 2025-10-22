@@ -49,12 +49,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.dark(
           primary: Colors.blueAccent,
           secondary: Colors.blueAccent,
-          surface: const Color(0xFF1E1E1E), // Warna permukaan
-          background: const Color(0xFF121212), // Warna background
+          surface: const Color(0xFF1E1E1E), // Warna background
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.white,
-          onBackground: Colors.white,
         ),
       ),
       // -- AKHIR PERUBAHAN THEME --
