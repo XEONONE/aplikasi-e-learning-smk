@@ -1,10 +1,10 @@
 // lib/screens/guru_materi_list_screen.dart
 
-import 'package:aplikasi_e_learning_smk/models/user_model.dart'; //
-import 'package:aplikasi_e_learning_smk/screens/edit_materi_screen.dart'; //
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; //
-import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart'; //
-import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart'; //
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/screens/edit_materi_screen.dart';
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
+import 'package:aplikasi_e_learning_smk/widgets/materi_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +18,9 @@ class GuruMateriListScreen extends StatefulWidget {
 }
 
 class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
-  final AuthService _authService = AuthService(); //
+  final AuthService _authService = AuthService();
   final User? currentUser = FirebaseAuth.instance.currentUser;
-  late Future<UserModel?> _userFuture; //
+  late Future<UserModel?> _userFuture;
   final Map<String, bool> _expansionState = {};
 
   @override
@@ -29,7 +29,7 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
     if (currentUser != null) {
       _userFuture = _authService.getUserData(currentUser!.uid);
     } else {
-       _userFuture = Future.value(null);
+      _userFuture = Future.value(null);
     }
   }
 
@@ -47,7 +47,10 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Hapus', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(
+                'Hapus',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           ],
         );
@@ -56,23 +59,31 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
 
     if (confirmDelete == true) {
       try {
-        await FirebaseFirestore.instance.collection('materi').doc(materiId).delete();
-        if(mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Materi "$judul" berhasil dihapus.'), backgroundColor: Colors.green),
-           );
+        await FirebaseFirestore.instance
+            .collection('materi')
+            .doc(materiId)
+            .delete();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Materi "$judul" berhasil dihapus.'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
         // TODO: Hapus juga file terkait di Firebase Storage jika ada
       } catch (e) {
-         if(mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(content: Text('Gagal menghapus materi: $e'), backgroundColor: Colors.red),
-             );
-         }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal menghapus materi: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -81,36 +92,48 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
       return const Center(child: Text('Silakan login ulang.'));
     }
 
-    return FutureBuilder<UserModel?>( //
+    return FutureBuilder<UserModel?>(
       future: _userFuture,
       builder: (context, userSnapshot) {
         if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CustomLoadingIndicator()); //
+          return const Center(child: CustomLoadingIndicator());
         }
         if (!userSnapshot.hasData || userSnapshot.data == null) {
           return const Center(child: Text('Gagal memuat data guru.'));
         }
 
         final guru = userSnapshot.data!;
-        // final List<String> kelasYangDiajar = guru.mengajarKelas ?? []; // <-- Dihapus (unused)
-        final String guruId = currentUser!.uid;
+        final String guruId =
+            currentUser!.uid; // <-- MENGAMBIL ID GURU YANG LOGIN
 
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('materi')
-              .where('guruId', isEqualTo: guruId)
+              .where(
+                'guruId',
+                isEqualTo: guruId,
+              ) // <-- MEMFILTER MATERI BERDASARKAN ID
               .orderBy('mataPelajaran')
               .orderBy('diunggahPada', descending: false)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CustomLoadingIndicator()); //
+              return const Center(child: CustomLoadingIndicator());
             }
             if (snapshot.hasError) {
-              return const Center(child: Text('Terjadi error saat memuat data materi.'));
+              // Ini yang muncul di Screenshot 1 & 2
+              return const Center(
+                child: Text('Terjadi error saat memuat data materi.'),
+              );
             }
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Center(child: Text('Anda belum mengunggah materi.', style: theme.textTheme.bodyMedium));
+              // Ini yang muncul di Screenshot 3
+              return Center(
+                child: Text(
+                  'Anda belum mengunggah materi.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              );
             }
 
             var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
@@ -129,58 +152,80 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
               padding: const EdgeInsets.only(top: 8.0, bottom: 80.0),
               itemCount: mapelKeys.length,
               itemBuilder: (context, index) {
-                  final mapel = mapelKeys[index];
-                  final materis = groupedMateri[mapel]!;
+                final mapel = mapelKeys[index];
+                final materis = groupedMateri[mapel]!;
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
-                    elevation: 0.5,
-                    child: ExpansionTile(
-                      key: PageStorageKey(mapel),
-                      title: Text(
-                        mapel,
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 6.0,
+                    horizontal: 16.0,
+                  ),
+                  elevation: 0.5,
+                  child: ExpansionTile(
+                    key: PageStorageKey(mapel),
+                    title: Text(
+                      mapel,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      initiallyExpanded: _expansionState[mapel] ?? true,
-                      onExpansionChanged: (isExpanded) {
-                        setState(() { _expansionState[mapel] = isExpanded; });
-                      },
-                      trailing: Icon(_expansionState[mapel] ?? true ? Icons.expand_less : Icons.expand_more),
-                      // ** PERBAIKAN: Gunakan .withAlpha() **
-                      backgroundColor: theme.cardColor.withAlpha(77), // sekitar 30% opacity
-                      collapsedBackgroundColor: Colors.transparent,
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      childrenPadding: const EdgeInsets.only(bottom: 8.0, left: 0.0, right: 0.0),
-                      children: materis.map((materiDoc) {
-                        var data = materiDoc.data() as Map<String, dynamic>;
-                        DateTime uploadDate = (data['diunggahPada'] as Timestamp? ?? Timestamp.now()).toDate();
-                        String formattedDate = DateFormat('d MMM yyyy', 'id_ID').format(uploadDate);
-
-                        return MateriCard( //
-                          judul: data['judul'] ?? 'Tanpa Judul',
-                          deskripsi: data['deskripsi'] ?? 'Tanpa Deskripsi',
-                          fileUrl: data['fileUrl'] as String?,
-                          guruNama: data['guruNama'] ?? guru.nama,
-                          tanggalUpload: formattedDate,
-                          isGuruView: true,
-                          onEdit: () {
-                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  // ** PERBAIKAN: Gunakan parameter yang benar untuk EditMateriScreen **
-                                  builder: (context) => EditMateriScreen( //
-                                    materiId: materiDoc.id,
-                                    initialData: data, // <-- Gunakan initialData
-                                  ),
-                                ),
-                              );
-                          },
-                          onDelete: () => _hapusMateri(materiDoc.id, data['judul'] ?? 'Tanpa Judul'),
-                        );
-                      }).toList(),
                     ),
-                  );
+                    initiallyExpanded: _expansionState[mapel] ?? true,
+                    onExpansionChanged: (isExpanded) {
+                      setState(() {
+                        _expansionState[mapel] = isExpanded;
+                      });
+                    },
+                    trailing: Icon(
+                      _expansionState[mapel] ?? true
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                    ),
+                    backgroundColor: theme.cardColor.withAlpha(77),
+                    collapsedBackgroundColor: Colors.transparent,
+                    shape: const Border(),
+                    collapsedShape: const Border(),
+                    childrenPadding: const EdgeInsets.only(
+                      bottom: 8.0,
+                      left: 0.0,
+                      right: 0.0,
+                    ),
+                    children: materis.map((materiDoc) {
+                      var data = materiDoc.data() as Map<String, dynamic>;
+                      DateTime uploadDate =
+                          (data['diunggahPada'] as Timestamp? ??
+                                  Timestamp.now())
+                              .toDate();
+                      String formattedDate = DateFormat(
+                        'd MMM yyyy',
+                        'id_ID',
+                      ).format(uploadDate);
+
+                      return MateriCard(
+                        judul: data['judul'] ?? 'Tanpa Judul',
+                        deskripsi: data['deskripsi'] ?? 'Tanpa Deskripsi',
+                        fileUrl: data['fileUrl'] as String?,
+                        guruNama: data['guruNama'] ?? guru.nama,
+                        tanggalUpload: formattedDate,
+                        isGuruView: true,
+                        onEdit: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditMateriScreen(
+                                materiId: materiDoc.id,
+                                initialData: data,
+                              ),
+                            ),
+                          );
+                        },
+                        onDelete: () => _hapusMateri(
+                          materiDoc.id,
+                          data['judul'] ?? 'Tanpa Judul',
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
               },
             );
           },
