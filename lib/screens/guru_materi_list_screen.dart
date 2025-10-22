@@ -12,6 +12,64 @@ import 'package:flutter/material.dart';
 class GuruMateriListScreen extends StatelessWidget {
   const GuruMateriListScreen({super.key});
 
+  // ## FUNGSI UNTUK MENGHAPUS MATERI DITAMBAHKAN DI SINI ##
+  Future<void> _hapusMateri(
+    BuildContext context,
+    String materiId,
+    String judulMateri,
+  ) async {
+    // Tampilkan dialog konfirmasi
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Hapus'),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus materi "$judulMateri"?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(false), // Return false jika batal
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(true), // Return true jika hapus
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Jika pengguna mengkonfirmasi hapus (confirmDelete == true)
+    if (confirmDelete == true) {
+      try {
+        // Hapus dokumen dari Firestore
+        await FirebaseFirestore.instance
+            .collection('materi')
+            .doc(materiId)
+            .delete();
+
+        // Tampilkan pesan sukses (Gunakan context asli dari build)
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Materi "$judulMateri" berhasil dihapus.')),
+          );
+        }
+      } catch (e) {
+        // Tampilkan pesan error jika gagal
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Gagal menghapus materi: $e')));
+        }
+      }
+    }
+  }
+  // ## AKHIR FUNGSI HAPUS MATERI ##
+
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -35,14 +93,15 @@ class GuruMateriListScreen extends StatelessWidget {
           }
 
           return StreamBuilder<QuerySnapshot>(
-            // ## PERUBAHAN PADA QUERY DIMULAI DI SINI ##
             stream: FirebaseFirestore.instance
                 .collection('materi')
                 .where('untukKelas', whereIn: guruKelas)
                 .orderBy('mataPelajaran') // Diurutkan berdasarkan mapel
-                .orderBy('diunggahPada', descending: true) // Lalu berdasarkan tanggal
+                .orderBy(
+                  'diunggahPada',
+                  descending: true,
+                ) // Lalu berdasarkan tanggal
                 .snapshots(),
-            // ## AKHIR PERUBAHAN QUERY ##
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -55,10 +114,12 @@ class GuruMateriListScreen extends StatelessWidget {
                 );
               }
               if (snapshot.hasError) {
-                return const Center(child: Text('Terjadi error. Pastikan indeks sudah dibuat.'));
+                return const Center(
+                  child: Text('Terjadi error. Pastikan indeks sudah dibuat.'),
+                );
               }
 
-              // ## LOGIKA PENGELOMPOKAN MATERI (FOLDER) DIMULAI DI SINI ##
+              // Logika pengelompokan materi
               var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
               for (var doc in snapshot.data!.docs) {
                 var data = doc.data() as Map<String, dynamic>;
@@ -80,22 +141,29 @@ class GuruMateriListScreen extends StatelessWidget {
 
                   // ExpansionTile bertindak sebagai "Folder" mata pelajaran
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 4.0,
+                      horizontal: 16.0,
+                    ),
                     child: ExpansionTile(
                       title: Text(
                         mapel,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
                       initiallyExpanded: true, // Folder langsung terbuka
                       children: materis.map((materiDoc) {
-                        var materiData = materiDoc.data() as Map<String, dynamic>;
-                        
+                        var materiData =
+                            materiDoc.data() as Map<String, dynamic>;
+
                         // Menampilkan setiap materi di dalam folder
                         return MateriCard(
                           judul: materiData['judul'],
                           deskripsi: materiData['deskripsi'],
                           fileUrl: materiData['fileUrl'],
-                          isGuruView: true, // Pastikan ini true untuk menampilkan tombol Edit
+                          isGuruView: true,
                           onEdit: () {
                             // Fungsi Edit tetap berjalan seperti sebelumnya
                             Navigator.push(
@@ -108,13 +176,19 @@ class GuruMateriListScreen extends StatelessWidget {
                               ),
                             );
                           },
+                          // ## PERUBAHAN DI SINI: Teruskan fungsi hapus ##
+                          onDelete: () => _hapusMateri(
+                            context,
+                            materiDoc.id,
+                            materiData['judul'],
+                          ),
+                          // ## AKHIR PERUBAHAN ##
                         );
                       }).toList(),
                     ),
                   );
                 },
               );
-              // ## AKHIR LOGIKA PENGELOMPOKAN ##
             },
           );
         },
