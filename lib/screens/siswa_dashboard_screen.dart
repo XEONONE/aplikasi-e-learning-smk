@@ -2,11 +2,16 @@
 
 import 'package:aplikasi_e_learning_smk/screens/student_home_screen.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/student_task_list_screen.dart';
-import 'package:aplikasi_e_learning_smk/screens/student_nilai_screen.dart';
+// Halaman lama yang dihapus
+// import 'package:aplikasi_e_learning_smk/screens/student_task_list_screen.dart';
+// import 'package:aplikasi_e_learning_smk/screens/student_nilai_screen.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
 import 'package:aplikasi_e_learning_smk/services/notification_service.dart';
 import 'package:flutter/material.dart';
+
+// Halaman baru yang ditambahkan
+import 'package:aplikasi_e_learning_smk/screens/student_graded_tasks_screen.dart'; // Halaman Tugas (Aktif/Selesai)
+import 'package:aplikasi_e_learning_smk/screens/profile_screen.dart'; // Halaman Profil Baru
 
 class SiswaDashboardScreen extends StatefulWidget {
   const SiswaDashboardScreen({super.key});
@@ -17,8 +22,7 @@ class SiswaDashboardScreen extends StatefulWidget {
 
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   int _selectedIndex = 0;
-
-  // --- PERUBAHAN 1: Deklarasi _pages di sini ---
+  
   late final List<Widget> _pages;
 
   @override
@@ -26,26 +30,24 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     super.initState();
     NotificationService().initialize();
 
-    // --- PERUBAHAN 2: Inisialisasi _pages di dalam initState ---
+    // --- PERUBAHAN 1: Daftar halaman disesuaikan ---
+    // Sekarang ada 4 halaman: Beranda, Materi, Tugas (baru), Profil (baru)
     _pages = <Widget>[
       StudentHomeScreen(
-        // --- PERUBAHAN 3: Tambahkan callback ini ---
-        // Ini akan memanggil _onItemTapped(1) saat tombol ditekan
         onLihatSemuaMateri: () => _onItemTapped(1),
       ),
       const StudentMateriListScreen(),
-      const StudentTaskListScreen(),
-      const StudentNilaiScreen(),
+      const StudentGradedTasksScreen(), // Halaman tugas baru
+      const ProfileScreen(),          // Halaman profil baru
     ];
   }
 
-  // --- PERUBAHAN 4: Hapus 'static const List<Widget> _pages' dari sini ---
-
+  // --- PERUBAHAN 2: Daftar judul disesuaikan ---
   static const List<String> _pageTitles = <String>[
     'Beranda',
     'Materi',
     'Tugas',
-    'Nilai',
+    'Profil', // Judul untuk halaman profil
   ];
 
   void _onItemTapped(int index) {
@@ -58,7 +60,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitles[_selectedIndex]),
+        title: Text(_selectedIndex < _pageTitles.length 
+            ? _pageTitles[_selectedIndex]
+            : 'E-Learning'), // AppBar akan ganti judul sesuai tab
         actions: [
           IconButton(
             onPressed: () => AuthService().signOut(),
@@ -67,8 +71,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           ),
         ],
       ),
-      // --- PERUBAHAN 5: Pastikan body menggunakan _pages (non-static) ---
       body: IndexedStack(index: _selectedIndex, children: _pages),
+      
+      // --- PERUBAHAN 3: Tombol navigasi disesuaikan ---
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
@@ -87,10 +92,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
             activeIcon: Icon(Icons.assignment),
             label: 'Tugas',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grade_outlined),
-            activeIcon: Icon(Icons.grade),
-            label: 'Nilai',
+          BottomNavigationBarItem( // Tombol profil baru
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,
