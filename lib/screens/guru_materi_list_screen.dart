@@ -103,31 +103,40 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
         }
 
         final guru = userSnapshot.data!;
-        final String guruId =
-            currentUser!.uid; // <-- MENGAMBIL ID GURU YANG LOGIN
+        // *** INI ADALAH BAGIAN YANG DIPERBAIKI ***
+        // Kita mengambil UID guru yang sedang login
+        final String guruUid = currentUser!.uid;
 
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('materi')
               .where(
-                'guruId',
-                isEqualTo: guruId,
-              ) // <-- MEMFILTER MATERI BERDASARKAN ID
-              .orderBy('mataPelajaran')
-              .orderBy('diunggahPada', descending: false)
+                'diunggahOlehUid',
+                isEqualTo: guruUid,
+              ) // <-- Persis 'diunggahOlehUid'
+              .orderBy('mataPelajaran') // <-- Persis 'mataPelajaran'
+              .orderBy(
+                'diunggahPada',
+                descending: false,
+              ) // <-- Persis 'diunggahPada'
               .snapshots(),
           builder: (context, snapshot) {
+            // Bagian ini akan menampilkan error jika indeks bermasalah
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CustomLoadingIndicator());
             }
+            // *** BAGIAN INI YANG MENYEBABKAN ERROR TAMPIL DI LAYAR ***
             if (snapshot.hasError) {
-              // Ini yang muncul di Screenshot 1 & 2
-              return const Center(
-                child: Text('Terjadi error saat memuat data materi.'),
+              // Kode ini akan mencetak error detail ke konsol debug Anda
+              print('Firestore Error: ${snapshot.error}');
+              return Center(
+                child: Text(
+                  'Terjadi error saat memuat data materi.\nError: ${snapshot.error}',
+                ), // Ini yang tampil di screenshot
               );
             }
+            // Bagian ini akan tampil jika query berhasil tapi tidak ada data
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              // Ini yang muncul di Screenshot 3
               return Center(
                 child: Text(
                   'Anda belum mengunggah materi.',
@@ -136,6 +145,7 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
               );
             }
 
+            // --- Jika kode sampai di sini, berarti data berhasil diambil ---
             var groupedMateri = <String, List<QueryDocumentSnapshot>>{};
             for (var doc in snapshot.data!.docs) {
               var data = doc.data() as Map<String, dynamic>;
@@ -161,10 +171,12 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
                     horizontal: 16.0,
                   ),
                   elevation: 0.5,
+
                   child: ExpansionTile(
                     key: PageStorageKey(mapel),
                     title: Text(
                       mapel,
+
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -175,11 +187,13 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
                         _expansionState[mapel] = isExpanded;
                       });
                     },
+
                     trailing: Icon(
                       _expansionState[mapel] ?? true
                           ? Icons.expand_less
                           : Icons.expand_more,
                     ),
+
                     backgroundColor: theme.cardColor.withAlpha(77),
                     collapsedBackgroundColor: Colors.transparent,
                     shape: const Border(),
@@ -189,8 +203,10 @@ class _GuruMateriListScreenState extends State<GuruMateriListScreen> {
                       left: 0.0,
                       right: 0.0,
                     ),
+
                     children: materis.map((materiDoc) {
                       var data = materiDoc.data() as Map<String, dynamic>;
+
                       DateTime uploadDate =
                           (data['diunggahPada'] as Timestamp? ??
                                   Timestamp.now())

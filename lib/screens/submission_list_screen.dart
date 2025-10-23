@@ -22,10 +22,34 @@ class SubmissionListScreen extends StatefulWidget {
 }
 
 class _SubmissionListScreenState extends State<SubmissionListScreen> {
-  Future<void> _launchUrl(String fileUrl) async {
-    final Uri url = Uri.parse(fileUrl);
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+  // --- PERBAIKAN: Tambahkan pengecekan null dan string kosong ---
+  Future<void> _launchUrl(String? fileUrl) async {
+    if (fileUrl == null || fileUrl.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Siswa ini tidak melampirkan link.')),
+        );
+      }
+      return;
+    }
+
+    String urlString = fileUrl;
+    if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
+      urlString = 'https://$urlString';
+    }
+
+    final Uri url = Uri.parse(urlString);
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print("Error launching URL: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tidak dapat membuka link: $urlString')),
+        );
+      }
     }
   }
 
@@ -37,10 +61,12 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
           .limit(1)
           .get();
       if (userDoc.docs.isNotEmpty) {
-        return userDoc.docs.first.data()['nama'] ?? 'Siswa tidak ditemukan';
+        // --- PERBAIKAN: Pastikan mengembalikan String ---
+        return userDoc.docs.first.data()['nama'] as String? ?? 'Siswa Anonim';
       }
       return 'Siswa Anonim';
     } catch (e) {
+      print("Error getStudentName: $e");
       return 'Error';
     }
   }
@@ -50,10 +76,12 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
     Map<String, dynamic> currentSubmissionData,
   ) async {
     final nilaiController = TextEditingController(
-      text: currentSubmissionData['nilai']?.toString() ?? '',
+      // --- PERBAIKAN: Konversi nilai (mungkin number) ke String ---
+      text: (currentSubmissionData['nilai']?.toString()) ?? '',
     );
     final feedbackController = TextEditingController(
-      text: currentSubmissionData['feedback'] ?? '',
+      // --- PERBAIKAN: Pastikan feedback adalah String ---
+      text: (currentSubmissionData['feedback'] as String?) ?? '',
     );
 
     return showDialog<void>(
@@ -64,17 +92,32 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                TextField(
+                TextFormField(
+                  // Ubah ke TextFormField
                   controller: nilaiController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Nilai (0-100)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Nilai (0-100)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nilai tidak boleh kosong';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return 'Masukkan angka yang valid';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
-                TextField(
+                TextFormField(
+                  // Ubah ke TextFormField
                   controller: feedbackController,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: 'Catatan / Feedback',
+                    labelText: 'Catatan / Feedback (Opsional)',
+                    border: OutlineInputBorder(),
                   ),
                 ),
               ],
@@ -88,17 +131,39 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
             ElevatedButton(
               child: const Text('Simpan'),
               onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('tugas')
-                    .doc(widget.taskId)
-                    .collection('pengumpulan')
-                    .doc(submissionId)
-                    .update({
-                      'nilai': int.tryParse(nilaiController.text) ?? 0,
-                      'feedback': feedbackController.text.trim(),
-                    });
-                if (!mounted) return;
-                Navigator.of(context).pop();
+                // Validasi nilai sebelum menyimpan
+                final int? nilai = int.tryParse(nilaiController.text);
+                if (nilai == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nilai harus berupa angka.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return; // Jangan tutup dialog
+                }
+
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('tugas')
+                      .doc(widget.taskId)
+                      .collection('pengumpulan')
+                      .doc(submissionId)
+                      .update({
+                        'nilai': nilai, // Simpan sebagai angka
+                        'feedback': feedbackController.text.trim(),
+                      });
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // Tutup dialog setelah berhasil
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal menyimpan: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
             ),
           ],
@@ -111,7 +176,6 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Pengumpulan: ${widget.taskTitle}')),
-      // ## 2. UBAH STRUKTUR BODY MENJADI SCROLLABLE COLUMN ##
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -140,25 +204,43 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
                   );
                 }
 
-                // Kita gunakan Column di sini, bukan ListView, karena sudah ada SingleChildScrollView di luar
                 return Column(
                   children: snapshot.data!.docs.map((submissionDoc) {
                     var submissionData =
                         submissionDoc.data() as Map<String, dynamic>;
                     DateTime dikumpulkanPada =
-                        (submissionData['dikumpulkanPada'] as Timestamp)
+                        (submissionData['dikumpulkanPada'] as Timestamp? ??
+                                Timestamp.now()) // Fallback
                             .toDate();
                     String formattedDate = DateFormat(
                       'd MMM yyyy, HH:mm',
+                      'id_ID',
                     ).format(dikumpulkanPada);
+
+                    // --- PERBAIKAN: Ambil data dengan aman ---
+                    final String siswaUid =
+                        submissionData['siswaUid'] as String? ??
+                        submissionData['userId'] as String? ??
+                        '';
+                    final String fileUrl =
+                        (submissionData['fileUrl'] as String?) ?? '';
+                    final dynamic nilai =
+                        submissionData['nilai']; // Bisa null, bisa number
+                    // --- AKHIR PERBAIKAN ---
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
-                        leading: const Icon(Icons.person, size: 40),
+                        leading: const Icon(
+                          Icons.person_outline,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                         title: FutureBuilder<String>(
-                          future: _getStudentName(submissionData['siswaUid']),
+                          future: _getStudentName(
+                            siswaUid,
+                          ), // Gunakan siswaUid yang aman
                           builder: (context, nameSnapshot) {
                             if (nameSnapshot.connectionState ==
                                 ConnectionState.waiting) {
@@ -168,29 +250,50 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
                               );
                             }
                             return Text(
-                              nameSnapshot.data ?? '...',
+                              nameSnapshot.data ?? 'Siswa Anonim',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             );
                           },
                         ),
-                        subtitle: Text('Mengumpulkan pada: $formattedDate'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Mengumpulkan pada: $formattedDate'),
+                            if (nilai != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  'Nilai: $nilai',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(
-                                Icons.file_open,
-                                color: Colors.blue,
+                              icon: Icon(
+                                Icons.link, // Ganti ikon menjadi link
+                                color: fileUrl.isNotEmpty
+                                    ? Colors.blue
+                                    : Colors.grey, // Warna beda jika ada link
                               ),
-                              tooltip: 'Lihat Jawaban',
-                              onPressed: () =>
-                                  _launchUrl(submissionData['fileUrl']),
+                              tooltip: 'Lihat Link Jawaban',
+                              onPressed: () => _launchUrl(
+                                fileUrl,
+                              ), // Gunakan fileUrl yang aman
                             ),
                             IconButton(
                               icon: const Icon(
-                                Icons.rate_review,
+                                Icons.rate_review_outlined, // Ganti ikon
                                 color: Colors.orange,
                               ),
                               tooltip: 'Beri Nilai',
@@ -208,7 +311,6 @@ class _SubmissionListScreenState extends State<SubmissionListScreen> {
               },
             ),
 
-            // ## 3. TAMBAHKAN WIDGET KOMENTAR DI SINI ##
             const Divider(height: 48, thickness: 1),
             CommentSection(documentId: widget.taskId, collectionPath: 'tugas'),
           ],

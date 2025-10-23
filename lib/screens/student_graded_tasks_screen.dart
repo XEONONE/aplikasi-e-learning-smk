@@ -1,9 +1,9 @@
 // lib/screens/student_graded_tasks_screen.dart
 
-import 'package:aplikasi_e_learning_smk/models/user_model.dart'; //
-import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart'; //
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; //
-import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart'; //
+import 'package:aplikasi_e_learning_smk/models/user_model.dart';
+import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart'; // Pastikan Anda punya screen ini
+import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
+import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart'; // Pastikan Anda punya widget ini
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,14 +19,14 @@ class StudentGradedTasksScreen extends StatefulWidget {
 
 class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
   int _selectedToggleIndex = 0; // 0: Aktif, 1: Selesai
-  late Future<UserModel?> _userFuture; //
-  final AuthService _authService = AuthService(); //
+  late Future<UserModel?> _userFuture;
+  final AuthService _authService = AuthService();
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
     super.initState();
-    Intl.defaultLocale = 'id_ID';
+    Intl.defaultLocale = 'id_ID'; // Atur locale untuk format tanggal Indonesia
     if (currentUser != null) {
       _userFuture = _authService.getUserData(currentUser!.uid);
     } else {
@@ -34,45 +34,63 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
     }
   }
 
-  // --- WIDGET KARTU TUGAS YANG SUDAH DINILAI ---
-  Widget _buildGradedTaskCard(
+  // --- WIDGET KARTU TUGAS AKTIF ---
+  Widget _buildActiveTaskCard(
     BuildContext context,
     String taskId,
     Map<String, dynamic> taskData,
-    Map<String, dynamic> submissionData,
   ) {
-    final theme = Theme.of(context); // Ambil tema
+    final theme = Theme.of(context);
     final String judul = taskData['judul'] ?? 'Tanpa Judul';
     final String mapel = taskData['mataPelajaran'] ?? 'Mapel';
-    final nilai = submissionData['nilai'];
+    final Timestamp tenggatTimestamp =
+        taskData['tenggatWaktu'] as Timestamp? ?? Timestamp.now();
+    final DateTime tenggatWaktu = tenggatTimestamp.toDate();
+    final now = DateTime.now();
+    final difference = tenggatWaktu.difference(now);
 
-    final Timestamp dinilaiTimestamp =
-        submissionData['tanggalPengumpulan'] as Timestamp? ??
-        taskData['tenggatWaktu'] as Timestamp? ??
-        Timestamp.now();
-    final DateTime dinilaiTanggal = dinilaiTimestamp.toDate();
-    final String formattedTanggal = DateFormat('dd MMM').format(dinilaiTanggal);
+    String deadlineText;
+    Color deadlineColor = Colors.orange.shade600; // Default
 
-    final Color nilaiBackgroundColor = (nilai is num && nilai >= 75)
-        ? Colors.green.shade700
-        : Colors.orange.shade700;
+    // Logika menampilkan status tenggat
+    if (difference.isNegative) {
+      deadlineText = 'Terlewat';
+      deadlineColor = theme.colorScheme.error;
+    } else if (difference.inDays == 0 && tenggatWaktu.day == now.day) {
+      deadlineText = 'Hari ini';
+      deadlineColor = Colors.red.shade400; // Mendesak jika hari ini
+    } else if (difference.inDays == 0 &&
+        tenggatWaktu.day == now.add(const Duration(days: 1)).day) {
+      deadlineText = 'Besok';
+      deadlineColor = Colors.orange.shade600;
+    } else if (difference.inDays >= 1) {
+      deadlineText = '${difference.inDays} hari lagi';
+      deadlineColor = Colors.green.shade600; // Tidak mendesak jika > 1 hari
+    } else if (difference.inHours >= 1) {
+      deadlineText = '${difference.inHours} jam lagi';
+      deadlineColor = Colors.orange.shade600; // Cukup mendesak
+    } else if (difference.inMinutes >= 1) {
+      deadlineText = '${difference.inMinutes} menit lagi';
+      deadlineColor = Colors.red.shade400; // Mendesak
+    } else {
+      deadlineText = 'Segera Berakhir';
+      deadlineColor = theme.colorScheme.error; // Sangat mendesak
+    }
+
+    final String timeText = DateFormat('HH:mm').format(tenggatWaktu);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: InkWell(
-        borderRadius: theme.cardTheme.shape is RoundedRectangleBorder
-            ? (theme.cardTheme.shape as RoundedRectangleBorder).borderRadius
-                  .resolve(Directionality.of(context))
-            : BorderRadius.zero,
+        borderRadius: BorderRadius.circular(12.0),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                //
-                taskId: taskId,
-                taskData: taskData,
-              ),
+              builder: (context) =>
+                  TaskDetailScreen(taskId: taskId, taskData: taskData),
             ),
           );
         },
@@ -86,7 +104,6 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                   children: [
                     Text(
                       judul,
-                      // Ambil style dari tema
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -95,8 +112,7 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$mapel • Dinilai pada $formattedTanggal',
-                      // Ambil style dari tema (redup)
+                      mapel,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color?.withOpacity(
                           0.7,
@@ -107,18 +123,139 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    deadlineText,
+                    style: TextStyle(
+                      color: deadlineColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  // Hanya tampilkan jam jika tidak terlewat
+                  if (!difference.isNegative) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      timeText, // Menampilkan jam tenggat
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withOpacity(
+                          0.7,
+                        ),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET KARTU TUGAS SELESAI (SUDAH DINILAI ATAU TERLEWAT) ---
+  Widget _buildGradedTaskCard(
+    BuildContext context,
+    String taskId,
+    Map<String, dynamic> taskData,
+    Map<String, dynamic>? submissionData, // Jadikan nullable
+  ) {
+    final theme = Theme.of(context);
+    final String judul = taskData['judul'] ?? 'Tanpa Judul';
+    final String mapel = taskData['mataPelajaran'] ?? 'Mapel';
+    // Ambil nilai HANYA jika submissionData tidak null
+    final nilai = submissionData?['nilai']; // Gunakan ?.
+
+    // Ambil tanggal pengumpulan jika ada, jika tidak, gunakan tanggal tenggat sebagai fallback
+    final Timestamp eventTimestamp =
+        submissionData?['dikumpulkanPada'] as Timestamp? ?? // Gunakan ?.
+        taskData['tenggatWaktu'] as Timestamp? ??
+        Timestamp.now();
+    final DateTime eventDate = eventTimestamp.toDate();
+    // Format tanggal sesuai gambar: "dd Okt"
+    final String formattedTanggal = DateFormat(
+      'dd MMM',
+      'id_ID',
+    ).format(eventDate);
+
+    // Tentukan warna background nilai dan teks nilai/status
+    final Color nilaiBackgroundColor;
+    final String nilaiText;
+
+    if (nilai != null) {
+      // Jika sudah ada nilai
+      nilaiBackgroundColor = (nilai is num && nilai >= 75)
+          ? Colors
+                .green
+                .shade600 // Hijau jika >= 75
+          : Colors.orange.shade700; // Oranye jika < 75
+      nilaiText = nilai.toString(); // Tampilkan nilai
+    } else {
+      // Jika belum ada nilai (kasus terlewat tapi belum dikumpul/dinilai)
+      nilaiBackgroundColor = Colors.grey.shade600; // Warna abu-abu
+      nilaiText = '-'; // Tampilkan strip
+    }
+
+    // Tentukan subtitle berdasarkan apakah sudah dinilai atau hanya terlewat
+    final String subtitleText = nilai != null
+        ? '$mapel - Dinilai pada $formattedTanggal' // Jika sudah dinilai
+        : '$mapel - Terlewat'; // Jika hanya terlewat
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.0),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TaskDetailScreen(taskId: taskId, taskData: taskData),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      judul, // Judul Tugas
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Subtitle: Menampilkan status (Dinilai/Terlewat)
+                    Text(
+                      subtitleText,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withOpacity(
+                          0.7,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: nilaiBackgroundColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              ),
+              const SizedBox(width: 16),
+              // Lingkaran untuk nilai atau status
+              CircleAvatar(
+                backgroundColor: nilaiBackgroundColor,
+                radius: 22, // Sesuaikan ukuran jika perlu
                 child: Text(
-                  nilai?.toString() ?? '?',
-                  // Teks nilai tetap putih
+                  nilaiText, // Tampilkan nilai atau '-'
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -135,35 +272,50 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Ambil tema
+    final theme = Theme.of(context);
 
     if (currentUser == null) {
       return const Center(child: Text('Silakan login ulang.'));
     }
 
     return Scaffold(
-      // <<-- Tambahkan Scaffold
       appBar: AppBar(
-        // <<-- Tambahkan AppBar
-        title: const Text('Tugas Dinilai'),
-        backgroundColor: Colors.transparent,
+        title: const Text('Daftar Tugas'),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
+        centerTitle: false, // Judul rata kiri
         actions: [
           IconButton(
-            onPressed: () {}, // Aksi notifikasi?
+            onPressed: () {
+              // TODO: Aksi Pencarian
+            },
             icon: Icon(
-              Icons.notifications_outlined,
-              color: theme.iconTheme.color?.withOpacity(0.7),
+              Icons.search, // Icon kaca pembesar
+              color: theme.iconTheme.color?.withOpacity(
+                0.9,
+              ), // Sedikit lebih jelas
             ),
+            tooltip: 'Cari Tugas',
+          ),
+          IconButton(
+            onPressed: () {
+              // TODO: Aksi notifikasi
+            },
+            icon: Icon(
+              Icons.notifications_outlined, // Icon lonceng
+              color: theme.iconTheme.color?.withOpacity(
+                0.9,
+              ), // Sedikit lebih jelas
+            ),
+            tooltip: 'Notifikasi',
           ),
         ],
       ),
       body: FutureBuilder<UserModel?>(
-        //
         future: _userFuture,
         builder: (context, userSnapshot) {
           if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CustomLoadingIndicator()); //
+            return const Center(child: CustomLoadingIndicator());
           }
           if (!userSnapshot.hasData || userSnapshot.data == null) {
             return const Center(child: Text('Gagal memuat data siswa.'));
@@ -174,10 +326,20 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
 
           return Column(
             children: [
-              // --- BAGIAN TOGGLE ---
+              // --- BAGIAN TOGGLE (SESUAI GAMBAR) ---
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 16.0,
+                ), // Tambah padding horizontal
+                child: Container(
+                  // Bungkus dengan Container untuk styling
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.grey[800]
+                        : Colors.grey[300], // Warna background toggle
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                   child: ToggleButtons(
                     isSelected: [
                       _selectedToggleIndex == 0,
@@ -188,32 +350,42 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                         _selectedToggleIndex = index;
                       });
                     },
-                    // Style dari tema
-                    borderRadius: theme.toggleButtonsTheme.borderRadius,
+                    borderRadius: BorderRadius.circular(8.0),
                     selectedBorderColor:
-                        theme.toggleButtonsTheme.selectedBorderColor,
-                    selectedColor: theme.toggleButtonsTheme.selectedColor,
-                    fillColor: theme.toggleButtonsTheme.fillColor,
-                    color: theme.toggleButtonsTheme.color,
-                    borderColor: theme.toggleButtonsTheme.borderColor,
-                    textStyle: theme.toggleButtonsTheme.textStyle,
+                        theme.colorScheme.primary, // Warna border saat terpilih
+                    selectedColor:
+                        theme.colorScheme.onPrimary, // Warna teks saat terpilih
+                    fillColor:
+                        theme.colorScheme.primary, // Warna fill saat terpilih
+                    color: theme.textTheme.bodyLarge?.color?.withOpacity(
+                      0.6,
+                    ), // Warna teks saat tidak terpilih
+                    borderColor: Colors.transparent, // Hilangkan border luar
+                    renderBorder: false, // Hilangkan border antar tombol
                     constraints: const BoxConstraints(
-                      minHeight: 35.0,
+                      minHeight: 38.0,
                       minWidth: 100.0,
-                    ),
+                    ), // Atur ukuran minimum
                     children: const [
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text('Aktif'),
+                        child: Text(
+                          'Aktif',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text('Selesai'),
+                        child: Text(
+                          'Selesai',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
+              // --- AKHIR BAGIAN TOGGLE ---
 
               // --- BAGIAN LIST TUGAS ---
               Expanded(
@@ -221,12 +393,11 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                   stream: FirebaseFirestore.instance
                       .collection('tugas')
                       .where('untukKelas', isEqualTo: userKelas)
-                      .orderBy('tenggatWaktu', descending: true)
-                      .snapshots(),
+                      .snapshots(), // Hapus orderBy di sini, lakukan setelah filter
                   builder: (context, taskSnapshot) {
                     if (taskSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const Center(child: CustomLoadingIndicator()); //
+                      return const Center(child: CustomLoadingIndicator());
                     }
                     if (!taskSnapshot.hasData ||
                         taskSnapshot.data!.docs.isEmpty) {
@@ -242,91 +413,141 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                       );
                     }
 
-                    List<Future<Widget?>> gradedTaskWidgetsFutures =
-                        taskSnapshot.data!.docs.map((taskDoc) async {
-                          Map<String, dynamic> taskData =
-                              taskDoc.data() as Map<String, dynamic>;
-                          Timestamp tenggatTimestamp =
-                              taskData['tenggatWaktu'] as Timestamp? ??
-                              Timestamp.now();
-                          DateTime tenggatWaktu = tenggatTimestamp.toDate();
-                          bool isTaskExpired = tenggatWaktu.isBefore(
-                            DateTime.now(),
-                          );
-
-                          if ((_selectedToggleIndex == 0 && isTaskExpired) ||
-                              (_selectedToggleIndex == 1 && !isTaskExpired)) {
-                            return null;
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collectionGroup('pengumpulan')
+                          .where('userId', isEqualTo: userId)
+                          .snapshots(),
+                      builder: (context, submissionSnapshot) {
+                        Map<String, Map<String, dynamic>> submissions = {};
+                        if (submissionSnapshot.hasData) {
+                          for (var doc in submissionSnapshot.data!.docs) {
+                            submissions[doc.reference.parent.parent!.id] =
+                                doc.data() as Map<String, dynamic>;
                           }
-
-                          DocumentSnapshot submissionSnapshot =
-                              await FirebaseFirestore.instance
-                                  .collection('tugas')
-                                  .doc(taskDoc.id)
-                                  .collection('pengumpulan')
-                                  .doc(userId)
-                                  .get();
-
-                          if (submissionSnapshot.exists) {
-                            Map<String, dynamic> submissionData =
-                                submissionSnapshot.data()
-                                    as Map<String, dynamic>;
-                            if (submissionData['nilai'] != null) {
-                              return _buildGradedTaskCard(
-                                context,
-                                taskDoc.id,
-                                taskData,
-                                submissionData,
-                              );
-                            }
-                          }
-                          return null;
-                        }).toList();
-
-                    return FutureBuilder<List<Widget?>>(
-                      future: Future.wait(gradedTaskWidgetsFutures),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(child: CustomLoadingIndicator());
-                        } //
-                        if (!snapshot.hasData || snapshot.data == null) {
-                          return Center(
-                            child: Text(
-                              'Gagal memuat detail nilai.',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          );
                         }
 
-                        final List<Widget> gradedTaskWidgets = snapshot.data!
-                            .whereType<Widget>()
-                            .toList();
+                        // --- LOGIKA PEMISAHAN AKTIF DAN SELESAI (SUDAH DIPERBAIKI) ---
+                        List<QueryDocumentSnapshot> activeTasks = [];
+                        List<QueryDocumentSnapshot> completedTasks = [];
+                        final now = DateTime.now();
 
-                        if (gradedTaskWidgets.isEmpty) {
+                        for (var taskDoc in taskSnapshot.data!.docs) {
+                          final taskData =
+                              taskDoc.data() as Map<String, dynamic>;
+                          // Ambil submissionData DARI MAP submissions, bukan dari snapshot langsung
+                          final submissionData =
+                              submissions[taskDoc.id]; // <<< PENTING
+
+                          final Timestamp tenggatTimestamp =
+                              taskData['tenggatWaktu'] as Timestamp? ??
+                              Timestamp.now();
+                          final DateTime tenggatWaktu = tenggatTimestamp
+                              .toDate();
+                          final bool isOverdue = tenggatWaktu.isBefore(now);
+                          // Cek nilai dari submissionData yang diambil dari map
+                          final bool isGraded =
+                              submissionData != null &&
+                              submissionData['nilai'] != null; // <<< PENTING
+
+                          if (isGraded || isOverdue) {
+                            // Masuk ke Selesai JIKA sudah dinilai ATAU sudah lewat tenggat
+                            completedTasks.add(taskDoc);
+                          } else {
+                            // Masuk ke Aktif HANYA JIKA belum dinilai DAN belum lewat tenggat
+                            activeTasks.add(taskDoc);
+                          }
+                        }
+                        // --- AKHIR LOGIKA PEMISAHAN ---
+
+                        // Urutkan tugas aktif (tenggat terdekat di atas)
+                        activeTasks.sort((a, b) {
+                          Timestamp aTenggat =
+                              (a.data()
+                                  as Map<String, dynamic>)['tenggatWaktu'] ??
+                              Timestamp.now();
+                          Timestamp bTenggat =
+                              (b.data()
+                                  as Map<String, dynamic>)['tenggatWaktu'] ??
+                              Timestamp.now();
+                          return aTenggat.compareTo(bTenggat);
+                        });
+
+                        // Urutkan tugas selesai (terbaru dinilai/terlewat di atas)
+                        completedTasks.sort((a, b) {
+                          // Ambil submission data dari MAP submissions lagi
+                          final subA = submissions[a.id]; // <<< PENTING
+                          final subB = submissions[b.id]; // <<< PENTING
+                          Timestamp aTimestamp =
+                              subA?['dikumpulkanPada'] as Timestamp? ??
+                              (a.data()
+                                  as Map<String, dynamic>)['tenggatWaktu'] ??
+                              Timestamp.now();
+                          Timestamp bTimestamp =
+                              subB?['dikumpulkanPada'] as Timestamp? ??
+                              (b.data()
+                                  as Map<String, dynamic>)['tenggatWaktu'] ??
+                              Timestamp.now();
+                          return bTimestamp.compareTo(aTimestamp);
+                        });
+
+                        final List<QueryDocumentSnapshot> tasksToShow =
+                            _selectedToggleIndex == 0
+                            ? activeTasks
+                            : completedTasks;
+
+                        if (tasksToShow.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(32.0),
                               child: Text(
                                 _selectedToggleIndex == 0
-                                    ? 'Tidak ada tugas aktif yang sudah dinilai.'
-                                    : 'Tidak ada tugas selesai yang sudah dinilai.',
+                                    ? 'Tidak ada tugas aktif.'
+                                    : 'Tidak ada tugas yang sudah selesai.',
                                 textAlign: TextAlign.center,
-                                style: theme
-                                    .textTheme
-                                    .bodyMedium, // Ambil style dari tema
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
                           );
                         }
 
-                        return ListView(
+                        // --- PEMANGGILAN KARTU YANG DIPASTIKAN BENAR ---
+                        return ListView.builder(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16.0,
                             vertical: 8.0,
                           ),
-                          children: gradedTaskWidgets,
+                          itemCount: tasksToShow.length,
+                          itemBuilder: (context, index) {
+                            final taskDoc = tasksToShow[index];
+                            final taskData =
+                                taskDoc.data() as Map<String, dynamic>;
+
+                            if (_selectedToggleIndex == 0) {
+                              // Tampilkan kartu tugas aktif
+                              return _buildActiveTaskCard(
+                                context,
+                                taskDoc.id,
+                                taskData,
+                              );
+                            } else {
+                              // TAB SELESAI: SELALU TAMPILKAN KARTU GRADED
+                              // Ambil submission data dari MAP submissions
+                              final submissionData =
+                                  submissions[taskDoc
+                                      .id]; // <<< PENTING: Ambil dari map
+                              return _buildGradedTaskCard(
+                                context,
+                                taskDoc.id,
+                                taskData,
+                                submissionData, // Kirim data dari map (bisa null)
+                              );
+                            }
+                          },
                         );
+                        // --- AKHIR PEMANGGILAN KARTU ---
                       },
                     );
                   },
@@ -336,6 +557,6 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
           );
         },
       ),
-    ); // <<-- Tutup Scaffold
+    );
   }
 }
