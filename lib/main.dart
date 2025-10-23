@@ -69,13 +69,10 @@ class MyAppState extends State<MyApp> {
       primary: Colors.indigo.shade700,
       secondary: Colors.indigoAccent.shade400,
       surface: Colors.white,
-      `background`: const Color(
-        0xFFF0F2F5,
-      ), // <<-- Biarkan background di sini (meskipun deprecated) agar warna Scaffold benar
+      background: const Color(0xFFF0F2F5),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
-      onSurface: Colors.black87, // <<-- Ganti onBackground ke onSurface
-      // onBackground: Colors.black87, // <<-- Hapus onBackground
+      onSurface: Colors.black87,
       error: Colors.redAccent.shade700,
       onError: Colors.white,
       brightness: Brightness.light,

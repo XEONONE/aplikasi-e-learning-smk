@@ -3,7 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:aplikasi_e_learning_smk/services/auth_service.dart'; // Tetap diperlukan jika Anda panggil AuthService
 // import 'package:aplikasi_e_learning_smk/widgets/comment_section.dart'; // Hapus jika tidak dipakai
 import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
