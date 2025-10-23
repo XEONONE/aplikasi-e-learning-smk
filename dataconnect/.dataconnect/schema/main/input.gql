@@ -1,27 +1,39 @@
 """
-✨ `List_KeyOutput` returns the primary key fields of table type `List`.
+✨ `Assignment_KeyOutput` returns the primary key fields of table type `Assignment`.
 
-It has the same format as `List_Key`, but is only used as mutation return value.
+It has the same format as `Assignment_Key`, but is only used as mutation return value.
 """
-scalar List_KeyOutput
+scalar Assignment_KeyOutput
 """
-✨ `ListMovie_KeyOutput` returns the primary key fields of table type `ListMovie`.
+✨ `Course_KeyOutput` returns the primary key fields of table type `Course`.
 
-It has the same format as `ListMovie_Key`, but is only used as mutation return value.
+It has the same format as `Course_Key`, but is only used as mutation return value.
 """
-scalar ListMovie_KeyOutput
+scalar Course_KeyOutput
 """
-✨ `Movie_KeyOutput` returns the primary key fields of table type `Movie`.
+✨ `Enrollment_KeyOutput` returns the primary key fields of table type `Enrollment`.
 
-It has the same format as `Movie_Key`, but is only used as mutation return value.
+It has the same format as `Enrollment_Key`, but is only used as mutation return value.
 """
-scalar Movie_KeyOutput
+scalar Enrollment_KeyOutput
 """
-✨ `Review_KeyOutput` returns the primary key fields of table type `Review`.
+✨ `Lesson_KeyOutput` returns the primary key fields of table type `Lesson`.
 
-It has the same format as `Review_Key`, but is only used as mutation return value.
+It has the same format as `Lesson_Key`, but is only used as mutation return value.
 """
-scalar Review_KeyOutput
+scalar Lesson_KeyOutput
+"""
+✨ `Module_KeyOutput` returns the primary key fields of table type `Module`.
+
+It has the same format as `Module_Key`, but is only used as mutation return value.
+"""
+scalar Module_KeyOutput
+"""
+✨ `Submission_KeyOutput` returns the primary key fields of table type `Submission`.
+
+It has the same format as `Submission_Key`, but is only used as mutation return value.
+"""
+scalar Submission_KeyOutput
 """
 ✨ `User_KeyOutput` returns the primary key fields of table type `User`.
 
@@ -29,760 +41,160 @@ It has the same format as `User_Key`, but is only used as mutation return value.
 """
 scalar User_KeyOutput
 """
-✨ `Watch_KeyOutput` returns the primary key fields of table type `Watch`.
-
-It has the same format as `Watch_Key`, but is only used as mutation return value.
+✨ Generated data input type for table 'Assignment'. It includes all necessary fields for creating or upserting rows into table.
 """
-scalar Watch_KeyOutput
-"""
-✨ Generated data input type for table 'List'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input List_Data {
+input Assignment_Data {
   """
-  ✨ Generated from Field `List`.`id` of type `UUID!`
+  ✨ Generated from Field `Assignment`.`id` of type `UUID!`
   """
   id: UUID
   """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `List`.`id` of type `UUID!`)
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Assignment`.`id` of type `UUID!`)
   """
   id_expr: UUID_Expr
   """
-  ✨ Generated from Field `List`.`userId` of type `UUID!`
+  ✨ Generated from Field `Assignment`.`moduleId` of type `UUID`
   """
-  userId: UUID
+  moduleId: UUID
   """
-  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `List`.`userId` of type `UUID!`)
+  ✨ `_expr` server value variant of `moduleId` (✨ Generated from Field `Assignment`.`moduleId` of type `UUID`)
   """
-  userId_expr: UUID_Expr
+  moduleId_expr: UUID_Expr
   """
-  ✨ Generated from Field `List`.`user` of type `User!`
+  ✨ Generated from Field `Assignment`.`module` of type `Module`
   """
-  user: User_Key
+  module: Module_Key
   """
-  ✨ Generated from Field `List`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `List`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_expr: Timestamp_Expr
-  """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `List`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_time: Timestamp_Relative
-  """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `List`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_update: [Timestamp_Update!]
-  """
-  ✨ Generated from Field `List`.`description` of type `String`
+  ✨ Generated from Field `Assignment`.`description` of type `String!`
   """
   description: String
   """
-  ✨ `_expr` server value variant of `description` (✨ Generated from Field `List`.`description` of type `String`)
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Assignment`.`description` of type `String!`)
   """
   description_expr: String_Expr
   """
-  ✨ Generated from Field `List`.`name` of type `String!`
+  ✨ Generated from Field `Assignment`.`dueDate` of type `Date!`
   """
-  name: String
+  dueDate: Date
   """
-  ✨ `_expr` server value variant of `name` (✨ Generated from Field `List`.`name` of type `String!`)
+  ✨ `_date` server value variant of `dueDate` (✨ Generated from Field `Assignment`.`dueDate` of type `Date!`)
   """
-  name_expr: String_Expr
+  dueDate_date: Date_Relative
   """
-  ✨ Generated from Field `List`.`public` of type `Boolean!`
+  ✨ `_expr` server value variant of `dueDate` (✨ Generated from Field `Assignment`.`dueDate` of type `Date!`)
   """
-  public: Boolean
+  dueDate_expr: Date_Expr
   """
-  ✨ `_expr` server value variant of `public` (✨ Generated from Field `List`.`public` of type `Boolean!`)
+  ✨ `_update` server value variant of `dueDate` (✨ Generated from Field `Assignment`.`dueDate` of type `Date!`)
   """
-  public_expr: Boolean_Expr
+  dueDate_update: [Date_Update!]
   """
-  ✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`
+  ✨ Generated from Field `Assignment`.`maxScore` of type `Int!`
   """
-  updatedAt: Timestamp
+  maxScore: Int
   """
-  ✨ `_expr` server value variant of `updatedAt` (✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`)
+  ✨ `_expr` server value variant of `maxScore` (✨ Generated from Field `Assignment`.`maxScore` of type `Int!`)
   """
-  updatedAt_expr: Timestamp_Expr
+  maxScore_expr: Int_Expr
   """
-  ✨ `_time` server value variant of `updatedAt` (✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`)
+  ✨ `_update` server value variant of `maxScore` (✨ Generated from Field `Assignment`.`maxScore` of type `Int!`)
   """
-  updatedAt_time: Timestamp_Relative
+  maxScore_update: [Int_Update!]
   """
-  ✨ `_update` server value variant of `updatedAt` (✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`)
-  """
-  updatedAt_update: [Timestamp_Update!]
-}
-"""
-✨ Generated filter input type for table 'List'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input List_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [List_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: List_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [List_Filter!]
-  """
-  ✨ Generated from Field `List`.`id` of type `UUID!`
-  """
-  id: UUID_Filter
-  """
-  ✨ Generated from Field `List`.`userId` of type `UUID!`
-  """
-  userId: UUID_Filter
-  """
-  ✨ Generated from Field `List`.`user` of type `User!`
-  """
-  user: User_Filter
-  """
-  ✨ Generated from Field `List`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `List`.`description` of type `String`
-  """
-  description: String_Filter
-  """
-  ✨ Generated from Field `List`.`name` of type `String!`
-  """
-  name: String_Filter
-  """
-  ✨ Generated from Field `List`.`public` of type `Boolean!`
-  """
-  public: Boolean_Filter
-  """
-  ✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`
-  """
-  updatedAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `List`.`listMovies_on_list` of type `[ListMovie!]!`
-  """
-  listMovies_on_list: ListMovie_ListFilter
-  """
-  ✨ Generated from Field `List`.`movies_via_ListMovie` of type `[Movie!]!`
-  """
-  movies_via_ListMovie: Movie_ListFilter
-}
-"""
-✨ Generated first-row input type for table 'List'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input List_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [List_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: List_Filter
-}
-"""
-✨ Generated having input type for table 'List'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input List_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [List_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: List_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [List_Having!]
-  """
-  ✨ Generated from Field `List`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`description_count` of type `Int!`
-  """
-  description_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`id_count` of type `Int!`
-  """
-  id_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`name_count` of type `Int!`
-  """
-  name_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`public_count` of type `Int!`
-  """
-  public_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`updatedAt_count` of type `Int!`
-  """
-  updatedAt_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`userId_count` of type `Int!`
-  """
-  userId_count: Int_Filter
-  """
-  ✨ Generated from Field `List`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `List`.`updatedAt_min` of type `Timestamp`
-  """
-  updatedAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `List`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `List`.`updatedAt_max` of type `Timestamp`
-  """
-  updatedAt_max: Timestamp_Filter
-}
-"""
-✨ Generated key input type for table 'List'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input List_Key {
-  """
-  ✨ Generated from Field `List`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `List`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr
-}
-"""
-✨ Generated list filter input type for table 'List'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input List_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: List_Filter
-}
-"""
-✨ Generated order input type for table 'List'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input List_Order {
-  """
-  ✨ Generated from Field `List`.`id` of type `UUID!`
-  """
-  id: OrderDirection
-  """
-  ✨ Generated from Field `List`.`userId` of type `UUID!`
-  """
-  userId: OrderDirection
-  """
-  ✨ Generated from Field `List`.`user` of type `User!`
-  """
-  user: User_Order
-  """
-  ✨ Generated from Field `List`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: OrderDirection
-  """
-  ✨ Generated from Field `List`.`description` of type `String`
-  """
-  description: OrderDirection
-  """
-  ✨ Generated from Field `List`.`name` of type `String!`
-  """
-  name: OrderDirection
-  """
-  ✨ Generated from Field `List`.`public` of type `Boolean!`
-  """
-  public: OrderDirection
-  """
-  ✨ Generated from Field `List`.`updatedAt` of type `Timestamp!`
-  """
-  updatedAt: OrderDirection
-  """
-  ✨ Generated from Field `List`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`description_count` of type `Int!`
-  """
-  description_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`id_count` of type `Int!`
-  """
-  id_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`name_count` of type `Int!`
-  """
-  name_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`public_count` of type `Int!`
-  """
-  public_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`updatedAt_count` of type `Int!`
-  """
-  updatedAt_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`userId_count` of type `Int!`
-  """
-  userId_count: OrderDirection
-  """
-  ✨ Generated from Field `List`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: OrderDirection
-  """
-  ✨ Generated from Field `List`.`updatedAt_min` of type `Timestamp`
-  """
-  updatedAt_min: OrderDirection
-  """
-  ✨ Generated from Field `List`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: OrderDirection
-  """
-  ✨ Generated from Field `List`.`updatedAt_max` of type `Timestamp`
-  """
-  updatedAt_max: OrderDirection
-}
-"""
-✨ Generated data input type for table 'ListMovie'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input ListMovie_Data {
-  """
-  ✨ Generated from Field `ListMovie`.`listId` of type `UUID!`
-  """
-  listId: UUID
-  """
-  ✨ `_expr` server value variant of `listId` (✨ Generated from Field `ListMovie`.`listId` of type `UUID!`)
-  """
-  listId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`
-  """
-  movieId: UUID
-  """
-  ✨ `_expr` server value variant of `movieId` (✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`)
-  """
-  movieId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `ListMovie`.`list` of type `List!`
-  """
-  list: List_Key
-  """
-  ✨ Generated from Field `ListMovie`.`movie` of type `Movie!`
-  """
-  movie: Movie_Key
-  """
-  ✨ Generated from Field `ListMovie`.`note` of type `String`
-  """
-  note: String
-  """
-  ✨ `_expr` server value variant of `note` (✨ Generated from Field `ListMovie`.`note` of type `String`)
-  """
-  note_expr: String_Expr
-  """
-  ✨ Generated from Field `ListMovie`.`position` of type `Int!`
-  """
-  position: Int
-  """
-  ✨ `_expr` server value variant of `position` (✨ Generated from Field `ListMovie`.`position` of type `Int!`)
-  """
-  position_expr: Int_Expr
-  """
-  ✨ `_update` server value variant of `position` (✨ Generated from Field `ListMovie`.`position` of type `Int!`)
-  """
-  position_update: [Int_Update!]
-}
-"""
-✨ Generated filter input type for table 'ListMovie'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input ListMovie_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [ListMovie_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: ListMovie_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [ListMovie_Filter!]
-  """
-  ✨ Generated from Field `ListMovie`.`listId` of type `UUID!`
-  """
-  listId: UUID_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`
-  """
-  movieId: UUID_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`list` of type `List!`
-  """
-  list: List_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`movie` of type `Movie!`
-  """
-  movie: Movie_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`note` of type `String`
-  """
-  note: String_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position` of type `Int!`
-  """
-  position: Int_Filter
-}
-"""
-✨ Generated first-row input type for table 'ListMovie'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input ListMovie_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [ListMovie_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: ListMovie_Filter
-}
-"""
-✨ Generated having input type for table 'ListMovie'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input ListMovie_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [ListMovie_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: ListMovie_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [ListMovie_Having!]
-  """
-  ✨ Generated from Field `ListMovie`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`listId_count` of type `Int!`
-  """
-  listId_count: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`movieId_count` of type `Int!`
-  """
-  movieId_count: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`note_count` of type `Int!`
-  """
-  note_count: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position_count` of type `Int!`
-  """
-  position_count: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position_sum` of type `Int`
-  """
-  position_sum: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position_avg` of type `Float`
-  """
-  position_avg: Float_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position_min` of type `Int`
-  """
-  position_min: Int_Filter
-  """
-  ✨ Generated from Field `ListMovie`.`position_max` of type `Int`
-  """
-  position_max: Int_Filter
-}
-"""
-✨ Generated key input type for table 'ListMovie'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input ListMovie_Key {
-  """
-  ✨ Generated from Field `ListMovie`.`listId` of type `UUID!`
-  """
-  listId: UUID
-  """
-  ✨ `_expr` server value variant of `listId` (✨ Generated from Field `ListMovie`.`listId` of type `UUID!`)
-  """
-  listId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`
-  """
-  movieId: UUID
-  """
-  ✨ `_expr` server value variant of `movieId` (✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`)
-  """
-  movieId_expr: UUID_Expr
-}
-"""
-✨ Generated list filter input type for table 'ListMovie'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input ListMovie_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: ListMovie_Filter
-}
-"""
-✨ Generated order input type for table 'ListMovie'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input ListMovie_Order {
-  """
-  ✨ Generated from Field `ListMovie`.`listId` of type `UUID!`
-  """
-  listId: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`movieId` of type `UUID!`
-  """
-  movieId: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`list` of type `List!`
-  """
-  list: List_Order
-  """
-  ✨ Generated from Field `ListMovie`.`movie` of type `Movie!`
-  """
-  movie: Movie_Order
-  """
-  ✨ Generated from Field `ListMovie`.`note` of type `String`
-  """
-  note: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position` of type `Int!`
-  """
-  position: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`listId_count` of type `Int!`
-  """
-  listId_count: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`movieId_count` of type `Int!`
-  """
-  movieId_count: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`note_count` of type `Int!`
-  """
-  note_count: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position_count` of type `Int!`
-  """
-  position_count: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position_sum` of type `Int`
-  """
-  position_sum: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position_avg` of type `Float`
-  """
-  position_avg: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position_min` of type `Int`
-  """
-  position_min: OrderDirection
-  """
-  ✨ Generated from Field `ListMovie`.`position_max` of type `Int`
-  """
-  position_max: OrderDirection
-}
-"""
-✨ Generated data input type for table 'Movie'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input Movie_Data {
-  """
-  ✨ Generated from Field `Movie`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Movie`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr
-  """
-  ✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_expr: Timestamp_Expr
-  """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_time: Timestamp_Relative
-  """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_update: [Timestamp_Update!]
-  """
-  ✨ Generated from Field `Movie`.`genres` of type `[String]`
-  """
-  genres: [String!]
-  """
-  ✨ `_update` server value variant of `genres` (✨ Generated from Field `Movie`.`genres` of type `[String]`)
-  """
-  genres_update: [String_ListUpdate!]
-  """
-  ✨ Generated from Field `Movie`.`runtime` of type `Int`
-  """
-  runtime: Int
-  """
-  ✨ `_expr` server value variant of `runtime` (✨ Generated from Field `Movie`.`runtime` of type `Int`)
-  """
-  runtime_expr: Int_Expr
-  """
-  ✨ `_update` server value variant of `runtime` (✨ Generated from Field `Movie`.`runtime` of type `Int`)
-  """
-  runtime_update: [Int_Update!]
-  """
-  ✨ Generated from Field `Movie`.`summary` of type `String`
-  """
-  summary: String
-  """
-  ✨ `_expr` server value variant of `summary` (✨ Generated from Field `Movie`.`summary` of type `String`)
-  """
-  summary_expr: String_Expr
-  """
-  ✨ Generated from Field `Movie`.`title` of type `String!`
+  ✨ Generated from Field `Assignment`.`title` of type `String!`
   """
   title: String
   """
-  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Movie`.`title` of type `String!`)
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Assignment`.`title` of type `String!`)
   """
   title_expr: String_Expr
   """
-  ✨ Generated from Field `Movie`.`year` of type `Int!`
+  ✨ Generated from Field `Assignment`.`type` of type `String!`
   """
-  year: Int
+  type: String
   """
-  ✨ `_expr` server value variant of `year` (✨ Generated from Field `Movie`.`year` of type `Int!`)
+  ✨ `_expr` server value variant of `type` (✨ Generated from Field `Assignment`.`type` of type `String!`)
   """
-  year_expr: Int_Expr
-  """
-  ✨ `_update` server value variant of `year` (✨ Generated from Field `Movie`.`year` of type `Int!`)
-  """
-  year_update: [Int_Update!]
+  type_expr: String_Expr
 }
 """
-✨ Generated filter input type for table 'Movie'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+✨ Generated filter input type for table 'Assignment'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
 """
-input Movie_Filter {
+input Assignment_Filter {
   """
   Apply multiple filter conditions using `AND` logic.
   """
-  _and: [Movie_Filter!]
+  _and: [Assignment_Filter!]
   """
   Negate the result of the provided filter condition.
   """
-  _not: Movie_Filter
+  _not: Assignment_Filter
   """
   Apply multiple filter conditions using `OR` logic.
   """
-  _or: [Movie_Filter!]
+  _or: [Assignment_Filter!]
   """
-  ✨ Generated from Field `Movie`.`id` of type `UUID!`
+  ✨ Generated from Field `Assignment`.`id` of type `UUID!`
   """
   id: UUID_Filter
   """
-  ✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`
+  ✨ Generated from Field `Assignment`.`moduleId` of type `UUID`
   """
-  createdAt: Timestamp_Filter
+  moduleId: UUID_Filter
   """
-  ✨ Generated from Field `Movie`.`genres` of type `[String]`
+  ✨ Generated from Field `Assignment`.`module` of type `Module`
   """
-  genres: String_ListFilter
+  module: Module_Filter
   """
-  ✨ Generated from Field `Movie`.`runtime` of type `Int`
+  ✨ Generated from Field `Assignment`.`description` of type `String!`
   """
-  runtime: Int_Filter
+  description: String_Filter
   """
-  ✨ Generated from Field `Movie`.`summary` of type `String`
+  ✨ Generated from Field `Assignment`.`dueDate` of type `Date!`
   """
-  summary: String_Filter
+  dueDate: Date_Filter
   """
-  ✨ Generated from Field `Movie`.`title` of type `String!`
+  ✨ Generated from Field `Assignment`.`maxScore` of type `Int!`
+  """
+  maxScore: Int_Filter
+  """
+  ✨ Generated from Field `Assignment`.`title` of type `String!`
   """
   title: String_Filter
   """
-  ✨ Generated from Field `Movie`.`year` of type `Int!`
+  ✨ Generated from Field `Assignment`.`type` of type `String!`
   """
-  year: Int_Filter
+  type: String_Filter
   """
-  ✨ Generated from Field `Movie`.`listMovies_on_movie` of type `[ListMovie!]!`
+  ✨ Generated from Field `Assignment`.`submissions_on_assignment` of type `[Submission!]!`
   """
-  listMovies_on_movie: ListMovie_ListFilter
+  submissions_on_assignment: Submission_ListFilter
   """
-  ✨ Generated from Field `Movie`.`reviews_on_movie` of type `[Review!]!`
+  ✨ Generated from Field `Assignment`.`users_via_Submission` of type `[User!]!`
   """
-  reviews_on_movie: Review_ListFilter
-  """
-  ✨ Generated from Field `Movie`.`watches_on_movie` of type `[Watch!]!`
-  """
-  watches_on_movie: Watch_ListFilter
-  """
-  ✨ Generated from Field `Movie`.`lists_via_ListMovie` of type `[List!]!`
-  """
-  lists_via_ListMovie: List_ListFilter
+  users_via_Submission: User_ListFilter
 }
 """
-✨ Generated first-row input type for table 'Movie'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+✨ Generated first-row input type for table 'Assignment'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
 """
-input Movie_FirstRow {
+input Assignment_FirstRow {
   """
   Order the result by the specified fields.
   """
-  orderBy: [Movie_Order!]
+  orderBy: [Assignment_Order!]
   """
   Filters rows based on the specified conditions.
   """
-  where: Movie_Filter
+  where: Assignment_Filter
 }
 """
-✨ Generated having input type for table 'Movie'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+✨ Generated having input type for table 'Assignment'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
 """
-input Movie_Having {
+input Assignment_Having {
   """
   Apply multiple Having conditions using `AND` logic.
   """
-  _and: [Movie_Having!]
+  _and: [Assignment_Having!]
   """
   Whether to apply DISTINCT to the aggregate function.
   """
@@ -790,97 +202,85 @@ input Movie_Having {
   """
   Negate the result of the provided Having condition.
   """
-  _not: Movie_Having
+  _not: Assignment_Having
   """
   Apply multiple Having conditions using `OR` logic.
   """
-  _or: [Movie_Having!]
+  _or: [Assignment_Having!]
   """
-  ✨ Generated from Field `Movie`.`_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`_count` of type `Int!`
   """
   _count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`createdAt_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`description_count` of type `Int!`
   """
-  createdAt_count: Int_Filter
+  description_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`id_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`dueDate_count` of type `Int!`
+  """
+  dueDate_count: Int_Filter
+  """
+  ✨ Generated from Field `Assignment`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`runtime_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`maxScore_count` of type `Int!`
   """
-  runtime_count: Int_Filter
+  maxScore_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`summary_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`moduleId_count` of type `Int!`
   """
-  summary_count: Int_Filter
+  moduleId_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`title_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`title_count` of type `Int!`
   """
   title_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`year_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`type_count` of type `Int!`
   """
-  year_count: Int_Filter
+  type_count: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`runtime_sum` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_sum` of type `Int`
   """
-  runtime_sum: Int_Filter
+  maxScore_sum: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`year_sum` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_avg` of type `Float`
   """
-  year_sum: Int_Filter
+  maxScore_avg: Float_Filter
   """
-  ✨ Generated from Field `Movie`.`runtime_avg` of type `Float`
+  ✨ Generated from Field `Assignment`.`dueDate_min` of type `Date`
   """
-  runtime_avg: Float_Filter
+  dueDate_min: Date_Filter
   """
-  ✨ Generated from Field `Movie`.`year_avg` of type `Float`
+  ✨ Generated from Field `Assignment`.`maxScore_min` of type `Int`
   """
-  year_avg: Float_Filter
+  maxScore_min: Int_Filter
   """
-  ✨ Generated from Field `Movie`.`createdAt_min` of type `Timestamp`
+  ✨ Generated from Field `Assignment`.`dueDate_max` of type `Date`
   """
-  createdAt_min: Timestamp_Filter
+  dueDate_max: Date_Filter
   """
-  ✨ Generated from Field `Movie`.`runtime_min` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_max` of type `Int`
   """
-  runtime_min: Int_Filter
-  """
-  ✨ Generated from Field `Movie`.`year_min` of type `Int`
-  """
-  year_min: Int_Filter
-  """
-  ✨ Generated from Field `Movie`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `Movie`.`runtime_max` of type `Int`
-  """
-  runtime_max: Int_Filter
-  """
-  ✨ Generated from Field `Movie`.`year_max` of type `Int`
-  """
-  year_max: Int_Filter
+  maxScore_max: Int_Filter
 }
 """
-✨ Generated key input type for table 'Movie'. It represents the primary key fields used to uniquely identify a row in the table.
+✨ Generated key input type for table 'Assignment'. It represents the primary key fields used to uniquely identify a row in the table.
 """
-input Movie_Key {
+input Assignment_Key {
   """
-  ✨ Generated from Field `Movie`.`id` of type `UUID!`
+  ✨ Generated from Field `Assignment`.`id` of type `UUID!`
   """
   id: UUID
   """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Movie`.`id` of type `UUID!`)
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Assignment`.`id` of type `UUID!`)
   """
   id_expr: UUID_Expr
 }
 """
-✨ Generated list filter input type for table 'Movie'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+✨ Generated list filter input type for table 'Assignment'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
 """
-input Movie_ListFilter {
+input Assignment_ListFilter {
   """
   The desired number of objects that match the condition (defaults to at least one).
   """
@@ -888,288 +288,268 @@ input Movie_ListFilter {
   """
   Condition of the related objects to filter for.
   """
-  exist: Movie_Filter
+  exist: Assignment_Filter
 }
 """
-✨ Generated order input type for table 'Movie'. This input defines the sorting order of rows in query results based on one or more fields.
+✨ Generated order input type for table 'Assignment'. This input defines the sorting order of rows in query results based on one or more fields.
 """
-input Movie_Order {
+input Assignment_Order {
   """
-  ✨ Generated from Field `Movie`.`id` of type `UUID!`
+  ✨ Generated from Field `Assignment`.`id` of type `UUID!`
   """
   id: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`createdAt` of type `Timestamp!`
+  ✨ Generated from Field `Assignment`.`moduleId` of type `UUID`
   """
-  createdAt: OrderDirection
+  moduleId: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`runtime` of type `Int`
+  ✨ Generated from Field `Assignment`.`module` of type `Module`
   """
-  runtime: OrderDirection
+  module: Module_Order
   """
-  ✨ Generated from Field `Movie`.`summary` of type `String`
+  ✨ Generated from Field `Assignment`.`description` of type `String!`
   """
-  summary: OrderDirection
+  description: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`title` of type `String!`
+  ✨ Generated from Field `Assignment`.`dueDate` of type `Date!`
+  """
+  dueDate: OrderDirection
+  """
+  ✨ Generated from Field `Assignment`.`maxScore` of type `Int!`
+  """
+  maxScore: OrderDirection
+  """
+  ✨ Generated from Field `Assignment`.`title` of type `String!`
   """
   title: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`year` of type `Int!`
+  ✨ Generated from Field `Assignment`.`type` of type `String!`
   """
-  year: OrderDirection
+  type: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`_count` of type `Int!`
   """
   _count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`createdAt_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`description_count` of type `Int!`
   """
-  createdAt_count: OrderDirection
+  description_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`id_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`dueDate_count` of type `Int!`
+  """
+  dueDate_count: OrderDirection
+  """
+  ✨ Generated from Field `Assignment`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`runtime_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`maxScore_count` of type `Int!`
   """
-  runtime_count: OrderDirection
+  maxScore_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`summary_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`moduleId_count` of type `Int!`
   """
-  summary_count: OrderDirection
+  moduleId_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`title_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`title_count` of type `Int!`
   """
   title_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`year_count` of type `Int!`
+  ✨ Generated from Field `Assignment`.`type_count` of type `Int!`
   """
-  year_count: OrderDirection
+  type_count: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`runtime_sum` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_sum` of type `Int`
   """
-  runtime_sum: OrderDirection
+  maxScore_sum: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`year_sum` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_avg` of type `Float`
   """
-  year_sum: OrderDirection
+  maxScore_avg: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`runtime_avg` of type `Float`
+  ✨ Generated from Field `Assignment`.`dueDate_min` of type `Date`
   """
-  runtime_avg: OrderDirection
+  dueDate_min: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`year_avg` of type `Float`
+  ✨ Generated from Field `Assignment`.`maxScore_min` of type `Int`
   """
-  year_avg: OrderDirection
+  maxScore_min: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`createdAt_min` of type `Timestamp`
+  ✨ Generated from Field `Assignment`.`dueDate_max` of type `Date`
   """
-  createdAt_min: OrderDirection
+  dueDate_max: OrderDirection
   """
-  ✨ Generated from Field `Movie`.`runtime_min` of type `Int`
+  ✨ Generated from Field `Assignment`.`maxScore_max` of type `Int`
   """
-  runtime_min: OrderDirection
-  """
-  ✨ Generated from Field `Movie`.`year_min` of type `Int`
-  """
-  year_min: OrderDirection
-  """
-  ✨ Generated from Field `Movie`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: OrderDirection
-  """
-  ✨ Generated from Field `Movie`.`runtime_max` of type `Int`
-  """
-  runtime_max: OrderDirection
-  """
-  ✨ Generated from Field `Movie`.`year_max` of type `Int`
-  """
-  year_max: OrderDirection
+  maxScore_max: OrderDirection
 }
 """
-✨ Generated data input type for table 'Review'. It includes all necessary fields for creating or upserting rows into table.
+✨ Generated data input type for table 'Course'. It includes all necessary fields for creating or upserting rows into table.
 """
-input Review_Data {
+input Course_Data {
   """
-  ✨ Generated from Field `Review`.`id` of type `UUID!`
+  ✨ Generated from Field `Course`.`id` of type `UUID!`
   """
   id: UUID
   """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Review`.`id` of type `UUID!`)
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Course`.`id` of type `UUID!`)
   """
   id_expr: UUID_Expr
   """
-  ✨ Generated from Field `Review`.`movieId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructorId` of type `UUID`
   """
-  movieId: UUID
+  instructorId: UUID
   """
-  ✨ `_expr` server value variant of `movieId` (✨ Generated from Field `Review`.`movieId` of type `UUID!`)
+  ✨ `_expr` server value variant of `instructorId` (✨ Generated from Field `Course`.`instructorId` of type `UUID`)
   """
-  movieId_expr: UUID_Expr
+  instructorId_expr: UUID_Expr
   """
-  ✨ Generated from Field `Review`.`userId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructor` of type `User`
   """
-  userId: UUID
+  instructor: User_Key
   """
-  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Review`.`userId` of type `UUID!`)
+  ✨ Generated from Field `Course`.`category` of type `String!`
   """
-  userId_expr: UUID_Expr
+  category: String
   """
-  ✨ Generated from Field `Review`.`watchId` of type `UUID!`
+  ✨ `_expr` server value variant of `category` (✨ Generated from Field `Course`.`category` of type `String!`)
   """
-  watchId: UUID
+  category_expr: String_Expr
   """
-  ✨ `_expr` server value variant of `watchId` (✨ Generated from Field `Review`.`watchId` of type `UUID!`)
-  """
-  watchId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `Review`.`movie` of type `Movie!`
-  """
-  movie: Movie_Key
-  """
-  ✨ Generated from Field `Review`.`user` of type `User!`
-  """
-  user: User_Key
-  """
-  ✨ Generated from Field `Review`.`watch` of type `Watch!`
-  """
-  watch: Watch_Key
-  """
-  ✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`
+  ✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`
   """
   createdAt: Timestamp
   """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`)
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`)
   """
   createdAt_expr: Timestamp_Expr
   """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`)
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`)
   """
   createdAt_time: Timestamp_Relative
   """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`)
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`)
   """
   createdAt_update: [Timestamp_Update!]
   """
-  ✨ Generated from Field `Review`.`rating` of type `Int!`
+  ✨ Generated from Field `Course`.`description` of type `String!`
   """
-  rating: Int
+  description: String
   """
-  ✨ `_expr` server value variant of `rating` (✨ Generated from Field `Review`.`rating` of type `Int!`)
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Course`.`description` of type `String!`)
   """
-  rating_expr: Int_Expr
+  description_expr: String_Expr
   """
-  ✨ `_update` server value variant of `rating` (✨ Generated from Field `Review`.`rating` of type `Int!`)
+  ✨ Generated from Field `Course`.`difficultyLevel` of type `String!`
   """
-  rating_update: [Int_Update!]
+  difficultyLevel: String
   """
-  ✨ Generated from Field `Review`.`review` of type `String`
+  ✨ `_expr` server value variant of `difficultyLevel` (✨ Generated from Field `Course`.`difficultyLevel` of type `String!`)
   """
-  review: String
+  difficultyLevel_expr: String_Expr
   """
-  ✨ `_expr` server value variant of `review` (✨ Generated from Field `Review`.`review` of type `String`)
+  ✨ Generated from Field `Course`.`thumbnailUrl` of type `String`
   """
-  review_expr: String_Expr
+  thumbnailUrl: String
   """
-  ✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`
+  ✨ `_expr` server value variant of `thumbnailUrl` (✨ Generated from Field `Course`.`thumbnailUrl` of type `String`)
   """
-  updatedAt: Timestamp
+  thumbnailUrl_expr: String_Expr
   """
-  ✨ `_expr` server value variant of `updatedAt` (✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`)
+  ✨ Generated from Field `Course`.`title` of type `String!`
   """
-  updatedAt_expr: Timestamp_Expr
+  title: String
   """
-  ✨ `_time` server value variant of `updatedAt` (✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`)
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Course`.`title` of type `String!`)
   """
-  updatedAt_time: Timestamp_Relative
-  """
-  ✨ `_update` server value variant of `updatedAt` (✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`)
-  """
-  updatedAt_update: [Timestamp_Update!]
+  title_expr: String_Expr
 }
 """
-✨ Generated filter input type for table 'Review'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+✨ Generated filter input type for table 'Course'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
 """
-input Review_Filter {
+input Course_Filter {
   """
   Apply multiple filter conditions using `AND` logic.
   """
-  _and: [Review_Filter!]
+  _and: [Course_Filter!]
   """
   Negate the result of the provided filter condition.
   """
-  _not: Review_Filter
+  _not: Course_Filter
   """
   Apply multiple filter conditions using `OR` logic.
   """
-  _or: [Review_Filter!]
+  _or: [Course_Filter!]
   """
-  ✨ Generated from Field `Review`.`id` of type `UUID!`
+  ✨ Generated from Field `Course`.`id` of type `UUID!`
   """
   id: UUID_Filter
   """
-  ✨ Generated from Field `Review`.`movieId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructorId` of type `UUID`
   """
-  movieId: UUID_Filter
+  instructorId: UUID_Filter
   """
-  ✨ Generated from Field `Review`.`userId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructor` of type `User`
   """
-  userId: UUID_Filter
+  instructor: User_Filter
   """
-  ✨ Generated from Field `Review`.`watchId` of type `UUID!`
+  ✨ Generated from Field `Course`.`category` of type `String!`
   """
-  watchId: UUID_Filter
+  category: String_Filter
   """
-  ✨ Generated from Field `Review`.`movie` of type `Movie!`
-  """
-  movie: Movie_Filter
-  """
-  ✨ Generated from Field `Review`.`user` of type `User!`
-  """
-  user: User_Filter
-  """
-  ✨ Generated from Field `Review`.`watch` of type `Watch!`
-  """
-  watch: Watch_Filter
-  """
-  ✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`
+  ✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`
   """
   createdAt: Timestamp_Filter
   """
-  ✨ Generated from Field `Review`.`rating` of type `Int!`
+  ✨ Generated from Field `Course`.`description` of type `String!`
   """
-  rating: Int_Filter
+  description: String_Filter
   """
-  ✨ Generated from Field `Review`.`review` of type `String`
+  ✨ Generated from Field `Course`.`difficultyLevel` of type `String!`
   """
-  review: String_Filter
+  difficultyLevel: String_Filter
   """
-  ✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`
+  ✨ Generated from Field `Course`.`thumbnailUrl` of type `String`
   """
-  updatedAt: Timestamp_Filter
+  thumbnailUrl: String_Filter
+  """
+  ✨ Generated from Field `Course`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `Course`.`enrollments_on_course` of type `[Enrollment!]!`
+  """
+  enrollments_on_course: Enrollment_ListFilter
+  """
+  ✨ Generated from Field `Course`.`modules_on_course` of type `[Module!]!`
+  """
+  modules_on_course: Module_ListFilter
+  """
+  ✨ Generated from Field `Course`.`users_via_Enrollment` of type `[User!]!`
+  """
+  users_via_Enrollment: User_ListFilter
 }
 """
-✨ Generated first-row input type for table 'Review'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+✨ Generated first-row input type for table 'Course'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
 """
-input Review_FirstRow {
+input Course_FirstRow {
   """
   Order the result by the specified fields.
   """
-  orderBy: [Review_Order!]
+  orderBy: [Course_Order!]
   """
   Filters rows based on the specified conditions.
   """
-  where: Review_Filter
+  where: Course_Filter
 }
 """
-✨ Generated having input type for table 'Review'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+✨ Generated having input type for table 'Course'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
 """
-input Review_Having {
+input Course_Having {
   """
   Apply multiple Having conditions using `AND` logic.
   """
-  _and: [Review_Having!]
+  _and: [Course_Having!]
   """
   Whether to apply DISTINCT to the aggregate function.
   """
@@ -1177,97 +557,73 @@ input Review_Having {
   """
   Negate the result of the provided Having condition.
   """
-  _not: Review_Having
+  _not: Course_Having
   """
   Apply multiple Having conditions using `OR` logic.
   """
-  _or: [Review_Having!]
+  _or: [Course_Having!]
   """
-  ✨ Generated from Field `Review`.`_count` of type `Int!`
+  ✨ Generated from Field `Course`.`_count` of type `Int!`
   """
   _count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`createdAt_count` of type `Int!`
+  ✨ Generated from Field `Course`.`category_count` of type `Int!`
+  """
+  category_count: Int_Filter
+  """
+  ✨ Generated from Field `Course`.`createdAt_count` of type `Int!`
   """
   createdAt_count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`id_count` of type `Int!`
+  ✨ Generated from Field `Course`.`description_count` of type `Int!`
+  """
+  description_count: Int_Filter
+  """
+  ✨ Generated from Field `Course`.`difficultyLevel_count` of type `Int!`
+  """
+  difficultyLevel_count: Int_Filter
+  """
+  ✨ Generated from Field `Course`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`movieId_count` of type `Int!`
+  ✨ Generated from Field `Course`.`instructorId_count` of type `Int!`
   """
-  movieId_count: Int_Filter
+  instructorId_count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`rating_count` of type `Int!`
+  ✨ Generated from Field `Course`.`thumbnailUrl_count` of type `Int!`
   """
-  rating_count: Int_Filter
+  thumbnailUrl_count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`review_count` of type `Int!`
+  ✨ Generated from Field `Course`.`title_count` of type `Int!`
   """
-  review_count: Int_Filter
+  title_count: Int_Filter
   """
-  ✨ Generated from Field `Review`.`updatedAt_count` of type `Int!`
-  """
-  updatedAt_count: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`userId_count` of type `Int!`
-  """
-  userId_count: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`watchId_count` of type `Int!`
-  """
-  watchId_count: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`rating_sum` of type `Int`
-  """
-  rating_sum: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`rating_avg` of type `Float`
-  """
-  rating_avg: Float_Filter
-  """
-  ✨ Generated from Field `Review`.`createdAt_min` of type `Timestamp`
+  ✨ Generated from Field `Course`.`createdAt_min` of type `Timestamp`
   """
   createdAt_min: Timestamp_Filter
   """
-  ✨ Generated from Field `Review`.`rating_min` of type `Int`
-  """
-  rating_min: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`updatedAt_min` of type `Timestamp`
-  """
-  updatedAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `Review`.`createdAt_max` of type `Timestamp`
+  ✨ Generated from Field `Course`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `Review`.`rating_max` of type `Int`
-  """
-  rating_max: Int_Filter
-  """
-  ✨ Generated from Field `Review`.`updatedAt_max` of type `Timestamp`
-  """
-  updatedAt_max: Timestamp_Filter
 }
 """
-✨ Generated key input type for table 'Review'. It represents the primary key fields used to uniquely identify a row in the table.
+✨ Generated key input type for table 'Course'. It represents the primary key fields used to uniquely identify a row in the table.
 """
-input Review_Key {
+input Course_Key {
   """
-  ✨ Generated from Field `Review`.`id` of type `UUID!`
+  ✨ Generated from Field `Course`.`id` of type `UUID!`
   """
   id: UUID
   """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Review`.`id` of type `UUID!`)
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Course`.`id` of type `UUID!`)
   """
   id_expr: UUID_Expr
 }
 """
-✨ Generated list filter input type for table 'Review'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+✨ Generated list filter input type for table 'Course'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
 """
-input Review_ListFilter {
+input Course_ListFilter {
   """
   The desired number of objects that match the condition (defaults to at least one).
   """
@@ -1275,124 +631,1420 @@ input Review_ListFilter {
   """
   Condition of the related objects to filter for.
   """
-  exist: Review_Filter
+  exist: Course_Filter
 }
 """
-✨ Generated order input type for table 'Review'. This input defines the sorting order of rows in query results based on one or more fields.
+✨ Generated order input type for table 'Course'. This input defines the sorting order of rows in query results based on one or more fields.
 """
-input Review_Order {
+input Course_Order {
   """
-  ✨ Generated from Field `Review`.`id` of type `UUID!`
+  ✨ Generated from Field `Course`.`id` of type `UUID!`
   """
   id: OrderDirection
   """
-  ✨ Generated from Field `Review`.`movieId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructorId` of type `UUID`
   """
-  movieId: OrderDirection
+  instructorId: OrderDirection
   """
-  ✨ Generated from Field `Review`.`userId` of type `UUID!`
+  ✨ Generated from Field `Course`.`instructor` of type `User`
   """
-  userId: OrderDirection
+  instructor: User_Order
   """
-  ✨ Generated from Field `Review`.`watchId` of type `UUID!`
+  ✨ Generated from Field `Course`.`category` of type `String!`
   """
-  watchId: OrderDirection
+  category: OrderDirection
   """
-  ✨ Generated from Field `Review`.`movie` of type `Movie!`
-  """
-  movie: Movie_Order
-  """
-  ✨ Generated from Field `Review`.`user` of type `User!`
-  """
-  user: User_Order
-  """
-  ✨ Generated from Field `Review`.`watch` of type `Watch!`
-  """
-  watch: Watch_Order
-  """
-  ✨ Generated from Field `Review`.`createdAt` of type `Timestamp!`
+  ✨ Generated from Field `Course`.`createdAt` of type `Timestamp!`
   """
   createdAt: OrderDirection
   """
-  ✨ Generated from Field `Review`.`rating` of type `Int!`
+  ✨ Generated from Field `Course`.`description` of type `String!`
   """
-  rating: OrderDirection
+  description: OrderDirection
   """
-  ✨ Generated from Field `Review`.`review` of type `String`
+  ✨ Generated from Field `Course`.`difficultyLevel` of type `String!`
   """
-  review: OrderDirection
+  difficultyLevel: OrderDirection
   """
-  ✨ Generated from Field `Review`.`updatedAt` of type `Timestamp!`
+  ✨ Generated from Field `Course`.`thumbnailUrl` of type `String`
   """
-  updatedAt: OrderDirection
+  thumbnailUrl: OrderDirection
   """
-  ✨ Generated from Field `Review`.`_count` of type `Int!`
+  ✨ Generated from Field `Course`.`title` of type `String!`
+  """
+  title: OrderDirection
+  """
+  ✨ Generated from Field `Course`.`_count` of type `Int!`
   """
   _count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`createdAt_count` of type `Int!`
+  ✨ Generated from Field `Course`.`category_count` of type `Int!`
+  """
+  category_count: OrderDirection
+  """
+  ✨ Generated from Field `Course`.`createdAt_count` of type `Int!`
   """
   createdAt_count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`id_count` of type `Int!`
+  ✨ Generated from Field `Course`.`description_count` of type `Int!`
+  """
+  description_count: OrderDirection
+  """
+  ✨ Generated from Field `Course`.`difficultyLevel_count` of type `Int!`
+  """
+  difficultyLevel_count: OrderDirection
+  """
+  ✨ Generated from Field `Course`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`movieId_count` of type `Int!`
+  ✨ Generated from Field `Course`.`instructorId_count` of type `Int!`
   """
-  movieId_count: OrderDirection
+  instructorId_count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`rating_count` of type `Int!`
+  ✨ Generated from Field `Course`.`thumbnailUrl_count` of type `Int!`
   """
-  rating_count: OrderDirection
+  thumbnailUrl_count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`review_count` of type `Int!`
+  ✨ Generated from Field `Course`.`title_count` of type `Int!`
   """
-  review_count: OrderDirection
+  title_count: OrderDirection
   """
-  ✨ Generated from Field `Review`.`updatedAt_count` of type `Int!`
-  """
-  updatedAt_count: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`userId_count` of type `Int!`
-  """
-  userId_count: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`watchId_count` of type `Int!`
-  """
-  watchId_count: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`rating_sum` of type `Int`
-  """
-  rating_sum: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`rating_avg` of type `Float`
-  """
-  rating_avg: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`createdAt_min` of type `Timestamp`
+  ✨ Generated from Field `Course`.`createdAt_min` of type `Timestamp`
   """
   createdAt_min: OrderDirection
   """
-  ✨ Generated from Field `Review`.`rating_min` of type `Int`
-  """
-  rating_min: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`updatedAt_min` of type `Timestamp`
-  """
-  updatedAt_min: OrderDirection
-  """
-  ✨ Generated from Field `Review`.`createdAt_max` of type `Timestamp`
+  ✨ Generated from Field `Course`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Enrollment'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Enrollment_Data {
   """
-  ✨ Generated from Field `Review`.`rating_max` of type `Int`
+  ✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`
   """
-  rating_max: OrderDirection
+  studentId: UUID
   """
-  ✨ Generated from Field `Review`.`updatedAt_max` of type `Timestamp`
+  ✨ `_expr` server value variant of `studentId` (✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`)
   """
-  updatedAt_max: OrderDirection
+  studentId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`
+  """
+  courseId: UUID
+  """
+  ✨ `_expr` server value variant of `courseId` (✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`)
+  """
+  courseId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Enrollment`.`course` of type `Course!`
+  """
+  course: Course_Key
+  """
+  ✨ Generated from Field `Enrollment`.`student` of type `User!`
+  """
+  student: User_Key
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`
+  """
+  completionDate: Timestamp
+  """
+  ✨ `_expr` server value variant of `completionDate` (✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`)
+  """
+  completionDate_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `completionDate` (✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`)
+  """
+  completionDate_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `completionDate` (✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`)
+  """
+  completionDate_update: [Timestamp_Update!]
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`
+  """
+  enrollmentDate: Timestamp
+  """
+  ✨ `_expr` server value variant of `enrollmentDate` (✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`)
+  """
+  enrollmentDate_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `enrollmentDate` (✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`)
+  """
+  enrollmentDate_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `enrollmentDate` (✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`)
+  """
+  enrollmentDate_update: [Timestamp_Update!]
+  """
+  ✨ Generated from Field `Enrollment`.`grade` of type `Int`
+  """
+  grade: Int
+  """
+  ✨ `_expr` server value variant of `grade` (✨ Generated from Field `Enrollment`.`grade` of type `Int`)
+  """
+  grade_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `grade` (✨ Generated from Field `Enrollment`.`grade` of type `Int`)
+  """
+  grade_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Enrollment`.`status` of type `String!`
+  """
+  status: String
+  """
+  ✨ `_expr` server value variant of `status` (✨ Generated from Field `Enrollment`.`status` of type `String!`)
+  """
+  status_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Enrollment'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Enrollment_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Enrollment_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Enrollment_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Enrollment_Filter!]
+  """
+  ✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`
+  """
+  studentId: UUID_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`
+  """
+  courseId: UUID_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`course` of type `Course!`
+  """
+  course: Course_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`student` of type `User!`
+  """
+  student: User_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`
+  """
+  completionDate: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`
+  """
+  enrollmentDate: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade` of type `Int`
+  """
+  grade: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`status` of type `String!`
+  """
+  status: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'Enrollment'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Enrollment_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Enrollment_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Enrollment_Filter
+}
+"""
+✨ Generated having input type for table 'Enrollment'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Enrollment_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Enrollment_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Enrollment_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Enrollment_Having!]
+  """
+  ✨ Generated from Field `Enrollment`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_count` of type `Int!`
+  """
+  completionDate_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`courseId_count` of type `Int!`
+  """
+  courseId_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_count` of type `Int!`
+  """
+  enrollmentDate_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade_count` of type `Int!`
+  """
+  grade_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`status_count` of type `Int!`
+  """
+  status_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`studentId_count` of type `Int!`
+  """
+  studentId_count: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade_sum` of type `Int`
+  """
+  grade_sum: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade_avg` of type `Float`
+  """
+  grade_avg: Float_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_min` of type `Timestamp`
+  """
+  completionDate_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_min` of type `Timestamp`
+  """
+  enrollmentDate_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade_min` of type `Int`
+  """
+  grade_min: Int_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_max` of type `Timestamp`
+  """
+  completionDate_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_max` of type `Timestamp`
+  """
+  enrollmentDate_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Enrollment`.`grade_max` of type `Int`
+  """
+  grade_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Enrollment'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Enrollment_Key {
+  """
+  ✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`
+  """
+  studentId: UUID
+  """
+  ✨ `_expr` server value variant of `studentId` (✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`)
+  """
+  studentId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`
+  """
+  courseId: UUID
+  """
+  ✨ `_expr` server value variant of `courseId` (✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`)
+  """
+  courseId_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Enrollment'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Enrollment_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Enrollment_Filter
+}
+"""
+✨ Generated order input type for table 'Enrollment'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Enrollment_Order {
+  """
+  ✨ Generated from Field `Enrollment`.`studentId` of type `UUID!`
+  """
+  studentId: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`courseId` of type `UUID!`
+  """
+  courseId: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`course` of type `Course!`
+  """
+  course: Course_Order
+  """
+  ✨ Generated from Field `Enrollment`.`student` of type `User!`
+  """
+  student: User_Order
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate` of type `Timestamp`
+  """
+  completionDate: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate` of type `Timestamp!`
+  """
+  enrollmentDate: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade` of type `Int`
+  """
+  grade: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`status` of type `String!`
+  """
+  status: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_count` of type `Int!`
+  """
+  completionDate_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`courseId_count` of type `Int!`
+  """
+  courseId_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_count` of type `Int!`
+  """
+  enrollmentDate_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade_count` of type `Int!`
+  """
+  grade_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`status_count` of type `Int!`
+  """
+  status_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`studentId_count` of type `Int!`
+  """
+  studentId_count: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade_sum` of type `Int`
+  """
+  grade_sum: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade_avg` of type `Float`
+  """
+  grade_avg: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_min` of type `Timestamp`
+  """
+  completionDate_min: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_min` of type `Timestamp`
+  """
+  enrollmentDate_min: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade_min` of type `Int`
+  """
+  grade_min: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`completionDate_max` of type `Timestamp`
+  """
+  completionDate_max: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`enrollmentDate_max` of type `Timestamp`
+  """
+  enrollmentDate_max: OrderDirection
+  """
+  ✨ Generated from Field `Enrollment`.`grade_max` of type `Int`
+  """
+  grade_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Lesson'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Lesson_Data {
+  """
+  ✨ Generated from Field `Lesson`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Lesson`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Lesson`.`moduleId` of type `UUID`
+  """
+  moduleId: UUID
+  """
+  ✨ `_expr` server value variant of `moduleId` (✨ Generated from Field `Lesson`.`moduleId` of type `UUID`)
+  """
+  moduleId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Lesson`.`module` of type `Module`
+  """
+  module: Module_Key
+  """
+  ✨ Generated from Field `Lesson`.`contentUrl` of type `String!`
+  """
+  contentUrl: String
+  """
+  ✨ `_expr` server value variant of `contentUrl` (✨ Generated from Field `Lesson`.`contentUrl` of type `String!`)
+  """
+  contentUrl_expr: String_Expr
+  """
+  ✨ Generated from Field `Lesson`.`description` of type `String`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Lesson`.`description` of type `String`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `Lesson`.`duration` of type `Int`
+  """
+  duration: Int
+  """
+  ✨ `_expr` server value variant of `duration` (✨ Generated from Field `Lesson`.`duration` of type `Int`)
+  """
+  duration_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `duration` (✨ Generated from Field `Lesson`.`duration` of type `Int`)
+  """
+  duration_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex` of type `Int!`
+  """
+  orderIndex: Int
+  """
+  ✨ `_expr` server value variant of `orderIndex` (✨ Generated from Field `Lesson`.`orderIndex` of type `Int!`)
+  """
+  orderIndex_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `orderIndex` (✨ Generated from Field `Lesson`.`orderIndex` of type `Int!`)
+  """
+  orderIndex_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Lesson`.`title` of type `String!`
+  """
+  title: String
+  """
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Lesson`.`title` of type `String!`)
+  """
+  title_expr: String_Expr
+  """
+  ✨ Generated from Field `Lesson`.`type` of type `String!`
+  """
+  type: String
+  """
+  ✨ `_expr` server value variant of `type` (✨ Generated from Field `Lesson`.`type` of type `String!`)
+  """
+  type_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Lesson'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Lesson_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Lesson_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Lesson_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Lesson_Filter!]
+  """
+  ✨ Generated from Field `Lesson`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Lesson`.`moduleId` of type `UUID`
+  """
+  moduleId: UUID_Filter
+  """
+  ✨ Generated from Field `Lesson`.`module` of type `Module`
+  """
+  module: Module_Filter
+  """
+  ✨ Generated from Field `Lesson`.`contentUrl` of type `String!`
+  """
+  contentUrl: String_Filter
+  """
+  ✨ Generated from Field `Lesson`.`description` of type `String`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration` of type `Int`
+  """
+  duration: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex` of type `Int!`
+  """
+  orderIndex: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `Lesson`.`type` of type `String!`
+  """
+  type: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'Lesson'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Lesson_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Lesson_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Lesson_Filter
+}
+"""
+✨ Generated having input type for table 'Lesson'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Lesson_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Lesson_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Lesson_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Lesson_Having!]
+  """
+  ✨ Generated from Field `Lesson`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`contentUrl_count` of type `Int!`
+  """
+  contentUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`description_count` of type `Int!`
+  """
+  description_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration_count` of type `Int!`
+  """
+  duration_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`moduleId_count` of type `Int!`
+  """
+  moduleId_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_count` of type `Int!`
+  """
+  orderIndex_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`title_count` of type `Int!`
+  """
+  title_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`type_count` of type `Int!`
+  """
+  type_count: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration_sum` of type `Int`
+  """
+  duration_sum: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_sum` of type `Int`
+  """
+  orderIndex_sum: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration_avg` of type `Float`
+  """
+  duration_avg: Float_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_avg` of type `Float`
+  """
+  orderIndex_avg: Float_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration_min` of type `Int`
+  """
+  duration_min: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_min` of type `Int`
+  """
+  orderIndex_min: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`duration_max` of type `Int`
+  """
+  duration_max: Int_Filter
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_max` of type `Int`
+  """
+  orderIndex_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Lesson'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Lesson_Key {
+  """
+  ✨ Generated from Field `Lesson`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Lesson`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Lesson'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Lesson_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Lesson_Filter
+}
+"""
+✨ Generated order input type for table 'Lesson'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Lesson_Order {
+  """
+  ✨ Generated from Field `Lesson`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`moduleId` of type `UUID`
+  """
+  moduleId: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`module` of type `Module`
+  """
+  module: Module_Order
+  """
+  ✨ Generated from Field `Lesson`.`contentUrl` of type `String!`
+  """
+  contentUrl: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`description` of type `String`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration` of type `Int`
+  """
+  duration: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex` of type `Int!`
+  """
+  orderIndex: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`title` of type `String!`
+  """
+  title: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`type` of type `String!`
+  """
+  type: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`contentUrl_count` of type `Int!`
+  """
+  contentUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`description_count` of type `Int!`
+  """
+  description_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration_count` of type `Int!`
+  """
+  duration_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`moduleId_count` of type `Int!`
+  """
+  moduleId_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_count` of type `Int!`
+  """
+  orderIndex_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`title_count` of type `Int!`
+  """
+  title_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`type_count` of type `Int!`
+  """
+  type_count: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration_sum` of type `Int`
+  """
+  duration_sum: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_sum` of type `Int`
+  """
+  orderIndex_sum: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration_avg` of type `Float`
+  """
+  duration_avg: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_avg` of type `Float`
+  """
+  orderIndex_avg: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration_min` of type `Int`
+  """
+  duration_min: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_min` of type `Int`
+  """
+  orderIndex_min: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`duration_max` of type `Int`
+  """
+  duration_max: OrderDirection
+  """
+  ✨ Generated from Field `Lesson`.`orderIndex_max` of type `Int`
+  """
+  orderIndex_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Module'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Module_Data {
+  """
+  ✨ Generated from Field `Module`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Module`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Module`.`courseId` of type `UUID`
+  """
+  courseId: UUID
+  """
+  ✨ `_expr` server value variant of `courseId` (✨ Generated from Field `Module`.`courseId` of type `UUID`)
+  """
+  courseId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Module`.`course` of type `Course`
+  """
+  course: Course_Key
+  """
+  ✨ Generated from Field `Module`.`description` of type `String!`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Module`.`description` of type `String!`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `Module`.`orderIndex` of type `Int!`
+  """
+  orderIndex: Int
+  """
+  ✨ `_expr` server value variant of `orderIndex` (✨ Generated from Field `Module`.`orderIndex` of type `Int!`)
+  """
+  orderIndex_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `orderIndex` (✨ Generated from Field `Module`.`orderIndex` of type `Int!`)
+  """
+  orderIndex_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Module`.`title` of type `String!`
+  """
+  title: String
+  """
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Module`.`title` of type `String!`)
+  """
+  title_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Module'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Module_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Module_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Module_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Module_Filter!]
+  """
+  ✨ Generated from Field `Module`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Module`.`courseId` of type `UUID`
+  """
+  courseId: UUID_Filter
+  """
+  ✨ Generated from Field `Module`.`course` of type `Course`
+  """
+  course: Course_Filter
+  """
+  ✨ Generated from Field `Module`.`description` of type `String!`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex` of type `Int!`
+  """
+  orderIndex: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `Module`.`assignments_on_module` of type `[Assignment!]!`
+  """
+  assignments_on_module: Assignment_ListFilter
+  """
+  ✨ Generated from Field `Module`.`lessons_on_module` of type `[Lesson!]!`
+  """
+  lessons_on_module: Lesson_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Module'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Module_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Module_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Module_Filter
+}
+"""
+✨ Generated having input type for table 'Module'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Module_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Module_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Module_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Module_Having!]
+  """
+  ✨ Generated from Field `Module`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`courseId_count` of type `Int!`
+  """
+  courseId_count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`description_count` of type `Int!`
+  """
+  description_count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex_count` of type `Int!`
+  """
+  orderIndex_count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`title_count` of type `Int!`
+  """
+  title_count: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex_sum` of type `Int`
+  """
+  orderIndex_sum: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex_avg` of type `Float`
+  """
+  orderIndex_avg: Float_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex_min` of type `Int`
+  """
+  orderIndex_min: Int_Filter
+  """
+  ✨ Generated from Field `Module`.`orderIndex_max` of type `Int`
+  """
+  orderIndex_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Module'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Module_Key {
+  """
+  ✨ Generated from Field `Module`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Module`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Module'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Module_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Module_Filter
+}
+"""
+✨ Generated order input type for table 'Module'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Module_Order {
+  """
+  ✨ Generated from Field `Module`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`courseId` of type `UUID`
+  """
+  courseId: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`course` of type `Course`
+  """
+  course: Course_Order
+  """
+  ✨ Generated from Field `Module`.`description` of type `String!`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex` of type `Int!`
+  """
+  orderIndex: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`title` of type `String!`
+  """
+  title: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`courseId_count` of type `Int!`
+  """
+  courseId_count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`description_count` of type `Int!`
+  """
+  description_count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex_count` of type `Int!`
+  """
+  orderIndex_count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`title_count` of type `Int!`
+  """
+  title_count: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex_sum` of type `Int`
+  """
+  orderIndex_sum: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex_avg` of type `Float`
+  """
+  orderIndex_avg: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex_min` of type `Int`
+  """
+  orderIndex_min: OrderDirection
+  """
+  ✨ Generated from Field `Module`.`orderIndex_max` of type `Int`
+  """
+  orderIndex_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Submission'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Submission_Data {
+  """
+  ✨ Generated from Field `Submission`.`studentId` of type `UUID!`
+  """
+  studentId: UUID
+  """
+  ✨ `_expr` server value variant of `studentId` (✨ Generated from Field `Submission`.`studentId` of type `UUID!`)
+  """
+  studentId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`
+  """
+  assignmentId: UUID
+  """
+  ✨ `_expr` server value variant of `assignmentId` (✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`)
+  """
+  assignmentId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Submission`.`assignment` of type `Assignment!`
+  """
+  assignment: Assignment_Key
+  """
+  ✨ Generated from Field `Submission`.`student` of type `User!`
+  """
+  student: User_Key
+  """
+  ✨ Generated from Field `Submission`.`feedback` of type `String`
+  """
+  feedback: String
+  """
+  ✨ `_expr` server value variant of `feedback` (✨ Generated from Field `Submission`.`feedback` of type `String`)
+  """
+  feedback_expr: String_Expr
+  """
+  ✨ Generated from Field `Submission`.`score` of type `Int!`
+  """
+  score: Int
+  """
+  ✨ `_expr` server value variant of `score` (✨ Generated from Field `Submission`.`score` of type `Int!`)
+  """
+  score_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `score` (✨ Generated from Field `Submission`.`score` of type `Int!`)
+  """
+  score_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Submission`.`studentResponse` of type `String`
+  """
+  studentResponse: String
+  """
+  ✨ `_expr` server value variant of `studentResponse` (✨ Generated from Field `Submission`.`studentResponse` of type `String`)
+  """
+  studentResponse_expr: String_Expr
+  """
+  ✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`
+  """
+  submissionDate: Timestamp
+  """
+  ✨ `_expr` server value variant of `submissionDate` (✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`)
+  """
+  submissionDate_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `submissionDate` (✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`)
+  """
+  submissionDate_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `submissionDate` (✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`)
+  """
+  submissionDate_update: [Timestamp_Update!]
+}
+"""
+✨ Generated filter input type for table 'Submission'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Submission_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Submission_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Submission_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Submission_Filter!]
+  """
+  ✨ Generated from Field `Submission`.`studentId` of type `UUID!`
+  """
+  studentId: UUID_Filter
+  """
+  ✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`
+  """
+  assignmentId: UUID_Filter
+  """
+  ✨ Generated from Field `Submission`.`assignment` of type `Assignment!`
+  """
+  assignment: Assignment_Filter
+  """
+  ✨ Generated from Field `Submission`.`student` of type `User!`
+  """
+  student: User_Filter
+  """
+  ✨ Generated from Field `Submission`.`feedback` of type `String`
+  """
+  feedback: String_Filter
+  """
+  ✨ Generated from Field `Submission`.`score` of type `Int!`
+  """
+  score: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`studentResponse` of type `String`
+  """
+  studentResponse: String_Filter
+  """
+  ✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`
+  """
+  submissionDate: Timestamp_Filter
+}
+"""
+✨ Generated first-row input type for table 'Submission'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Submission_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Submission_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Submission_Filter
+}
+"""
+✨ Generated having input type for table 'Submission'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Submission_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Submission_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Submission_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Submission_Having!]
+  """
+  ✨ Generated from Field `Submission`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`assignmentId_count` of type `Int!`
+  """
+  assignmentId_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`feedback_count` of type `Int!`
+  """
+  feedback_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`score_count` of type `Int!`
+  """
+  score_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`studentId_count` of type `Int!`
+  """
+  studentId_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`studentResponse_count` of type `Int!`
+  """
+  studentResponse_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_count` of type `Int!`
+  """
+  submissionDate_count: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`score_sum` of type `Int`
+  """
+  score_sum: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`score_avg` of type `Float`
+  """
+  score_avg: Float_Filter
+  """
+  ✨ Generated from Field `Submission`.`score_min` of type `Int`
+  """
+  score_min: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_min` of type `Timestamp`
+  """
+  submissionDate_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Submission`.`score_max` of type `Int`
+  """
+  score_max: Int_Filter
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_max` of type `Timestamp`
+  """
+  submissionDate_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Submission'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Submission_Key {
+  """
+  ✨ Generated from Field `Submission`.`studentId` of type `UUID!`
+  """
+  studentId: UUID
+  """
+  ✨ `_expr` server value variant of `studentId` (✨ Generated from Field `Submission`.`studentId` of type `UUID!`)
+  """
+  studentId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`
+  """
+  assignmentId: UUID
+  """
+  ✨ `_expr` server value variant of `assignmentId` (✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`)
+  """
+  assignmentId_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Submission'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Submission_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Submission_Filter
+}
+"""
+✨ Generated order input type for table 'Submission'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Submission_Order {
+  """
+  ✨ Generated from Field `Submission`.`studentId` of type `UUID!`
+  """
+  studentId: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`assignmentId` of type `UUID!`
+  """
+  assignmentId: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`assignment` of type `Assignment!`
+  """
+  assignment: Assignment_Order
+  """
+  ✨ Generated from Field `Submission`.`student` of type `User!`
+  """
+  student: User_Order
+  """
+  ✨ Generated from Field `Submission`.`feedback` of type `String`
+  """
+  feedback: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score` of type `Int!`
+  """
+  score: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`studentResponse` of type `String`
+  """
+  studentResponse: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`submissionDate` of type `Timestamp!`
+  """
+  submissionDate: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`assignmentId_count` of type `Int!`
+  """
+  assignmentId_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`feedback_count` of type `Int!`
+  """
+  feedback_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score_count` of type `Int!`
+  """
+  score_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`studentId_count` of type `Int!`
+  """
+  studentId_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`studentResponse_count` of type `Int!`
+  """
+  studentResponse_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_count` of type `Int!`
+  """
+  submissionDate_count: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score_sum` of type `Int`
+  """
+  score_sum: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score_avg` of type `Float`
+  """
+  score_avg: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score_min` of type `Int`
+  """
+  score_min: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_min` of type `Timestamp`
+  """
+  submissionDate_min: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`score_max` of type `Int`
+  """
+  score_max: OrderDirection
+  """
+  ✨ Generated from Field `Submission`.`submissionDate_max` of type `Timestamp`
+  """
+  submissionDate_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'User'. It includes all necessary fields for creating or upserting rows into table.
@@ -1431,13 +2083,21 @@ input User_Data {
   """
   displayName_expr: String_Expr
   """
-  ✨ Generated from Field `User`.`email` of type `String`
+  ✨ Generated from Field `User`.`email` of type `String!`
   """
   email: String
   """
-  ✨ `_expr` server value variant of `email` (✨ Generated from Field `User`.`email` of type `String`)
+  ✨ `_expr` server value variant of `email` (✨ Generated from Field `User`.`email` of type `String!`)
   """
   email_expr: String_Expr
+  """
+  ✨ Generated from Field `User`.`major` of type `String`
+  """
+  major: String
+  """
+  ✨ `_expr` server value variant of `major` (✨ Generated from Field `User`.`major` of type `String`)
+  """
+  major_expr: String_Expr
   """
   ✨ Generated from Field `User`.`photoUrl` of type `String`
   """
@@ -1446,6 +2106,14 @@ input User_Data {
   ✨ `_expr` server value variant of `photoUrl` (✨ Generated from Field `User`.`photoUrl` of type `String`)
   """
   photoUrl_expr: String_Expr
+  """
+  ✨ Generated from Field `User`.`role` of type `String!`
+  """
+  role: String
+  """
+  ✨ `_expr` server value variant of `role` (✨ Generated from Field `User`.`role` of type `String!`)
+  """
+  role_expr: String_Expr
 }
 """
 ✨ Generated filter input type for table 'User'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1476,25 +2144,41 @@ input User_Filter {
   """
   displayName: String_Filter
   """
-  ✨ Generated from Field `User`.`email` of type `String`
+  ✨ Generated from Field `User`.`email` of type `String!`
   """
   email: String_Filter
+  """
+  ✨ Generated from Field `User`.`major` of type `String`
+  """
+  major: String_Filter
   """
   ✨ Generated from Field `User`.`photoUrl` of type `String`
   """
   photoUrl: String_Filter
   """
-  ✨ Generated from Field `User`.`lists_on_user` of type `[List!]!`
+  ✨ Generated from Field `User`.`role` of type `String!`
   """
-  lists_on_user: List_ListFilter
+  role: String_Filter
   """
-  ✨ Generated from Field `User`.`reviews_on_user` of type `[Review!]!`
+  ✨ Generated from Field `User`.`courses_on_instructor` of type `[Course!]!`
   """
-  reviews_on_user: Review_ListFilter
+  courses_on_instructor: Course_ListFilter
   """
-  ✨ Generated from Field `User`.`watches_on_user` of type `[Watch!]!`
+  ✨ Generated from Field `User`.`enrollments_on_student` of type `[Enrollment!]!`
   """
-  watches_on_user: Watch_ListFilter
+  enrollments_on_student: Enrollment_ListFilter
+  """
+  ✨ Generated from Field `User`.`submissions_on_student` of type `[Submission!]!`
+  """
+  submissions_on_student: Submission_ListFilter
+  """
+  ✨ Generated from Field `User`.`assignments_via_Submission` of type `[Assignment!]!`
+  """
+  assignments_via_Submission: Assignment_ListFilter
+  """
+  ✨ Generated from Field `User`.`courses_via_Enrollment` of type `[Course!]!`
+  """
+  courses_via_Enrollment: Course_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'User'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -1550,9 +2234,17 @@ input User_Having {
   """
   id_count: Int_Filter
   """
+  ✨ Generated from Field `User`.`major_count` of type `Int!`
+  """
+  major_count: Int_Filter
+  """
   ✨ Generated from Field `User`.`photoUrl_count` of type `Int!`
   """
   photoUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`role_count` of type `Int!`
+  """
+  role_count: Int_Filter
   """
   ✨ Generated from Field `User`.`createdAt_min` of type `Timestamp`
   """
@@ -1605,13 +2297,21 @@ input User_Order {
   """
   displayName: OrderDirection
   """
-  ✨ Generated from Field `User`.`email` of type `String`
+  ✨ Generated from Field `User`.`email` of type `String!`
   """
   email: OrderDirection
+  """
+  ✨ Generated from Field `User`.`major` of type `String`
+  """
+  major: OrderDirection
   """
   ✨ Generated from Field `User`.`photoUrl` of type `String`
   """
   photoUrl: OrderDirection
+  """
+  ✨ Generated from Field `User`.`role` of type `String!`
+  """
+  role: OrderDirection
   """
   ✨ Generated from Field `User`.`_count` of type `Int!`
   """
@@ -1633,9 +2333,17 @@ input User_Order {
   """
   id_count: OrderDirection
   """
+  ✨ Generated from Field `User`.`major_count` of type `Int!`
+  """
+  major_count: OrderDirection
+  """
   ✨ Generated from Field `User`.`photoUrl_count` of type `Int!`
   """
   photoUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`role_count` of type `Int!`
+  """
+  role_count: OrderDirection
   """
   ✨ Generated from Field `User`.`createdAt_min` of type `Timestamp`
   """
@@ -1644,319 +2352,4 @@ input User_Order {
   ✨ Generated from Field `User`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: OrderDirection
-}
-"""
-✨ Generated data input type for table 'Watch'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input Watch_Data {
-  """
-  ✨ Generated from Field `Watch`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Watch`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr
-  """
-  ✨ Generated from Field `Watch`.`movieId` of type `UUID!`
-  """
-  movieId: UUID
-  """
-  ✨ `_expr` server value variant of `movieId` (✨ Generated from Field `Watch`.`movieId` of type `UUID!`)
-  """
-  movieId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `Watch`.`userId` of type `UUID!`
-  """
-  userId: UUID
-  """
-  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Watch`.`userId` of type `UUID!`)
-  """
-  userId_expr: UUID_Expr
-  """
-  ✨ Generated from Field `Watch`.`movie` of type `Movie!`
-  """
-  movie: Movie_Key
-  """
-  ✨ Generated from Field `Watch`.`user` of type `User!`
-  """
-  user: User_Key
-  """
-  ✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_expr: Timestamp_Expr
-  """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_time: Timestamp_Relative
-  """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_update: [Timestamp_Update!]
-  """
-  ✨ Generated from Field `Watch`.`location` of type `String`
-  """
-  location: String
-  """
-  ✨ `_expr` server value variant of `location` (✨ Generated from Field `Watch`.`location` of type `String`)
-  """
-  location_expr: String_Expr
-  """
-  ✨ Generated from Field `Watch`.`watchDate` of type `Date!`
-  """
-  watchDate: Date
-  """
-  ✨ `_date` server value variant of `watchDate` (✨ Generated from Field `Watch`.`watchDate` of type `Date!`)
-  """
-  watchDate_date: Date_Relative
-  """
-  ✨ `_expr` server value variant of `watchDate` (✨ Generated from Field `Watch`.`watchDate` of type `Date!`)
-  """
-  watchDate_expr: Date_Expr
-  """
-  ✨ `_update` server value variant of `watchDate` (✨ Generated from Field `Watch`.`watchDate` of type `Date!`)
-  """
-  watchDate_update: [Date_Update!]
-}
-"""
-✨ Generated filter input type for table 'Watch'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input Watch_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [Watch_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: Watch_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [Watch_Filter!]
-  """
-  ✨ Generated from Field `Watch`.`id` of type `UUID!`
-  """
-  id: UUID_Filter
-  """
-  ✨ Generated from Field `Watch`.`movieId` of type `UUID!`
-  """
-  movieId: UUID_Filter
-  """
-  ✨ Generated from Field `Watch`.`userId` of type `UUID!`
-  """
-  userId: UUID_Filter
-  """
-  ✨ Generated from Field `Watch`.`movie` of type `Movie!`
-  """
-  movie: Movie_Filter
-  """
-  ✨ Generated from Field `Watch`.`user` of type `User!`
-  """
-  user: User_Filter
-  """
-  ✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `Watch`.`location` of type `String`
-  """
-  location: String_Filter
-  """
-  ✨ Generated from Field `Watch`.`watchDate` of type `Date!`
-  """
-  watchDate: Date_Filter
-  """
-  ✨ Generated from Field `Watch`.`reviews_on_watch` of type `[Review!]!`
-  """
-  reviews_on_watch: Review_ListFilter
-}
-"""
-✨ Generated first-row input type for table 'Watch'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input Watch_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [Watch_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: Watch_Filter
-}
-"""
-✨ Generated having input type for table 'Watch'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input Watch_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [Watch_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: Watch_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [Watch_Having!]
-  """
-  ✨ Generated from Field `Watch`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`id_count` of type `Int!`
-  """
-  id_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`location_count` of type `Int!`
-  """
-  location_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`movieId_count` of type `Int!`
-  """
-  movieId_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`userId_count` of type `Int!`
-  """
-  userId_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`watchDate_count` of type `Int!`
-  """
-  watchDate_count: Int_Filter
-  """
-  ✨ Generated from Field `Watch`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `Watch`.`watchDate_min` of type `Date`
-  """
-  watchDate_min: Date_Filter
-  """
-  ✨ Generated from Field `Watch`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `Watch`.`watchDate_max` of type `Date`
-  """
-  watchDate_max: Date_Filter
-}
-"""
-✨ Generated key input type for table 'Watch'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input Watch_Key {
-  """
-  ✨ Generated from Field `Watch`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Watch`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr
-}
-"""
-✨ Generated list filter input type for table 'Watch'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input Watch_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: Watch_Filter
-}
-"""
-✨ Generated order input type for table 'Watch'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input Watch_Order {
-  """
-  ✨ Generated from Field `Watch`.`id` of type `UUID!`
-  """
-  id: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`movieId` of type `UUID!`
-  """
-  movieId: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`userId` of type `UUID!`
-  """
-  userId: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`movie` of type `Movie!`
-  """
-  movie: Movie_Order
-  """
-  ✨ Generated from Field `Watch`.`user` of type `User!`
-  """
-  user: User_Order
-  """
-  ✨ Generated from Field `Watch`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`location` of type `String`
-  """
-  location: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`watchDate` of type `Date!`
-  """
-  watchDate: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`id_count` of type `Int!`
-  """
-  id_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`location_count` of type `Int!`
-  """
-  location_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`movieId_count` of type `Int!`
-  """
-  movieId_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`userId_count` of type `Int!`
-  """
-  userId_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`watchDate_count` of type `Int!`
-  """
-  watchDate_count: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`watchDate_min` of type `Date`
-  """
-  watchDate_min: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: OrderDirection
-  """
-  ✨ Generated from Field `Watch`.`watchDate_max` of type `Date`
-  """
-  watchDate_max: OrderDirection
 }

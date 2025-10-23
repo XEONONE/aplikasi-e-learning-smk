@@ -1,8 +1,8 @@
 extend type Query {
   """
-  ✨ Look up a single `List` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  ✨ Look up a single `Assignment` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
-  list(
+  assignment(
     """
     The unique ID of the object.
     """
@@ -11,31 +11,17 @@ extend type Query {
     """
     The key used to identify the object.
     """
-    key: List_Key
+    key: Assignment_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: List_FirstRow
-  ): List @fdc_generated(from: "List", purpose: QUERY_SINGLE)
+    first: Assignment_FirstRow
+  ): Assignment @fdc_generated(from: "Assignment", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `ListMovie` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  ✨ Look up a single `Course` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
-  listMovie(
-    """
-    The key used to identify the object.
-    """
-    key: ListMovie_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: ListMovie_FirstRow
-  ): ListMovie @fdc_generated(from: "ListMovie", purpose: QUERY_SINGLE)
-  """
-  ✨ Look up a single `Movie` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  movie(
+  course(
     """
     The unique ID of the object.
     """
@@ -44,17 +30,31 @@ extend type Query {
     """
     The key used to identify the object.
     """
-    key: Movie_Key
+    key: Course_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Movie_FirstRow
-  ): Movie @fdc_generated(from: "Movie", purpose: QUERY_SINGLE)
+    first: Course_FirstRow
+  ): Course @fdc_generated(from: "Course", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `Review` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  ✨ Look up a single `Enrollment` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
-  review(
+  enrollment(
+    """
+    The key used to identify the object.
+    """
+    key: Enrollment_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Enrollment_FirstRow
+  ): Enrollment @fdc_generated(from: "Enrollment", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Lesson` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  lesson(
     """
     The unique ID of the object.
     """
@@ -63,13 +63,46 @@ extend type Query {
     """
     The key used to identify the object.
     """
-    key: Review_Key
+    key: Lesson_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Review_FirstRow
-  ): Review @fdc_generated(from: "Review", purpose: QUERY_SINGLE)
+    first: Lesson_FirstRow
+  ): Lesson @fdc_generated(from: "Lesson", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Module` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  module(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Module_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Module_FirstRow
+  ): Module @fdc_generated(from: "Module", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Submission` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  submission(
+    """
+    The key used to identify the object.
+    """
+    key: Submission_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Submission_FirstRow
+  ): Submission @fdc_generated(from: "Submission", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -90,37 +123,18 @@ extend type Query {
     first: User_FirstRow
   ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `Watch` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  ✨ List `Assignment` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
-  watch(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: Watch_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Watch_FirstRow
-  ): Watch @fdc_generated(from: "Watch", purpose: QUERY_SINGLE)
-  """
-  ✨ List `List` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  lists(
+  assignments(
     """
     Filter condition to narrow down the query results.
     """
-    where: List_Filter
+    where: Assignment_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [List_Order!]
+    orderBy: [Assignment_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -140,21 +154,21 @@ extend type Query {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: List_Having
-  ): [List!]! @fdc_generated(from: "List", purpose: QUERY_MULTIPLE)
+    having: Assignment_Having
+  ): [Assignment!]! @fdc_generated(from: "Assignment", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `ListMovie` objects in the table and return selected fields, optionally filtered by `where` conditions
+  ✨ List `Course` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
-  listMovies(
+  courses(
     """
     Filter condition to narrow down the query results.
     """
-    where: ListMovie_Filter
+    where: Course_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [ListMovie_Order!]
+    orderBy: [Course_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -174,21 +188,21 @@ extend type Query {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: ListMovie_Having
-  ): [ListMovie!]! @fdc_generated(from: "ListMovie", purpose: QUERY_MULTIPLE)
+    having: Course_Having
+  ): [Course!]! @fdc_generated(from: "Course", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `Movie` objects in the table and return selected fields, optionally filtered by `where` conditions
+  ✨ List `Enrollment` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
-  movies(
+  enrollments(
     """
     Filter condition to narrow down the query results.
     """
-    where: Movie_Filter
+    where: Enrollment_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [Movie_Order!]
+    orderBy: [Enrollment_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -208,21 +222,21 @@ extend type Query {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: Movie_Having
-  ): [Movie!]! @fdc_generated(from: "Movie", purpose: QUERY_MULTIPLE)
+    having: Enrollment_Having
+  ): [Enrollment!]! @fdc_generated(from: "Enrollment", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `Review` objects in the table and return selected fields, optionally filtered by `where` conditions
+  ✨ List `Lesson` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
-  reviews(
+  lessons(
     """
     Filter condition to narrow down the query results.
     """
-    where: Review_Filter
+    where: Lesson_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [Review_Order!]
+    orderBy: [Lesson_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -242,8 +256,76 @@ extend type Query {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: Review_Having
-  ): [Review!]! @fdc_generated(from: "Review", purpose: QUERY_MULTIPLE)
+    having: Lesson_Having
+  ): [Lesson!]! @fdc_generated(from: "Lesson", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Module` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  modules(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Module_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Module_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Module_Having
+  ): [Module!]! @fdc_generated(from: "Module", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Submission` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  submissions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Submission_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Submission_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Submission_Having
+  ): [Submission!]! @fdc_generated(from: "Submission", purpose: QUERY_MULTIPLE)
   """
   ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -278,38 +360,4 @@ extend type Query {
     """
     having: User_Having
   ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `Watch` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  watches(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: Watch_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [Watch_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: Watch_Having
-  ): [Watch!]! @fdc_generated(from: "Watch", purpose: QUERY_MULTIPLE)
 }

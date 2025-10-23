@@ -1,0 +1,123 @@
+mutation createUser(
+  $displayName: String!
+  $email: String!
+  $role: String!
+  $photoUrl: String
+  $major: String
+) {
+  user_insert(data: {
+    displayName: $displayName
+    email: $email
+    role: $role
+    photoUrl: $photoUrl
+    major: $major
+    createdAt: { _now: true }
+  })
+}
+
+mutation createCourse(
+  $title: String!
+  $description: String!
+  $category: String!
+  $difficultyLevel: String!
+  $thumbnailUrl: String
+  $instructor: ID!
+) {
+  course_insert(data: {
+    title: $title
+    description: $description
+    category: $category
+    difficultyLevel: $difficultyLevel
+    thumbnailUrl: $thumbnailUrl
+    createdAt: { _now: true }
+    instructor: { id: $instructor }
+  })
+}
+
+mutation createEnrollment(
+  $enrollmentDate: Timestamp!
+  $status: String!
+  $completionDate: Timestamp
+  $grade: Int
+  $student: ID!
+  $course: ID!
+) {
+  enrollment_insert(data: {
+    enrollmentDate: $enrollmentDate
+    status: $status
+    completionDate: $completionDate
+    grade: $grade
+    student: { id: $student }
+    course: { id: $course }
+  })
+}
+
+mutation createModule(
+  $title: String!
+  $description: String!
+  $orderIndex: Int!
+  $course: ID!
+) {
+  module_insert(data: {
+    title: $title
+    description: $description
+    orderIndex: $orderIndex
+    course: { id: $course }
+  })
+}
+
+mutation createLesson(
+  $title: String!
+  $type: String!
+  $contentUrl: String!
+  $orderIndex: Int!
+  $description: String
+  $duration: Int
+  $module: ID!
+) {
+  lesson_insert(data: {
+    title: $title
+    type: $type
+    contentUrl: $contentUrl
+    orderIndex: $orderIndex
+    description: $description
+    duration: $duration
+    module: { id: $module }
+  })
+}
+
+mutation createAssignment(
+  $title: String!
+  $description: String!
+  $type: String!
+  $dueDate: Date!
+  $maxScore: Int!
+  $module: ID!
+) {
+  assignment_insert(data: {
+    title: $title
+    description: $description
+    type: $type
+    dueDate: $dueDate
+    maxScore: $maxScore
+    module: { id: $module }
+  })
+}
+
+mutation createSubmission(
+  $submissionDate: Timestamp!
+  $score: Int!
+  $studentResponse: String
+  $feedback: String
+  $student: ID!
+  $assignment: ID!
+) {
+  submission_insert(data: {
+    submissionDate: $submissionDate
+    score: $score
+    studentResponse: $studentResponse
+    feedback: $feedback
+    student: { id: $student }
+    assignment: { id: $assignment }
+  })
+}

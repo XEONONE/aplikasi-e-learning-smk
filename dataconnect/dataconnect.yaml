@@ -1,13 +1,13 @@
 specVersion: "v1"
-serviceId: "aplikasielearningsmk"
-location: "asia-southeast1"
+serviceId: "aplikasi-e-learning-smk"
+location: "asia-southeast2"
 schema:
   source: "./schema"
   datasource:
     postgresql:
       database: "fdcdb"
       cloudSql:
-        instanceId: "aplikasielearningsmk-fdc"
+        instanceId: "aplikasi-e-learning-smk-fdc"
         # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
         # schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
 connectorDirs: ["./example"]

@@ -1,0 +1,133 @@
+query listUsers {
+  users: users {
+    id
+    displayName
+    email
+    role
+    createdAt
+    photoUrl
+    major
+  }
+}
+
+query getUser($id: UUID!) {
+  user(id: $id) {
+    id
+    displayName
+    email
+    role
+    createdAt
+    photoUrl
+    major
+  }
+}
+
+query listCourses {
+  courses: courses {
+    id
+    title
+    description
+    category
+    difficultyLevel
+    createdAt
+    thumbnailUrl
+    instructor {
+      id
+      displayName
+    }
+  }
+}
+
+query getCourse($id: UUID!) {
+  course(id: $id) {
+    id
+    title
+    description
+    category
+    difficultyLevel
+    createdAt
+    thumbnailUrl
+    instructor {
+      id
+      displayName
+    }
+  }
+}
+
+query listEnrollments {
+  enrollments: enrollments {
+    enrollmentDate
+    status
+    completionDate
+    grade
+    student {
+      id
+      displayName
+    }
+    course {
+      id
+      title
+    }
+  }
+}
+
+query listModules {
+  modules: modules {
+    id
+    title
+    description
+    orderIndex
+    course {
+      id
+      title
+    }
+  }
+}
+
+query listLessons {
+  lessons: lessons {
+    id
+    title
+    type
+    contentUrl
+    orderIndex
+    description
+    duration
+    module {
+      id
+      title
+    }
+  }
+}
+
+query listAssignments {
+  assignments: assignments {
+    id
+    title
+    description
+    type
+    dueDate
+    maxScore
+    module {
+      id
+      title
+    }
+  }
+}
+
+query listSubmissions {
+  submissions: submissions {
+    submissionDate
+    score
+    studentResponse
+    feedback
+    student {
+      id
+      displayName
+    }
+    assignment {
+      id
+      title
+    }
+  }
+}

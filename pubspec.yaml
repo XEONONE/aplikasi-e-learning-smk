@@ -48,6 +48,8 @@ dependencies:
   
   # --- TAMBAHKAN INI ---
   shared_preferences: ^2.2.3 # Gunakan versi terbaru saat Anda menjalankan pub get
+  firebase_data_connect: ^0.1.5+4
+  build_runner: ^2.10.0
 
 dev_dependencies:
   flutter_test:

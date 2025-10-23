@@ -1,49 +1,62 @@
 type User @table {
   displayName: String!
-  email: String
+  email: String!
+  role: String!
+  createdAt: Timestamp!
   photoUrl: String
-  createdAt: Timestamp!
+  major: String
 }
 
-type Movie @table {
+type Course @table {
   title: String!
-  year: Int!
-  summary: String
-  genres: [String]
-  runtime: Int
+  description: String!
+  category: String!
+  difficultyLevel: String!
   createdAt: Timestamp!
+  thumbnailUrl: String
+  instructor: User
 }
 
-type Watch @table {
-  user: User!
-  movie: Movie!
-  watchDate: Date!
-  location: String
-  createdAt: Timestamp!
+type Enrollment @table(key: ["student", "course"]) {
+  enrollmentDate: Timestamp!
+  status: String!
+  completionDate: Timestamp
+  grade: Int
+  student: User!
+  course: Course!
 }
 
-type Review @table {
-  movie: Movie!
-  user: User!
-  watch: Watch!
-  rating: Int!
-  review: String
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
+type Module @table {
+  title: String!
+  description: String!
+  orderIndex: Int!
+  course: Course
 }
 
-type List @table {
-  user: User!
-  name: String!
-  public: Boolean!
+type Lesson @table {
+  title: String!
+  type: String!
+  contentUrl: String!
+  orderIndex: Int!
   description: String
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
+  duration: Int
+  module: Module
 }
 
-type ListMovie @table(key: ["list", "movie"]) {
-  list: List!
-  movie: Movie!
-  position: Int!
-  note: String
+type Assignment @table {
+  title: String!
+  description: String!
+  type: String!
+  dueDate: Date!
+  maxScore: Int!
+  module: Module
+}
+
+type Submission @table(key: ["student", "assignment"]) {
+  submissionDate: Timestamp!
+  score: Int!
+  studentResponse: String
+  feedback: String
+  student: User!
+  assignment: Assignment!
 }

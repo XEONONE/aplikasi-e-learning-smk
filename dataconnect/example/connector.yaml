@@ -1,0 +1,129 @@
+connectorId: example
+generate:
+  dartSdk:
+    - outputDir: ..\..\lib\dataconnect_generated
+      package: dataconnect_generated/generated.dart
+queries:
+  listUsers:
+    doc: "List all users"
+    operation: query
+    arguments: {}
+    returns: [User]
+  getUser:
+    doc: "Get a user by ID"
+    operation: query
+    arguments:
+      id: ID!
+    returns: User
+  listCourses:
+    doc: "List all courses"
+    operation: query
+    arguments: {}
+    returns: [Course]
+  getCourse:
+    doc: "Get a course by ID"
+    operation: query
+    arguments:
+      id: ID!
+    returns: Course
+  listEnrollments:
+    doc: "List all enrollments"
+    operation: query
+    arguments: {}
+    returns: [Enrollment]
+  listModules:
+    doc: "List all modules"
+    operation: query
+    arguments: {}
+    returns: [Module]
+  listLessons:
+    doc: "List all lessons"
+    operation: query
+    arguments: {}
+    returns: [Lesson]
+  listAssignments:
+    doc: "List all assignments"
+    operation: query
+    arguments: {}
+    returns: [Assignment]
+  listSubmissions:
+    doc: "List all submissions"
+    operation: query
+    arguments: {}
+    returns: [Submission]
+mutations:
+  createUser:
+    doc: "Create a new user"
+    operation: mutation
+    arguments:
+      displayName: String!
+      email: String!
+      role: String!
+      photoUrl: String
+      major: String
+    returns: User
+  createCourse:
+    doc: "Create a new course"
+    operation: mutation
+    arguments:
+      title: String!
+      description: String!
+      category: String!
+      difficultyLevel: String!
+      thumbnailUrl: String
+      instructor: ID!
+    returns: Course
+  createEnrollment:
+    doc: "Create a new enrollment"
+    operation: mutation
+    arguments:
+      enrollmentDate: Timestamp!
+      status: String!
+      completionDate: Timestamp
+      grade: Int
+      student: ID!
+      course: ID!
+    returns: Enrollment
+  createModule:
+    doc: "Create a new module"
+    operation: mutation
+    arguments:
+      title: String!
+      description: String!
+      orderIndex: Int!
+      course: ID!
+    returns: Module
+  createLesson:
+    doc: "Create a new lesson"
+    operation: mutation
+    arguments:
+      title: String!
+      type: String!
+      contentUrl: String!
+      orderIndex: Int!
+      description: String
+      duration: Int
+      module: ID!
+    returns: Lesson
+  createAssignment:
+    doc: "Create a new assignment"
+    operation: mutation
+    arguments:
+      title: String!
+      description: String!
+      type: String!
+      dueDate: Date!
+      maxScore: Int!
+      module: ID!
+    returns: Assignment
+  createSubmission:
+    doc: "Create a new submission"
+    operation: mutation
+    arguments:
+      submissionDate: Timestamp!
+      score: Int!
+      studentResponse: String
+      feedback: String
+      student: ID!
+      assignment: ID!
+    returns: Submission
