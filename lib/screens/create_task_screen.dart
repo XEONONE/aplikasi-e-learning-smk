@@ -90,6 +90,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         'targetAudience': [
           'kelas_$kelas',
         ], // Targetnya adalah kelas yang dipilih
+        // --- TAMBAHAN BARU ---
+        'isRead': false, // Tandai sebagai belum dibaca
+        // --- AKHIR TAMBAHAN BARU ---
       });
     } catch (e) {
       print('Gagal membuat notifikasi: $e');

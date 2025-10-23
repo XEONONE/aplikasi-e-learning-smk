@@ -22,19 +22,55 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchUserKelas();
+    _fetchUserKelasAndMarkRead();
   }
 
-  Future<void> _fetchUserKelas() async {
+  // --- FUNGSI BARU UNTUK MENGGABUNGKAN FETCH KELAS DAN MARK AS READ ---
+  Future<void> _fetchUserKelasAndMarkRead() async {
     if (currentUser != null) {
       final userData = await _authService.getUserData(currentUser!.uid);
       if (mounted) {
         setState(() {
           _userKelas = userData?.kelas;
         });
+        // Setelah mendapatkan kelas, panggil fungsi mark read
+        if (_userKelas != null) {
+          _markNotificationsAsRead();
+        }
       }
     }
   }
+
+  // --- FUNGSI BARU UNTUK MENANDAI NOTIFIKASI SEBAGAI DIBACA ---
+  Future<void> _markNotificationsAsRead() async {
+    if (currentUser == null || _userKelas == null) return;
+
+    final query = FirebaseFirestore.instance
+        .collection('notifications')
+        .where(
+          'targetAudience',
+          arrayContainsAny: [
+            '${currentUser!.uid}',
+            'kelas_${_userKelas!}',
+            'all_users',
+          ],
+        )
+        .where('isRead', isEqualTo: false); // Hanya ambil yang belum dibaca
+
+    try {
+      final snapshot = await query.get();
+      // Gunakan batch write untuk efisiensi
+      final batch = FirebaseFirestore.instance.batch();
+      for (final doc in snapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+      await batch.commit();
+      print('Ditandai ${snapshot.docs.length} notifikasi sebagai dibaca.');
+    } catch (e) {
+      print('Gagal menandai notifikasi sebagai dibaca: $e');
+    }
+  }
+  // --- AKHIR FUNGSI BARU ---
 
   // Fungsi untuk menghitung waktu relatif (e.g., "5 menit yang lalu")
   String _timeAgo(Timestamp timestamp) {
@@ -63,12 +99,27 @@ class _NotificationScreenState extends State<NotificationScreen> {
     Timestamp timestamp, {
     Color? iconColor,
     IconData? icon,
+    bool isRead = true, // Tambahkan parameter isRead
   }) {
     final theme = Theme.of(context);
     IconData defaultIcon;
     Color defaultColor;
+    final titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: isRead
+          ? FontWeight.normal
+          : FontWeight.bold, // Bold jika belum dibaca
+    );
+    final cardColor = isRead
+        ? theme.cardColor
+        : theme.colorScheme.primary.withOpacity(
+            0.05,
+          ); // Warna beda jika belum dibaca
 
     switch (type) {
+      case 'new_materi': // Tambahkan case untuk materi baru
+        defaultIcon = Icons.auto_stories_outlined;
+        defaultColor = Colors.blue.shade600;
+        break;
       case 'grade':
         defaultIcon = Icons.check_circle_outline;
         defaultColor = Colors.green.shade600;
@@ -88,7 +139,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-      elevation: 1.0,
+      elevation: isRead ? 1.0 : 2.0, // Sedikit lebih menonjol jika belum dibaca
+      color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -105,12 +157,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(title, style: titleStyle),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
@@ -173,9 +220,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               // TODO: Implementasi filter atau pengaturan notifikasi
             },
             icon: Icon(
-              Icons.notifications_active_outlined,
-              color: theme.colorScheme.primary,
-            ), // Icon notifikasi aktif
+              Icons.notifications_none_outlined, // Ubah jadi outline biasa
+              color: theme.iconTheme.color,
+            ),
           ),
         ],
       ),
@@ -226,7 +273,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               final String title = data['title'] ?? 'Notifikasi';
               final String subtitle = data['subtitle'] ?? '';
               final Timestamp timestamp = data['timestamp'] ?? Timestamp.now();
-              // Icon dan warna akan ditentukan di _buildNotificationCard berdasarkan 'type'
+              // --- AMBIL STATUS isRead ---
+              final bool isRead =
+                  data['isRead'] ?? true; // Anggap dibaca jika tidak ada field
 
               return _buildNotificationCard(
                 context,
@@ -234,6 +283,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 title,
                 subtitle,
                 timestamp,
+                isRead: isRead, // Kirim status ke widget card
               );
             },
           );

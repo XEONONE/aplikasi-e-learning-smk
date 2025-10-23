@@ -10,6 +10,7 @@ import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
 import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart';
 // --- IMPORT BARU UNTUK NOTIFIKASI ---
 import 'package:aplikasi_e_learning_smk/screens/notification_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 // --- AKHIR IMPORT BARU ---
 
 class StudentHomeScreen extends StatefulWidget {
@@ -24,21 +25,141 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   final AuthService _authService = AuthService();
   late Future<UserModel?> _userFuture;
 
+  // --- TAMBAHAN STATE UNTUK NOTIFIKASI ---
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
+  String? _userKelas;
+  // --- AKHIR TAMBAHAN STATE ---
+
   @override
   void initState() {
     super.initState();
     _userFuture = _fetchStudentData();
+    _fetchUserKelas(); // Panggil fungsi untuk mengambil kelas
     Intl.defaultLocale = 'id_ID'; // Pastikan locale diatur untuk format tanggal
   }
 
+  // --- MODIFIKASI FUNGSI INI ---
   Future<UserModel?> _fetchStudentData() async {
     String? studentId = _authService.getCurrentUser()?.uid;
     if (studentId != null) {
       UserModel? studentData = await _authService.getUserData(studentId);
+      // Simpan kelas di state saat data didapat
+      if (mounted && studentData != null) {
+        setState(() {
+          _userKelas = studentData.kelas;
+        });
+      }
       return studentData;
     }
     return null;
   }
+
+  // --- FUNGSI BARU UNTUK FALLBACK JIKA _fetchStudentData GAGAL ---
+  Future<void> _fetchUserKelas() async {
+    if (_userKelas != null) return; // Sudah didapat dari _fetchStudentData
+    if (_currentUser != null) {
+      final userData = await _authService.getUserData(_currentUser!.uid);
+      if (mounted) {
+        setState(() {
+          _userKelas = userData?.kelas;
+        });
+      }
+    }
+  }
+  // --- AKHIR FUNGSI BARU ---
+
+  // --- WIDGET BARU UNTUK IKON NOTIFIKASI ---
+  Widget _buildNotificationIcon() {
+    // Tampilkan ikon biasa jika user atau kelas belum terload
+    if (_currentUser == null || _userKelas == null) {
+      return IconButton(
+        icon: Icon(
+          Icons.notifications_none_outlined,
+          color: Theme.of(context).iconTheme.color,
+        ),
+        tooltip: 'Notifikasi',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NotificationScreen()),
+          );
+        },
+      );
+    }
+
+    // Gunakan StreamBuilder untuk mengecek notifikasi baru
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('notifications')
+          .where(
+            'targetAudience',
+            arrayContainsAny: [
+              _currentUser!.uid,
+              'kelas_${_userKelas!}',
+              'all_users',
+            ],
+          )
+          .where('isRead', isEqualTo: false) // Hanya cek yang belum dibaca
+          .limit(1) // Cukup 1 saja untuk menunjukkan badge
+          .snapshots(),
+      builder: (context, snapshot) {
+        bool hasNewNotification = false;
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          hasNewNotification = true;
+        }
+
+        // Widget ikon dasar
+        Widget iconButton = IconButton(
+          icon: Icon(
+            Icons.notifications_none_outlined,
+            color: Theme.of(context).iconTheme.color,
+          ),
+          tooltip: 'Notifikasi',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationScreen(),
+              ),
+            );
+          },
+        );
+
+        // Jika ada notifikasi baru, bungkus dengan Stack dan Badge
+        if (hasNewNotification) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              iconButton,
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 10,
+                    minHeight: 10,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Kembalikan ikon biasa jika tidak ada notifikasi baru
+        return iconButton;
+      },
+    );
+  }
+  // --- AKHIR WIDGET BARU ---
 
   @override
   Widget build(BuildContext context) {
@@ -57,26 +178,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.notifications_none_outlined, // Icon lonceng
-              color: Theme.of(context).iconTheme.color,
-            ),
-            tooltip: 'Notifikasi', // Tooltip
-            onPressed: () {
-              // Navigasi ke NotificationScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationScreen(),
-                ),
-              );
-            },
-          ),
+          // --- GUNAKAN WIDGET BARU DI SINI ---
+          _buildNotificationIcon(),
+          // --- AKHIR PERUBAHAN APPBAR ---
           const SizedBox(width: 8), // Sedikit jarak
         ],
       ),
-      // --- AKHIR PERUBAHAN APPBAR ---
       body: FutureBuilder<UserModel?>(
         future: _userFuture,
         builder: (context, snapshot) {
@@ -93,6 +200,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           }
 
           final user = snapshot.data!;
+          // Pastikan _userKelas di-update jika belum
+          if (_userKelas == null && user.kelas != null) {
+            _userKelas = user.kelas;
+          }
           final userKelas = user.kelas; // Simpan kelas user
 
           return SingleChildScrollView(
