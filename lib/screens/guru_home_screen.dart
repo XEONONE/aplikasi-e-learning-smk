@@ -264,7 +264,92 @@ class _GuruHomeScreenState extends State<GuruHomeScreen> {
                   },
                 ),
 
-                // -- AKHIR BAGIAN PENGUMUMAN --
+                // -- BAGIAN TUGAS MENDATANG --
+                const SizedBox(height: 32),
+                Text(
+                  'Tugas Mendatang',
+                  // --- PERBAIKAN: Ambil warna dari tema ---
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    // color: Colors.white, <-- HAPUS
+                  ),
+                ),
+                const SizedBox(height: 16),
+                StreamBuilder<QuerySnapshot>(
+                  stream:
+                      (user.mengajarKelas != null &&
+                          user.mengajarKelas!.isNotEmpty)
+                      ? FirebaseFirestore.instance
+                            .collection('tugas')
+                            .where('untukKelas', whereIn: user.mengajarKelas)
+                            .limit(
+                              10,
+                            ) // Ambil lebih banyak untuk sorting di kode
+                            .snapshots()
+                      : Stream.empty(), // Jika tidak mengajar kelas, kosong
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Belum ada tugas mendatang.',
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withOpacity(0.7),
+                          ),
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      print("Error loading tasks: ${snapshot.error}");
+                      return const Center(
+                        child: Text(
+                          'Gagal memuat tugas.',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    // Sortir berdasarkan tenggatWaktu secara descending di kode
+                    final docs = snapshot.data!.docs;
+                    docs.sort((a, b) {
+                      final aData = a.data() as Map<String, dynamic>;
+                      final bData = b.data() as Map<String, dynamic>;
+                      final aTime =
+                          aData['tenggatWaktu'] as Timestamp? ??
+                          Timestamp.now();
+                      final bTime =
+                          bData['tenggatWaktu'] as Timestamp? ??
+                          Timestamp.now();
+                      return bTime.compareTo(aTime); // Descending
+                    });
+
+                    // Ambil hanya 3 teratas
+                    final recentTasks = docs.take(3);
+
+                    return Column(
+                      children: recentTasks.map((doc) {
+                        var data = doc.data() as Map<String, dynamic>;
+                        return Card(
+                          child: ListTile(
+                            title: Text(data['judul1'] ?? 'Tanpa Judul'),
+                            subtitle: Text(
+                              'Tenggat: ${(data['tenggatWaktu'] as Timestamp?)?.toDate().toString() ?? 'Tidak diketahui'}',
+                            ),
+                            trailing: Icon(
+                              Icons.assignment,
+                              color: Colors.orange,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+
+                // -- AKHIR BAGIAN TUGAS --
                 const SizedBox(height: 80), // Ruang untuk FAB
               ],
             ),

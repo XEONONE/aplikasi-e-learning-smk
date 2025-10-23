@@ -1,0 +1,6 @@
+- [x] Update lib/models/materi_model.dart to match DB structure
+- [x] Create lib/models/kelas_model.dart
+- [x] Create lib/models/pengumuman_model.dart
+- [x] Create lib/models/tugas_model.dart
+- [x] Create lib/models/komentar_model.dart
+- [x] Create lib/models/pengumpulan_model.dart

@@ -14,8 +14,19 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: AuthService().authStateChanges,
       builder: (context, snapshot) {
+        print("AuthGate: Connection state: ${snapshot.connectionState}");
+        print("AuthGate: Has data: ${snapshot.hasData}");
+        if (snapshot.hasData) {
+          print("AuthGate: User UID: ${snapshot.data!.uid}");
+        }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          print("AuthGate: Stream error: ${snapshot.error}");
+          return Center(child: Text("Error: ${snapshot.error}"));
         }
 
         if (snapshot.hasData) {
@@ -23,29 +34,43 @@ class AuthGate extends StatelessWidget {
           return FutureBuilder<UserModel?>(
             future: AuthService().getUserData(snapshot.data!.uid),
             builder: (context, userModelSnapshot) {
+              print(
+                "AuthGate: UserModel future state: ${userModelSnapshot.connectionState}",
+              );
+              print(
+                "AuthGate: UserModel has data: ${userModelSnapshot.hasData}",
+              );
+
               if (userModelSnapshot.connectionState ==
                   ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
+
+              if (userModelSnapshot.hasError) {
+                print("AuthGate: UserModel error: ${userModelSnapshot.error}");
+                AuthService().signOut();
+                return LoginScreen();
+              }
+
               if (userModelSnapshot.hasData && userModelSnapshot.data != null) {
                 final userRole = userModelSnapshot.data!.role;
+                print("AuthGate: User role: $userRole");
                 if (userRole == 'guru') {
-                  // Jika const tidak bisa, hapus const
                   return const GuruDashboardScreen();
                 } else {
-                  // Jika const tidak bisa, hapus const
                   return const SiswaDashboardScreen();
                 }
               }
+
               // Data user tidak ditemukan, paksa logout
+              print("AuthGate: User data not found, signing out");
               AuthService().signOut();
-              // ## PERBAIKAN: Hapus const ##
               return LoginScreen();
             },
           );
         } else {
           // User belum login
-          // ## PERBAIKAN: Hapus const ##
+          print("AuthGate: No user data, showing login screen");
           return LoginScreen();
         }
       },
