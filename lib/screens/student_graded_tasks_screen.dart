@@ -34,6 +34,75 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
     }
   }
 
+  // --- FUNGSI BARU UNTUK MEMPROSES TUGAS DENGAN DATA NILAI YANG DIAMBIL LANGSUNG ---
+  Future<Map<String, List<Map<String, dynamic>>>> _processTasks(
+    List<QueryDocumentSnapshot> taskDocs,
+    String userId,
+  ) async {
+    List<Map<String, dynamic>> activeTasks = [];
+    List<Map<String, dynamic>> completedTasks = [];
+    final now = DateTime.now();
+
+    for (var taskDoc in taskDocs) {
+      final taskData = taskDoc.data() as Map<String, dynamic>;
+
+      // --- PERBAIKAN INTI: AMBIL SUBMISSION SECARA LANGSUNG ---
+      // Ini meniru cara kerja TaskDetailScreen yang berhasil
+      final submissionRef = FirebaseFirestore.instance
+          .collection('tugas')
+          .doc(taskDoc.id)
+          .collection('pengumpulan')
+          .doc(userId); // Gunakan userId sebagai ID dokumen pengumpulan
+      final submissionDoc = await submissionRef.get();
+      final submissionData = submissionDoc
+          .data(); // Bisa null jika tidak ada dokumen
+      // --- AKHIR PERBAIKAN INTI ---
+
+      final bool isGraded =
+          submissionData != null && submissionData['nilai'] != null;
+
+      final Timestamp tenggatTimestamp =
+          taskData['tenggatWaktu'] as Timestamp? ?? Timestamp.now();
+      final DateTime tenggatWaktu = tenggatTimestamp.toDate();
+      final bool isOverdue = tenggatWaktu.isBefore(now);
+
+      // Data ini akan kita gunakan untuk sorting dan building
+      final taskEntry = {
+        'taskDoc': taskDoc,
+        'taskData': taskData,
+        'submissionData': submissionData,
+        'tenggat': tenggatWaktu, // Untuk sorting
+        'eventDate':
+            (submissionData?['dikumpulkanPada'] as Timestamp? ??
+                    tenggatTimestamp)
+                .toDate(), // Untuk sorting
+      };
+
+      // Logika sesuai permintaan Anda: Selesai = Sudah Dinilai ATAU Terlewat
+      if (isGraded || isOverdue) {
+        completedTasks.add(taskEntry);
+      } else {
+        activeTasks.add(taskEntry);
+      }
+    }
+
+    // Urutkan tugas aktif (tenggat terdekat di atas)
+    activeTasks.sort((a, b) {
+      DateTime aTenggat = a['tenggat'] as DateTime;
+      DateTime bTenggat = b['tenggat'] as DateTime;
+      return aTenggat.compareTo(bTenggat);
+    });
+
+    // Urutkan tugas selesai (terbaru dinilai/terlewat di atas)
+    completedTasks.sort((a, b) {
+      DateTime aDate = a['eventDate'] as DateTime;
+      DateTime bDate = b['eventDate'] as DateTime;
+      return bDate.compareTo(aDate); // Descending
+    });
+
+    return {'active': activeTasks, 'completed': completedTasks};
+  }
+
   // --- WIDGET KARTU TUGAS AKTIF ---
   Widget _buildActiveTaskCard(
     BuildContext context,
@@ -393,11 +462,16 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                   stream: FirebaseFirestore.instance
                       .collection('tugas')
                       .where('untukKelas', isEqualTo: userKelas)
-                      .snapshots(), // Hapus orderBy di sini, lakukan setelah filter
+                      .snapshots(),
                   builder: (context, taskSnapshot) {
                     if (taskSnapshot.connectionState ==
                         ConnectionState.waiting) {
                       return const Center(child: CustomLoadingIndicator());
+                    }
+                    if (taskSnapshot.hasError) {
+                      return const Center(
+                        child: Text('Gagal memuat daftar tugas.'),
+                      );
                     }
                     if (!taskSnapshot.hasData ||
                         taskSnapshot.data!.docs.isEmpty) {
@@ -413,85 +487,38 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                       );
                     }
 
-                    return StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collectionGroup('pengumpulan')
-                          .where('userId', isEqualTo: userId)
-                          .snapshots(),
-                      builder: (context, submissionSnapshot) {
-                        Map<String, Map<String, dynamic>> submissions = {};
-                        if (submissionSnapshot.hasData) {
-                          for (var doc in submissionSnapshot.data!.docs) {
-                            submissions[doc.reference.parent.parent!.id] =
-                                doc.data() as Map<String, dynamic>;
-                          }
+                    // --- PERUBAHAN: GUNAKAN FUTUREBUILDER UNTUK DATA NILAI ---
+                    return FutureBuilder<
+                      Map<String, List<Map<String, dynamic>>>
+                    >(
+                      future: _processTasks(taskSnapshot.data!.docs, userId),
+                      builder: (context, processedSnapshot) {
+                        if (processedSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(child: CustomLoadingIndicator());
                         }
 
-                        // --- LOGIKA PEMISAHAN AKTIF DAN SELESAI (SUDAH DIPERBAIKI) ---
-                        List<QueryDocumentSnapshot> activeTasks = [];
-                        List<QueryDocumentSnapshot> completedTasks = [];
-                        final now = DateTime.now();
-
-                        for (var taskDoc in taskSnapshot.data!.docs) {
-                          final taskData =
-                              taskDoc.data() as Map<String, dynamic>;
-                          // Ambil submissionData DARI MAP submissions, bukan dari snapshot langsung
-                          final submissionData =
-                              submissions[taskDoc.id]; // <<< PENTING
-
-                          final Timestamp tenggatTimestamp =
-                              taskData['tenggatWaktu'] as Timestamp? ??
-                              Timestamp.now();
-                          final DateTime tenggatWaktu = tenggatTimestamp
-                              .toDate();
-                          final bool isOverdue = tenggatWaktu.isBefore(now);
-                          // Cek nilai dari submissionData yang diambil dari map
-                          final bool isGraded =
-                              submissionData != null &&
-                              submissionData['nilai'] != null; // <<< PENTING
-
-                          if (isGraded || isOverdue) {
-                            // Masuk ke Selesai JIKA sudah dinilai ATAU sudah lewat tenggat
-                            completedTasks.add(taskDoc);
-                          } else {
-                            // Masuk ke Aktif HANYA JIKA belum dinilai DAN belum lewat tenggat
-                            activeTasks.add(taskDoc);
-                          }
+                        if (processedSnapshot.hasError) {
+                          print(
+                            "Error processing tasks: ${processedSnapshot.error}",
+                          );
+                          return const Center(
+                            child: Text('Gagal memproses data nilai tugas.'),
+                          );
                         }
-                        // --- AKHIR LOGIKA PEMISAHAN ---
 
-                        // Urutkan tugas aktif (tenggat terdekat di atas)
-                        activeTasks.sort((a, b) {
-                          Timestamp aTenggat =
-                              (a.data()
-                                  as Map<String, dynamic>)['tenggatWaktu'] ??
-                              Timestamp.now();
-                          Timestamp bTenggat =
-                              (b.data()
-                                  as Map<String, dynamic>)['tenggatWaktu'] ??
-                              Timestamp.now();
-                          return aTenggat.compareTo(bTenggat);
-                        });
+                        if (!processedSnapshot.hasData) {
+                          return const Center(
+                            child: Text('Tidak ada data tugas.'),
+                          );
+                        }
 
-                        // Urutkan tugas selesai (terbaru dinilai/terlewat di atas)
-                        completedTasks.sort((a, b) {
-                          // Ambil submission data dari MAP submissions lagi
-                          final subA = submissions[a.id]; // <<< PENTING
-                          final subB = submissions[b.id]; // <<< PENTING
-                          Timestamp aTimestamp =
-                              subA?['dikumpulkanPada'] as Timestamp? ??
-                              (a.data()
-                                  as Map<String, dynamic>)['tenggatWaktu'] ??
-                              Timestamp.now();
-                          Timestamp bTimestamp =
-                              subB?['dikumpulkanPada'] as Timestamp? ??
-                              (b.data()
-                                  as Map<String, dynamic>)['tenggatWaktu'] ??
-                              Timestamp.now();
-                          return bTimestamp.compareTo(aTimestamp);
-                        });
+                        final activeTasks =
+                            processedSnapshot.data!['active'] ?? [];
+                        final completedTasks =
+                            processedSnapshot.data!['completed'] ?? [];
 
-                        final List<QueryDocumentSnapshot> tasksToShow =
+                        final List<Map<String, dynamic>> tasksToShow =
                             _selectedToggleIndex == 0
                             ? activeTasks
                             : completedTasks;
@@ -521,9 +548,14 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                           ),
                           itemCount: tasksToShow.length,
                           itemBuilder: (context, index) {
-                            final taskDoc = tasksToShow[index];
+                            final taskEntry = tasksToShow[index];
+                            final taskDoc =
+                                taskEntry['taskDoc'] as QueryDocumentSnapshot;
                             final taskData =
-                                taskDoc.data() as Map<String, dynamic>;
+                                taskEntry['taskData'] as Map<String, dynamic>;
+                            final submissionData =
+                                taskEntry['submissionData']
+                                    as Map<String, dynamic>?;
 
                             if (_selectedToggleIndex == 0) {
                               // Tampilkan kartu tugas aktif
@@ -533,11 +565,7 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                                 taskData,
                               );
                             } else {
-                              // TAB SELESAI: SELALU TAMPILKAN KARTU GRADED
-                              // Ambil submission data dari MAP submissions
-                              final submissionData =
-                                  submissions[taskDoc
-                                      .id]; // <<< PENTING: Ambil dari map
+                              // TAB SELESAI
                               return _buildGradedTaskCard(
                                 context,
                                 taskDoc.id,
@@ -550,6 +578,7 @@ class _StudentGradedTasksScreenState extends State<StudentGradedTasksScreen> {
                         // --- AKHIR PEMANGGILAN KARTU ---
                       },
                     );
+                    // --- AKHIR PERUBAHAN FUTUREBUILDER ---
                   },
                 ),
               ),

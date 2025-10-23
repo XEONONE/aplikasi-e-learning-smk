@@ -43,27 +43,58 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memuat daftar kelas: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat daftar kelas: $e')));
     }
   }
+
+  // --- FUNGSI BARU UNTUK MEMBUAT NOTIFIKASI ---
+  Future<void> _createNotification(
+    String judulMateri,
+    String mapel,
+    String kelas,
+  ) async {
+    try {
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'type': 'new_materi', // Tipe notifikasi materi baru
+        'title': 'Materi Baru: $judulMateri',
+        'subtitle': 'Mapel: $mapel',
+        'timestamp': Timestamp.now(),
+        'targetAudience': [
+          'kelas_$kelas',
+        ], // Targetnya adalah kelas yang dipilih
+      });
+    } catch (e) {
+      print('Gagal membuat notifikasi: $e');
+      // Tidak perlu menampilkan error ke user, biarkan proses upload utama berjalan
+    }
+  }
+  // --- AKHIR FUNGSI BARU ---
 
   Future<void> _uploadMateri() async {
     if (_formKey.currentState!.validate() && _selectedKelas != null) {
       setState(() => _isLoading = true);
-      
-      // --- PERUBAHAN DURASI MENJADI 2 DETIK ---
-      await Future.delayed(const Duration(seconds: 2));
-      
+
+      // Mengambil data sebelum proses async
+      final String judul = _judulController.text.trim();
+      final String mapel = _mapelController.text.trim();
+      final String kelas = _selectedKelas!;
+
       try {
         await FirebaseFirestore.instance.collection('materi').add({
-          'judul': _judulController.text.trim(),
+          'judul': judul,
           'deskripsi': _deskripsiController.text.trim(),
           'fileUrl': _linkController.text.trim(),
-          'mataPelajaran': _mapelController.text.trim(),
+          'mataPelajaran': mapel,
           'diunggahPada': Timestamp.now(),
           'diunggahOlehUid': _authService.getCurrentUser()!.uid,
-          'untukKelas': _selectedKelas,
+          'untukKelas': kelas,
         });
+
+        // --- PANGGIL FUNGSI NOTIFIKASI SETELAH SUKSES ---
+        await _createNotification(judul, mapel, kelas);
+        // --- AKHIR PANGGILAN FUNGSI ---
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,7 +103,9 @@ class _UploadMateriScreenState extends State<UploadMateriScreen> {
         Navigator.pop(context);
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunggah: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal mengunggah: $e')));
       } finally {
         if (mounted) {
           setState(() => _isLoading = false);

@@ -1,10 +1,16 @@
 // lib/screens/student_home_screen.dart
 import 'package:aplikasi_e_learning_smk/models/user_model.dart';
 import 'package:aplikasi_e_learning_smk/services/auth_service.dart';
-import 'package:aplikasi_e_learning_smk/widgets/announcement_card.dart'; // Import AnnouncementCard
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:aplikasi_e_learning_smk/widgets/announcement_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:intl/intl.dart'; // Hapus jika AnnouncementCard Anda tidak butuh ini
+import 'package:intl/intl.dart';
+import 'package:aplikasi_e_learning_smk/screens/task_detail_screen.dart';
+import 'package:aplikasi_e_learning_smk/widgets/custom_loading_indicator.dart';
+import 'package:aplikasi_e_learning_smk/screens/student_materi_list_screen.dart';
+// --- IMPORT BARU UNTUK NOTIFIKASI ---
+import 'package:aplikasi_e_learning_smk/screens/notification_screen.dart';
+// --- AKHIR IMPORT BARU ---
 
 class StudentHomeScreen extends StatefulWidget {
   final String kelasId;
@@ -22,6 +28,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   void initState() {
     super.initState();
     _userFuture = _fetchStudentData();
+    Intl.defaultLocale = 'id_ID'; // Pastikan locale diatur untuk format tanggal
   }
 
   Future<UserModel?> _fetchStudentData() async {
@@ -35,12 +42,47 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // --- PERUBAHAN UTAMA: TAMBAHKAN APPBAR ---
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // Sembunyikan tombol back
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        title: Text(
+          // Judul bisa opsional
+          'Beranda',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.notifications_none_outlined, // Icon lonceng
+              color: Theme.of(context).iconTheme.color,
+            ),
+            tooltip: 'Notifikasi', // Tooltip
+            onPressed: () {
+              // Navigasi ke NotificationScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8), // Sedikit jarak
+        ],
+      ),
+      // --- AKHIR PERUBAHAN APPBAR ---
       body: FutureBuilder<UserModel?>(
         future: _userFuture,
         builder: (context, snapshot) {
+          // ... (sisa kode FutureBuilder tetap sama) ...
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CustomLoadingIndicator());
           }
 
           if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
@@ -53,13 +95,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           final user = snapshot.data!;
           final userKelas = user.kelas; // Simpan kelas user
 
-          // --- UI LAMA ANDA ---
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Welcome Card (sesuai kode asli Anda, sedikit dimodifikasi)
+                // Welcome Card
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20.0),
@@ -70,11 +111,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       colors: [
                         Colors.indigo,
                         const Color(0xFF7C3AED).withOpacity(0.8),
-                      ], // Sedikit transparansi
+                      ],
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(16.0)),
                     boxShadow: [
-                      // Tambahkan sedikit shadow
                       BoxShadow(
                         color: Colors.indigo.withOpacity(0.3),
                         blurRadius: 8,
@@ -86,7 +126,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        // Tampilkan nama dan kelas
                         'Selamat Datang, ${user.nama}',
                         style: const TextStyle(
                           color: Colors.white,
@@ -96,7 +135,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Kelas: ${userKelas ?? 'Belum ada kelas'}', // Tampilkan kelas
+                        'Kelas: ${userKelas ?? 'Belum ada kelas'}',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -112,32 +151,64 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Stats Grid (sesuai kode asli Anda)
+                // Stats Grid (DINAMIS)
                 GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 16.0,
                   mainAxisSpacing: 16.0,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  childAspectRatio: 4.0,
+                  childAspectRatio: 4.0, // <-- Mengikuti kode asli Anda
                   children: [
-                    _buildStatCard(
-                      'Materi',
-                      '12/20',
-                      Icons.book_outlined,
-                      Colors.green.shade400,
+                    // --- KARTU STAT MATERI (DINAMIS) ---
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('materi')
+                          .where('untukKelas', isEqualTo: userKelas)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        String materiCount = '...';
+                        if (snapshot.hasData) {
+                          materiCount = snapshot.data!.docs.length.toString();
+                        } else if (snapshot.hasError) {
+                          materiCount = 'Err';
+                        }
+                        // Menampilkan total materi
+                        return _buildStatCard(
+                          'Materi', // Judul asli
+                          materiCount, // Nilai dinamis (total)
+                          Icons.book_outlined,
+                          Colors.green.shade400,
+                        );
+                      },
                     ),
-                    _buildStatCard(
-                      'Tugas',
-                      '5/8',
-                      Icons.assignment_outlined,
-                      Colors.orange.shade400,
+                    // --- KARTU STAT TUGAS (DINAMIS) ---
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('tugas')
+                          .where('untukKelas', isEqualTo: userKelas)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        String tugasCount = '...';
+                        if (snapshot.hasData) {
+                          tugasCount = snapshot.data!.docs.length.toString();
+                        } else if (snapshot.hasError) {
+                          tugasCount = 'Err';
+                        }
+                        // Menampilkan total tugas
+                        return _buildStatCard(
+                          'Tugas', // Judul asli
+                          tugasCount, // Nilai dinamis (total)
+                          Icons.assignment_outlined,
+                          Colors.orange.shade400,
+                        );
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 1),
 
-                // Mata Pelajaran Section (sesuai kode asli Anda)
+                // Mata Pelajaran Section (DINAMIS)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -148,30 +219,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {}, // TODO: Implementasi Lihat Semua Materi
+                      onPressed: () {
+                        // Navigasi ke halaman daftar materi siswa
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const StudentMateriListScreen(),
+                          ),
+                        );
+                      },
                       child: const Text('Lihat Semua'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSubjectCard(
-                  'Informatika',
-                  '6 dari 10 modul',
-                  0.6,
-                  Icons.laptop_chromebook_outlined,
-                  Colors.blue.shade400,
-                ),
-                const SizedBox(height: 12),
-                _buildSubjectCard(
-                  'Matematika',
-                  '8 dari 12 modul',
-                  0.75,
-                  Icons.calculate_outlined,
-                  Colors.teal.shade400,
-                ),
+                _buildSubjectSection(userKelas),
                 const SizedBox(height: 32),
 
-                // Tugas Mendatang Section (sesuai kode asli Anda)
+                // Tugas Mendatang Section (DINAMIS)
                 Text(
                   'Tugas Mendatang',
                   style: Theme.of(
@@ -179,21 +245,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildUpcomingTask(
-                  'Essay Algoritma',
-                  'Informatika',
-                  'Batas: Besok!',
-                  Colors.red.shade400,
-                ),
-                const SizedBox(height: 12),
-                _buildUpcomingTask(
-                  'Latihan Soal Integral',
-                  'Matematika',
-                  'Batas: 4 hari lagi',
-                  Colors.amber.shade600,
-                ),
-                const SizedBox(height: 32), // Beri jarak sebelum pengumuman
-                // --- BAGIAN PENGUMUMAN (BARU DITAMBAHKAN) ---
+                _buildUpcomingTaskSection(userKelas),
+                const SizedBox(height: 32),
+
+                // BAGIAN PENGUMUMAN
                 Text(
                   'Pengumuman Terbaru',
                   style: Theme.of(
@@ -201,20 +256,16 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildAnnouncementSection(
-                  userKelas,
-                ), // Panggil method build pengumuman
-                // --- AKHIR BAGIAN PENGUMUMAN ---
+                _buildAnnouncementSection(userKelas),
               ],
             ),
           );
-          // --- AKHIR UI LAMA ---
         },
       ),
     );
   }
 
-  // --- WIDGET HELPER DARI KODE ASLI ANDA (Dimodifikasi sedikit untuk style) ---
+  // --- WIDGET HELPER ---
   Widget _buildStatCard(
     String title,
     String value,
@@ -222,16 +273,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     Color color,
   ) {
     return Card(
-      elevation: 2.0, // Sedikit kurangi shadow
+      elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start, // Align ke kiri
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              // Ikon dan Judul
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
@@ -243,7 +293,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              // Nilai
               value,
               style: TextStyle(
                 fontSize: 22,
@@ -260,7 +309,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   Widget _buildSubjectCard(
     String subject,
     String progress,
-    double progressValue,
+    double? progressValue,
     IconData icon,
     Color color,
   ) {
@@ -275,7 +324,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1), // Gunakan withOpacity
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.0),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -294,16 +343,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    progress, // Tampilkan progress text
+                    progress,
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: progressValue,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    borderRadius: BorderRadius.circular(5), // Sedikit rounded
-                  ),
+                  if (progressValue != null) ...[
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: progressValue,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -318,12 +369,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     String subject,
     String deadline,
     Color color,
+    String taskId,
+    Map<String, dynamic> taskData,
   ) {
     return Card(
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: ListTile(
-        // Gunakan ListTile agar lebih rapi
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -340,12 +392,201 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
         onTap: () {
-          // TODO: Aksi ketika item tugas diklik
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TaskDetailScreen(taskId: taskId, taskData: taskData),
+            ),
+          );
         },
       ),
     );
   }
-  // --- AKHIR WIDGET HELPER DARI KODE ASLI ---
+
+  // --- METHOD BARU UNTUK BAGIAN MATA PELAJARAN (DINAMIS) ---
+  Widget _buildSubjectSection(String? userKelas) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('materi')
+          .where('untukKelas', isEqualTo: userKelas)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CustomLoadingIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Padding(
+              // Beri padding agar tidak terlalu mepet
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Text('Belum ada mata pelajaran.'),
+            ),
+          );
+        }
+
+        // Ekstrak mata pelajaran unik
+        final subjects = <String>{};
+        for (var doc in snapshot.data!.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final subject = data['mataPelajaran'] as String?;
+          if (subject != null && subject.isNotEmpty) {
+            subjects.add(subject);
+          }
+        }
+
+        if (subjects.isEmpty) {
+          return const Center(
+            child: Padding(
+              // Beri padding agar tidak terlalu mepet
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Text('Belum ada mata pelajaran.'),
+            ),
+          );
+        }
+
+        // Map untuk ikon dan warna
+        final subjectStyles = {
+          'Informatika': {
+            'icon': Icons.laptop_chromebook_outlined,
+            'color': Colors.blue.shade400,
+          },
+          'Matematika': {
+            'icon': Icons.calculate_outlined,
+            'color': Colors.teal.shade400,
+          },
+          'Fisika': {
+            'icon': Icons.science_outlined,
+            'color': Colors.purple.shade400,
+          },
+          'Default': {
+            'icon': Icons.subject_outlined,
+            'color': Colors.grey.shade400,
+          },
+        };
+
+        const int maxSubjectsToShow = 3;
+        final subjectsToShow = subjects.take(maxSubjectsToShow).toList();
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: subjectsToShow.length,
+          itemBuilder: (context, index) {
+            final subjectName = subjectsToShow[index];
+            final style =
+                subjectStyles[subjectName] ?? subjectStyles['Default']!;
+
+            // Hitung jumlah modul
+            final moduleCount = snapshot.data!.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return (data['mataPelajaran'] as String?) == subjectName;
+            }).length;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildSubjectCard(
+                subjectName,
+                '$moduleCount Modul',
+                null,
+                style['icon'] as IconData,
+                style['color'] as Color,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // --- METHOD BARU UNTUK TUGAS MENDATANG (DINAMIS) ---
+  Widget _buildUpcomingTaskSection(String? userKelas) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('tugas')
+          .where('untukKelas', isEqualTo: userKelas)
+          .where(
+            'tenggatWaktu',
+            isGreaterThanOrEqualTo: Timestamp.now(),
+          ) // Hanya tugas mendatang
+          .orderBy('tenggatWaktu', descending: false) // Terdekat dulu
+          .limit(3) // Ambil 3 teratas
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CustomLoadingIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Text('Tidak ada tugas mendatang.'),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text(
+              'Gagal memuat tugas.',
+              style: TextStyle(color: Colors.red),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            var taskDoc = snapshot.data!.docs[index];
+            var taskData = taskDoc.data() as Map<String, dynamic>;
+
+            final String judul = taskData['judul'] ?? 'Tanpa Judul';
+            final String mapel = taskData['mataPelajaran'] ?? 'Mapel';
+            final Timestamp tenggatTimestamp =
+                taskData['tenggatWaktu'] as Timestamp? ?? Timestamp.now();
+
+            // Logika Teks Deadline
+            final DateTime tenggatWaktu = tenggatTimestamp.toDate();
+            final now = DateTime.now();
+            final difference = tenggatWaktu.difference(now);
+            String deadlineText;
+            Color deadlineColor = Colors.amber.shade600;
+
+            if (difference.inDays == 0 && tenggatWaktu.day == now.day) {
+              deadlineText = 'Batas: Hari ini!';
+              deadlineColor = Colors.red.shade400;
+            } else if (difference.inDays == 0 &&
+                tenggatWaktu.day == now.add(const Duration(days: 1)).day) {
+              deadlineText = 'Batas: Besok!';
+              deadlineColor = Colors.red.shade400;
+            } else if (difference.inDays >= 1) {
+              deadlineText = 'Batas: ${difference.inDays} hari lagi';
+              deadlineColor = Colors.green.shade600;
+            } else if (difference.inHours >= 1) {
+              deadlineText = 'Batas: ${difference.inHours} jam lagi';
+              deadlineColor = Colors.amber.shade600;
+            } else {
+              deadlineText = 'Batas: Segera';
+              deadlineColor = Colors.red.shade400;
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildUpcomingTask(
+                judul,
+                mapel,
+                deadlineText,
+                deadlineColor,
+                taskDoc.id,
+                taskData,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   // --- METHOD BARU UNTUK BAGIAN PENGUMUMAN ---
   Widget _buildAnnouncementSection(String? userKelas) {
@@ -358,7 +599,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CustomLoadingIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
@@ -391,16 +632,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             var data = doc.data() as Map<String, dynamic>;
 
             Timestamp timestamp = data['dibuatPada'] ?? Timestamp.now();
-            // DateTime dateTime = timestamp.toDate(); // Hapus jika AnnouncementCard pakai Timestamp
 
-            // String authorName = data['dibuatOlehNama'] ?? data['dibuatOlehUid'] ?? 'Admin'; // Hapus jika AnnouncementCard handle nama
-
-            // Panggil AnnouncementCard sesuai definisi di announcement_card.dart
-            // (Menggunakan judul, isi, dibuatPada(Timestamp), dibuatOlehUid, untukKelas)
             return AnnouncementCard(
               judul: data['judul'] ?? 'Tanpa Judul',
               isi: data['isi'] ?? 'Tidak ada isi.',
-              dibuatPada: timestamp, // Kirim Timestamp
+              dibuatPada: timestamp,
               dibuatOlehUid: data['dibuatOlehUid'] ?? '',
               untukKelas: data['untukKelas'] ?? 'Tidak diketahui',
             );
@@ -409,6 +645,4 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       },
     );
   }
-
-  // --- AKHIR METHOD BARU ---
 }

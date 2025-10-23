@@ -18,13 +18,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _judulController = TextEditingController();
   final _deskripsiController = TextEditingController();
   final _mapelController = TextEditingController();
-  // --- PERUBAHAN 1: Controller untuk link ---
   final _linkController = TextEditingController();
-  // --- AKHIR PERUBAHAN 1 ---
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  // File? _pickedFile; // <-- Hapus ini
-  // String? _pickedFileName; // <-- Hapus ini
   bool _isLoading = false;
   String? _selectedKelas;
   late Future<UserModel?> _guruFuture;
@@ -46,12 +42,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     _judulController.dispose();
     _deskripsiController.dispose();
     _mapelController.dispose();
-    _linkController.dispose(); // <-- Jangan lupa dispose controller baru
+    _linkController.dispose();
     super.dispose();
   }
-
-  // --- Hapus fungsi _pickFile() ---
-  // Future<void> _pickFile() async { ... }
 
   Future<void> _selectDateTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -75,6 +68,35 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
+  // --- FUNGSI BARU UNTUK MEMBUAT NOTIFIKASI ---
+  Future<void> _createNotification(
+    String judulTugas,
+    String mapel,
+    String kelas,
+    DateTime tenggatWaktu,
+  ) async {
+    try {
+      // Format tanggal tenggat untuk subtitle
+      final String formattedTenggat = DateFormat(
+        'd MMM, HH:mm',
+        'id_ID',
+      ).format(tenggatWaktu);
+
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'type': 'new_task', // Tipe notifikasi tugas baru
+        'title': 'Tugas Baru: $judulTugas',
+        'subtitle': 'Mapel: $mapel - Tenggat: $formattedTenggat',
+        'timestamp': Timestamp.now(),
+        'targetAudience': [
+          'kelas_$kelas',
+        ], // Targetnya adalah kelas yang dipilih
+      });
+    } catch (e) {
+      print('Gagal membuat notifikasi: $e');
+    }
+  }
+  // --- AKHIR FUNGSI BARU ---
+
   Future<void> _submitTugas(String guruId, String guruNama) async {
     if (_formKey.currentState!.validate() &&
         _selectedDate != null &&
@@ -82,37 +104,39 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         _selectedKelas != null) {
       setState(() => _isLoading = true);
 
+      // Mengambil data sebelum proses async
+      final String judul = _judulController.text.trim();
+      final String mapel = _mapelController.text.trim();
+      final String kelas = _selectedKelas!;
+      final DateTime tenggatWaktu = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
       try {
-        // --- PERUBAHAN 2: Gunakan _linkController.text ---
         String? lampiranUrl = _linkController.text.trim();
         if (lampiranUrl.isEmpty) {
-          lampiranUrl = null; // Set null jika link kosong
+          lampiranUrl = null;
         }
-        // --- AKHIR PERUBAHAN 2 ---
-
-        // --- Hapus bagian upload file ---
-        // if (_pickedFile != null) { ... }
-
-        final DateTime tenggatWaktu = DateTime(
-          _selectedDate!.year,
-          _selectedDate!.month,
-          _selectedDate!.day,
-          _selectedTime!.hour,
-          _selectedTime!.minute,
-        );
 
         await FirebaseFirestore.instance.collection('tugas').add({
-          'judul': _judulController.text,
+          'judul': judul,
           'deskripsi': _deskripsiController.text,
-          'mataPelajaran': _mapelController.text,
+          'mataPelajaran': mapel,
           'tenggatWaktu': Timestamp.fromDate(tenggatWaktu),
-          'lampiranUrl': lampiranUrl, // Simpan link dari controller
-          // 'lampiranNama': _pickedFileName, // Hapus ini
+          'lampiranUrl': lampiranUrl,
           'dibuatPada': Timestamp.now(),
-          'untukKelas': _selectedKelas,
+          'untukKelas': kelas,
           'guruId': guruId,
           'guruNama': guruNama,
         });
+
+        // --- PANGGIL FUNGSI NOTIFIKASI SETELAH SUKSES ---
+        await _createNotification(judul, mapel, kelas, tenggatWaktu);
+        // --- AKHIR PANGGILAN FUNGSI ---
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -280,7 +304,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // --- PERUBAHAN 3: Ubah ListTile menjadi TextFormField untuk Link ---
                   TextFormField(
                     controller: _linkController,
                     decoration: InputDecoration(
@@ -300,7 +323,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     keyboardType: TextInputType.url, // Keyboard tipe URL
                   ),
 
-                  // --- AKHIR PERUBAHAN 3 ---
                   const SizedBox(height: 32),
 
                   _isLoading
