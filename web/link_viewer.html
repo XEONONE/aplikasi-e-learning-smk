@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning SMK - Shared Content</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .content-header {
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .content-header.materi {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .content-header.tugas {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .content-header.pengumuman {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        
+        .content-header h1 {
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .content-type {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .content-body {
+            padding: 30px;
+        }
+        
+        .metadata {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .metadata-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .metadata-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 50px;
+            color: white;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+        }
+        
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div id="loading" class="loading">
+                    <div class="spinner-border spinner text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h3 class="mt-3">Loading content...</h3>
+                </div>
+                
+                <div id="error" class="error-container d-none">
+                    <div class="error-icon">❌</div>
+                    <h2>Oops! Something went wrong</h2>
+                    <p id="error-message">The link you're looking for doesn't exist or has expired.</p>
+                    <button onclick="window.close()" class="btn btn-custom mt-3">Close</button>
+                </div>
+                
+                <div id="content" class="d-none">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBhSsRtp2rs_0_Ve-YBczeTHLJ3EbMtP0",
+            authDomain: "aplikasi-e-learning-smk.firebaseapp.com",
+            projectId: "aplikasi-e-learning-smk",
+            storageBucket: "aplikasi-e-learning-smk.firebasestorage.app",
+            messagingSenderId: "978948896131",
+            appId: "1:978948896131:web:b888b4dbf390fe26f4f2b6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Get short code from URL
+        const urlParts = window.location.pathname.split('/');
+        const shortCode = urlParts[urlParts.length - 1];
+
+        // Load content
+        loadContent(shortCode);
+
+        async function loadContent(shortCode) {
+            try {
+                // Get link data
+                const linkDoc = await db.collection('dynamic_links').doc(shortCode).get();
+                
+                if (!linkDoc.exists) {
+                    showError('Link tidak ditemukan atau sudah tidak aktif');
+                    return;
+                }
+
+                const linkData = linkDoc.data();
+                
+                if (!linkData.isActive) {
+                    showError('Link ini sudah tidak aktif');
+                    return;
+                }
+
+                // Increment click count
+                await db.collection('dynamic_links').doc(shortCode).update({
+                    clickCount: firebase.firestore.FieldValue.increment(1),
+                    lastClicked: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Get actual content data
+                const contentDoc = await db.collection(getCollectionName(linkData.type)).doc(linkData.dataId).get();
+                
+                if (!contentDoc.exists) {
+                    showError('Konten tidak ditemukan');
+                    return;
+                }
+
+                const contentData = contentDoc.data();
+                renderContent(linkData.type, contentData, linkData);
+                
+            } catch (error) {
+                console.error('Error loading content:', error);
+                showError('Terjadi kesalahan saat memuat konten');
+            }
+        }
+
+        function getCollectionName(type) {
+            switch (type) {
+                case 'materi': return 'materi';
+                case 'tugas': return 'tugas';
+                case 'pengumuman': return 'pengumuman';
+                default: return type;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error').classList.remove('d-none');
+        }
+
+        function renderContent(type, data, linkData) {
+            document.getElementById('loading').classList.add('d-none');
+            
+            let html = '';
+            
+            switch (type) {
+                case 'materi':
+                    html = renderMateri(data, linkData);
+                    break;
+                case 'tugas':
+                    html = renderTugas(data, linkData);
+                    break;
+                case 'pengumuman':
+                    html = renderPengumuman(data, linkData);
+                    break;
+                default:
+                    showError('Tipe konten tidak dikenal');
+                    return;
+            }
+            
+            document.getElementById('content').innerHTML = html;
+            document.getElementById('content').classList.remove('d-none');
+        }
+
+        function renderMateri(data, linkData) {
+            return `
+                <div class="content-card">
+                    <div class="content-header materi">
+                        <div class="content-type">📚 MATERI PEMBELAJARAN</div>
+                        <h1>${data.judul}</h1>
+                    </div>
+                    <div class="content-body">
+                        <h5>Deskripsi</h5>
+                        <p>${data.deskripsi}</p>
+                        
+                        ${data.fileUrl ? `
+                            <div class="mt-4">
+                                <h6>📎 File Terlampir</h6>
+                                <a href="${data.fileUrl}" target="_blank" class="btn btn-custom">
+                                    <i class="fas fa-download"></i> Download File
+                                </a>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="metadata">
+                            <div class="metadata-row">
+                                <strong>Guru:</strong>
+                                <span>${data.namaGuru}</span>
+                            </div>
+                            <div class="metadata-row">
+                                <strong>Tanggal:</strong>
+                                <span>${formatDate(data.tanggalDibuat)}</span>
+                            </div>
+                            <div class="metadata-row">
+                                <strong>Dilihat:</strong>
+                                <span>${linkData.clickCount || 0} kali</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button onclick="shareLink()" class="btn btn-custom">
+                                📤 Share Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTugas(data, linkData) {
+            return `
+                <div class="content-card">
+                    <div class="content-header tugas">
+                        <div class="content-type">📋 TUGAS</div>
+                        <h1>${data.judul}</h1>
+                        ${data.deadline ? `
+                            <div class="alert alert-warning mt-3">
+                                ⏰ <strong>Deadline:</strong> ${formatDate(data.deadline)}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="content-body">
+                        <h5>Deskripsi Tugas</h5>
+                        <p>${data.deskripsi}</p>
+                        
+                        ${data.fileUrl ? `
+                            <div class="mt-4">
+                                <h6>📎 File Terlampir</h6>
+                                <a href="${data.fileUrl}" target="_blank" class="btn btn-custom">
+                                    <i class="fas fa-download"></i> Download File
+                                </a>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="metadata">
+                            <div class="metadata-row">
+                                <strong>Guru:</strong>
+                                <span>${data.namaGuru}</span>
+                            </div>
+                            <div class="metadata-row">
+                                <strong>Tanggal Dibuat:</strong>
+                                <span>${formatDate(data.tanggalDibuat)}</span>
+                            </div>
+                            ${data.deadline ? `
+                                <div class="metadata-row">
+                                    <strong>Deadline:</strong>
+                                    <span>${formatDate(data.deadline)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="metadata-row">
+                                <strong>Dilihat:</strong>
+                                <span>${linkData.clickCount || 0} kali</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button onclick="shareLink()" class="btn btn-custom">
+                                📤 Share Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPengumuman(data, linkData) {
+            return `
+                <div class="content-card">
+                    <div class="content-header pengumuman">
+                        <div class="content-type">📢 PENGUMUMAN</div>
+                        <h1>${data.judul}</h1>
+                    </div>
+                    <div class="content-body">
+                        <h5>Isi Pengumuman</h5>
+                        <p>${data.isi}</p>
+                        
+                        <div class="metadata">
+                            <div class="metadata-row">
+                                <strong>Dibuat oleh:</strong>
+                                <span>${data.namaGuru}</span>
+                            </div>
+                            <div class="metadata-row">
+                                <strong>Tanggal:</strong>
+                                <span>${formatDate(data.tanggalDibuat)}</span>
+                            </div>
+                            <div class="metadata-row">
+                                <strong>Dilihat:</strong>
+                                <span>${linkData.clickCount || 0} kali</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button onclick="shareLink()" class="btn btn-custom">
+                                📤 Share Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            
+            let date;
+            if (timestamp.seconds) {
+                // Firestore Timestamp
+                date = new Date(timestamp.seconds * 1000);
+            } else {
+                date = new Date(timestamp);
+            }
+            
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function shareLink() {
+            const currentUrl = window.location.href;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    url: currentUrl
+                });
+            } else {
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+# Firestore Security Rules
+# Firebase Console -> Firestore Database -> Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null; // Allow reading other users for display purposes
+    }
+    
+    // Materi collection
+    match /materi/{materiId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+        (resource.data.guruId == request.auth.uid || !exists(/databases/$(database)/documents/users/$(request.auth.uid)) || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru');
+    }
+    
+    // Tugas collection
+    match /tugas/{tugasId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+        (resource.data.guruId == request.auth.uid || !exists(/databases/$(database)/documents/users/$(request.auth.uid)) || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru');
+    }
+    
+    // Pengumuman collection
+    match /pengumuman/{pengumumanId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+        (resource.data.guruId == request.auth.uid || !exists(/databases/$(database)/documents/users/$(request.auth.uid)) || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru');
+    }
+    
+    // Komentar collection
+    match /komentar/{komentarId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru');
+    }
+    
+    // Kelas collection
+    match /kelas/{kelasId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru';
+    }
+    
+    // Pengumpulan collection
+    match /pengumpulan/{pengumpulanId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.siswaId;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.siswaId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru');
+      allow delete: if request.auth != null && request.auth.uid == resource.data.siswaId;
+    }
+    
+    // Dynamic Links collection
+    match /dynamic_links/{shortCode} {
+      allow read: if true; // Allow public read for link resolution
+      allow create, update, delete: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'guru';
+    }
+    
+    // Allow admins to access everything
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
